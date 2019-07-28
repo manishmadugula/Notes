@@ -261,6 +261,12 @@
         A[mid]<A[(mid-1+A.size())%A.size()]
     ```
 
+- ### Dynamic Programming
+
+  - [FAO formula](https://medium.com/cs-dojo/an-introduction-to-dynamic-programming-89fdd3549d54)
+  
+  - [DP Book by ByteByByte](Books\Dynamic-Programming-for-Interviews.pdf)
+
 - ### LCM and HCF
 
   - To find HCF or GCD
@@ -296,3 +302,29 @@
       HENCE CLAIM WAS CORRECT
 
       This means that after every 2 iterations a is getting halved …hence it would take O(log(a)) time
+
+- ### Two Pointer
+  
+  Two Pointers is a pattern where two pointers iterate through the data structure in tandem until one or both of the pointers hit a certain condition. Two Pointers is often useful when searching pairs in a sorted array or linked list.
+
+  In some questions with 2 arrays you may need to reverse one array and start a pointer from both the arrays.
+
+  Two pointers are needed because with just pointer, you would have to continually loop back through the array to find the answer(O(n*n)).
+
+  Ways to identify when to use the Two Pointer method:
+
+  - It will feature problems where you deal with sorted arrays (or Linked Lists) and need to find a set of elements that fulfill certain constraints.
+
+  - The set of elements in the array is a pair, a triplet, or even a **subarray**.
+
+### Misc Resources
+
+- [Common Patterns in Coding Interviews](https://medium.com/hackernoon/14-patterns-to-ace-any-coding-interview-question-c5bb3357f6ed)
+
+- [DP Book by ByteByByte](Books\Dynamic-Programming-for-Interviews.pdf)
+
+- [50 Questions by ByteByByte](Books\50-Coding-Interview-Questions.pdf)
+
+- [Ardendertat Blog](http://www.ardendertat.com/2012/01/09/programming-interview-questions/)
+
+- Spoj Most Liked Questions.

@@ -1,0 +1,4 @@
+#ignore all video files
+*.mp4
+*.avi
+*.mkv
