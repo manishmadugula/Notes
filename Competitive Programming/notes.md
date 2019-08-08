@@ -1,4 +1,4 @@
-# CPP Notes
+# Notes
 
 ## Competitive Programming Tips
 
@@ -7,6 +7,8 @@
 - see the return type carefully,cast to long if long is expected.
 
 - see constraints in question.
+
+- ```int* m,n;``` makes m a pointer but n an integer. You need to do as following ```int *m,*n;```. 
 
 - If you are iterating like below
     ```c++
@@ -307,17 +309,31 @@
   
   Two Pointers is a pattern where two pointers iterate through the data structure in tandem until one or both of the pointers hit a certain condition. Two Pointers is often useful when searching pairs in a sorted array or linked list.
 
-  In some questions with 2 arrays you may need to reverse one array and start a pointer from both the arrays.
-
   Two pointers are needed because with just pointer, you would have to continually loop back through the array to find the answer(O(n*n)).
 
   Ways to identify when to use the Two Pointer method:
 
   - It will feature problems where you deal with sorted arrays (or Linked Lists) and need to find a set of elements that fulfill certain constraints.
+  
+  - [Comparing strings that contain backspaces](https://leetcode.com/problems/backspace-string-compare/submissions/)
+  
+  - [Remove duplicates from Sorted Array](https://www.interviewbit.com/problems/remove-duplicates-from-sorted-array/)
 
-  - The set of elements in the array is a pair, a triplet, or even a **subarray**.
+  In some questions with 2 arrays you may need to reverse one array and start a pointer from both the arrays. Like finding palindrome in a linked list.
 
-### Misc Resources
+- ### Fast and Slow Pointer
+  
+  - A pointer algorithm that uses two pointers which move through the array (or sequence/linked list) at different speeds.
+  
+  
+  - How do you identify when to use the Fast and Slow pattern?
+  
+    - The problem will deal with a loop in a linked list or array
+    
+    - When you need to know the position of a certain element or the overall length of the linked list. 
+
+
+# Misc Resources
 
 - [Common Patterns in Coding Interviews](https://medium.com/hackernoon/14-patterns-to-ace-any-coding-interview-question-c5bb3357f6ed)
 
