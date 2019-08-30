@@ -664,6 +664,8 @@
 
     - linkage of the static symbol will be internal. It is only going to be visible to the translation unit you defined it in.
 
+    - Functions have the same linkage property that variables do. Functions always default to external linkage, but can be set to internal linkage via the static keyword. Function forward declarations don’t need the extern keyword. The compiler is able to tell whether you’re defining a function or a function prototype by whether you supply a function body or not.
+
     - It is kind of like declaring a variable/function private but for a translation unit. Linker or any other translational unit cannot see it.
     
     - If there is a header file with a static variable/function then every file which includes this header file can then use those static variable or function.
@@ -818,6 +820,87 @@ but both are the same as explained in the video.
 - ```int * const A;``` -> "A is a const pointer to an int."
 
 - ```const int* const A;``` -> "A is a const pointer to an int that is constant".
+
+
+## Global Variables
+
+Variables declared outside of function block are global variables, The global scope is accessed via ```::global_variable```. 
+
+### Linkage
+In addition to scope and duration, variables have a third property: linkage.
+
+**Static Keyword** - Variables with **internal linkage** can be used anywhere within the file they are defined in, but can not be referenced outside the file they exist in. 
+
+```c++
+ static int g_x;
+```
+
+**Extern Keyword** - Variables with **external linkage** can be used both in the file they are defined in, as well as in other files.
+
+```c++
+extern double g_y
+```
+
+By default, **non-const variables declared outside of a function are assumed to be external. However, const variables declared outside of a function are assumed to be internal.**
+
+Just like in case of functions, in order to use an external global variable that has been declared in another file, y**ou must use a variable forward declaration.** For variables, creating a forward declaration is done **via the extern keyword** **(with no initialization value)**.
+
+ If you want to define an uninitialized non-const global variable, do not use the extern keyword, otherwise C++ will think you’re trying to make a forward declaration for the variable. 
+
+If the variable forward declaration is declared outside of a function, it applies for the whole file. If the variable forward declaration is declared inside a function, it applies within that block only.
+
+```c++
+// global.cpp
+int g_x(4); // External Linkage by default. 
+extern int g_y(24) //extern is ignored since by default extern.
+```
+
+```c++
+// main.cpp
+extern int g_x; //Forward declaration. You can use g_x anywhere in this file. It is a global variable in this file. 
+
+int main(){
+    extern int g_y // You can only use g_y inside the main function.
+}
+
+```
+
+Functions have the same linkage property that variables do. Functions always default to external linkage, but can be set to internal linkage via the static keyword
+
+```c++
+static int add(int x, int y)
+{
+    return x + y;
+}
+```
+
+Function forward declarations don’t need the extern keyword. The compiler is able to tell whether you’re defining a function or a function prototype by whether you supply a function body or not.
+
+
+ # Avoid non-const global variables
+By far the biggest reason non-const global variables are dangerous is because their values can be changed by any function that is called, and there is no easy way for the programmer to know that this will happen. 
+
+
+
+- Non-const global variables make every function call potentially dangerous, and the programmer has no easy way of knowing which ones are dangerous and which ones aren’t! Local variables are much safer because other functions can not affect them directly.
+
+- because they can be used anywhere, you might have to look through a significant amount of code to understand their usage.
+
+-  instead of allowing direct access to the global variable, it’s a better practice to “encapsulate” the variable. Instead of ->
+
+    ```c++
+    double g_gravity (9.8); // can be exported and used directly in any file
+    ```
+
+    Use 
+    ```c++
+    static double g_gravity(9.8); // restrict direct access to this file only
+    double getGravity(){
+        // this function can be exported to other files to access the global outside of this file
+        return g_gravity;
+    }
+    ```
+
 
 ## Mutable
 

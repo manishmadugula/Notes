@@ -332,6 +332,40 @@
     
     - When you need to know the position of a certain element or the overall length of the linked list. 
 
+# Modulus Properties
+- The most obvious definition is: mod(x,y) or x % y gives the remainder when you divide x by y.
+- Technique used by many a programmer to work out mod(x,y) when a mod function isn't available i.e. ```mod(x,y)= x-x*int(x/y)```
+  
+- Properties
+    - Addition property
+        ```
+        (A + B) mod C = (A mod C + B mod C)mod C
+        ```
+    - Mod of a -ve number
+      ```
+      (-A) mod C = (-A + C)mod C
+      ```
+    - **Multiplication property**
+      ```
+      (A * B) mod C = (A mod C * B mod C) mod C
+      ```
+    
+    - Exponentiation property
+      ```
+      A^B mod C = ( (A mod C)^B ) mod C
+      ```
+
+    - Modular Inverse property
+      ```
+      A * A^-1) ≡ 1 (mod C) or equivalently (A * A^-1) mod C = 1
+      ```
+      Only the numbers coprime to C (numbers that share no prime factors with C) have a modular inverse (mod C)
+
+- Non Negative Modulus
+    ```
+    long long modul(long long p,long long q){
+    return (q + (p%q)) % q;
+    ```
 
 # Misc Resources
 
