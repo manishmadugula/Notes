@@ -24,6 +24,8 @@
 
 * ### init and zygote
 
+* ### Process Lifecycle.
+
 * ### preempt, scheduling, dispatch
 
 * ### IPC shared buffers message passing ipc,shared memory IPC which is better?
