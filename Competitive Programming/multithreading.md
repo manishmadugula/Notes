@@ -1,3 +1,80 @@
+## Concurrency
+
+- Two Types
+    - MultiProcessing 
+        - Communication -> (IPC)
+        
+    - MultiThreading  
+        - Communication -> (Shared Memory)
+        - Faster to Start
+        - Low OverHead
+        - Difficult to Implement
+        - Can't run over distributed systems.
+
+
+
+### Threading 
+
+- Thread object can't be copied only moved;
+
+    ```c++
+    std::thread t2 = std::move(t1);
+    ```
+
+- To print identification number of current thread use.
+
+    ```c++
+    std::this_thread::get_id();
+    ```
+
+- For any thread t1 do 
+    ```c++
+    t1.get_id();
+    ```
+
+- Ideally create as many thread as the number of cores. If you do more you run into problem of OverSubscription. There will be lots of context switching. You can get idea of optimal number of threads to use by using ->
+    ```c++
+    std::thread::hardware_concurrency();
+    ```
+
+- To make sure an exception in main thread doesn't kill the other threads enclose the main thread code in try catch block.
+
+    ```c++
+    void function_1(){
+        for(int i=0;i<40000;i++)
+                cout << i << " : ";
+    }
+
+    int main(){
+        std::thread t1(function_1);
+        try{
+                for(int i=0;i<100;i++){
+                        if(i==50)
+                                throw "Exception";
+                        cout << i << " ";
+                }
+        }
+        catch(...){}
+        t1.join();
+        return 0;
+    }
+    ```
+
+- Alternatively, we can also perform **"Resource Aquisition is Initialization"** approach. We create a wrapper class around thread and in destructor of wrapper class we call join.
+
+ 
+- Parameters are always passed by value to thread so if you want to pass by reference you need to wrap the paramter by std::ref or pass it as pointer.
+    ```c++
+    std::string m = "Hello";
+    std::thread(function_1,std::ref(m));
+    ```
+    
+    - If you won't use the m in main thread you can wrap it in move which will move the parameter from main thread to child thread so program is more safe and efficient.
+        ```c++
+        std::string m = "Hello";
+        std::thread(function_1,std::move(m));
+        ```
+
 ### Passing Functor to threads in c++
 
 Say we have a functor
