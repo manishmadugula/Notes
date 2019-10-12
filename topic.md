@@ -1,0 +1,65 @@
+# Topic to see
+- Read about obj uml
+- Static class vs singleton
+- Thread safe singleton
+- Websockets vs http2
+- 0 vs delete function declaration
+- UML Diagram
+- Linked list intersection
+- Unique ptr passing function
+- Virtual table
+- Why use unique ptr at all
+- In a n-ary tree there is a unique path between any 2 nodes Euler walk.
+- Think about #define vs typedef in terms of char*
+- A a() not working
+- Async
+- Return Value optimisation
+- 50 Questions ByteByByte -> 1 3 7 8 10 12 15 19 coin change 33 36
+- Hidden binary search questions
+- Getting started with the sport of programming
+- Coderust hacking the coding Interview
+- Interview bit
+- Grokking the object oriented design interview
+- Order statistics
+- Bipartite
+- 2 elements from 2 the unsorted singly linked list having sum k. Using 2 pointer
+- Binary tree mirror 3 lines recursive
+- Read only array find repeating number
+- Fast and slow pointers
+- Quick select
+- Time complexities
+- In place linkedlist merging
+- Diameter of a tree
+- Next palindrome number
+- Concepts behind dynamic programming
+- Running median
+- Coloring graph
+- Euler tour
+- LCA queries
+- //Operator overloading
+- Try hashmap of hashset and the anagram question
+- Convex optimisation and dp
+- learncpp.com
+- Ardendertat blog
+- Enki
+- Walk vs path
+- Firecode.io
+- System design Gaurav Sen
+- system design Grokking SDI
+- Complete OS
+- Databases
+- Networking
+- Design patterns
+- algo expert
+- Learn about iterators
+- Competitive coding practises cpp
+- Oops concepts
+- Class diagrams
+- MVCC
+- Dynamic hashing
+- Thread creation join conditiobal variable mutexes lock_guard unique_lock
+- System Design Donnemartin
+- Heavy light decomposition
+- Binary lifting
+- Treap
+- Suffix array

@@ -148,3 +148,73 @@
         apropos "query"
 
 * ### Terminal Incognito
+
+
+# From office
+- top
+- Jobs
+- Ps
+- Htop
+- Ptree
+- Kill
+- Killall
+- Denice
+- netstat -nutlp
+- fuser PORT_NUMBER/tcp
+- sudo fuser -k PORTNUMBER/tcp
+- tcptrack
+- nslookup
+- Tcpdump
+- Ifconfig
+- Ping
+- dig domain
+- dig -x IP
+- netstat -an
+- curl --libcurl
+- Which
+- Whereis
+- dpkg 
+- dpkg-query -L Firefox
+- find /-name Google -type f 2>&1 | grep google
+- locate
+- grep -inr
+- sed
+- w
+- Last
+- Uptime
+- Users
+- Who
+- Whoami
+- Rsync
+- Ash
+- Unlimited history
+- Chmod
+- strace -o logfile -fF make 
+- Use absolute paths in Linux
+- ./configure 
+- Change release by git checkout tags/tagname
+- ln -s source linkname : Softlink
+- ln source linkname : Hardlink
+- file
+- nm -l
+- ldd
+- objdump -tTC filename
+- c++filt 
+- strings binary_file
+- readelf --all 
+- lsof
+- uname -a
+- lspci
+- git reset - undo local changes
+- Vim %s/search/replace/gc
+- tty
+- comm
+- expr
+- env
+- du -sh *
+- whatis
+- time
+- Compgen -c
+- Compgen -b
+- serverfault what all useful things one can add to bashrc
+- Slashroot Linux processes administration and monitoring tutorial.

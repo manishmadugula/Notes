@@ -8,6 +8,13 @@
 
 - see constraints in question.
 
+- Dynamic 2D array in cpp
+    ```c++
+    int** graph = new int*[n];
+    for(int i=0;i<n;i++){
+        graph[i] = new int[m];
+    }
+    ```
 - ```int* m,n;``` makes m a pointer but n an integer. You need to do as following ```int *m,*n;```. 
 
 - If you are iterating like below
@@ -37,6 +44,42 @@
     ```c++
     accumulate(v.begin(),v.end(),0L);
     ```
+- Hash function
+  - FOR STRINGS
+    ```c++
+    unsigned long hashstring(char* str){
+    unsigned long hash = 5381;
+    int c;
+    while(c = *str++){
+        hash = ((hash << 5) + hash ) + c;
+    }
+    return hash%len(array);
+    }
+    ```
+
+  - FOR INTEGER
+
+    ```c++
+    unsigned int hashint( unsigned int x){
+    x = ((x>>16)^x)*0x45d9f3b;
+    x = ((x>>16)^x)*0x45d9f3b;
+    x = ((x>>16)^x);
+    return x%len(array);
+    }
+    ```
+
+
+
+
+- To find missing number in a random sequence of numbers ranging from 1 to N use XOR.
+
+- Trie is better than hashing for string search when it comes to strings cause we don't have to deal with collision and also no hash fucnctiin needs to be calculated. Also we can print words in alphabetical order easily and do prefix search and auto complete with trie
+
+- When crawling through linked list make sure first one is not null.
+  
+- When deleting tries Remember to make the child of parent 0 too. Else number of child will be wrong and also check if root exists or not.
+
+- Advantages of BST over hash all keys are sorted by just doing inorder traversal. Doing order statistics, finding closest lower and greater elements and range queries,easy to implement.
 
 - Check constraints to determine which datatype to use.
 

@@ -1055,3 +1055,140 @@ By far the biggest reason non-const global variables are dangerous is because th
 - A translation unit is the basic unit of compilation in C++. It consists of the contents of a single source file, plus the contents of any header files directly or indirectly included by it, minus those lines that were ignored using conditional preprocessing statements. A single translation unit can be compiled into an object file, library, or executable program.
 
 - extern keyword is gonna make the compiler look for the symbol in some other(external) translation unit.
+
+
+## Random Insights
+- Same version of function one with pass by value other with reference will cause ambiguity.
+void f(int) vs void f(int &)
+- We cannot predict the outcome of this.
+    ```c++
+    int func(int a,int b){
+    return a-b;
+    }
+    int main(){
+    int i = 1;
+    cout << func(i++,i++) <<endl;
+    }
+    ```
+    Mostly the order in which parameters are assigned is right to left.
+- For assignment operator no need to have return type.
+ Void operator=(const D& a){this->b= a.b;}
+ If you have a return type
+ Int operator=(const D& a){this->b= a.b; return 2;}
+ You can do int X = E=F; this will first assign E with F and assign X =2.
+
+- A a() not working
+
+- Gdb watch useful feature
+
+- Don't use cout to print pointers
+
+- For ```char a[2]```; difference between &a and &a[0].
+
+    - If array is initialized in stack. i.e
+
+        ```c++
+        char d[3] = {'a', 'b','c'}
+        ```
+        
+        will allocate memory for 10 chars only. ```printf("&d - %p\n")``` will contain address of the whole array which is same as that of the first element since we are creating array in stack. Type -> ```char(*)[10]```
+        ```printf("&d[0] - %p", &d[0])``` will contain address of the first element type ```char*```.   See type of ```&d```, ```&d[0]```, ```d``` their value is same but type is different.
+
+
+    - If array is initialized in heap
+
+        ```c++
+        char *c = (char *) malloc(4*sizeof(char))
+        ``` 
+    
+        will allocate space for pointer as well as 4 chars. &c will contain address of the pointer (type char*) &c[0] will contain address of the first element of dynamically allocated object. See type of c, &c and &c[0], value is also different now.
+
+- Difference between ```char*c= Hello``` and ```char[] = "Hello"```.
+
+    In first i.e ```char * c = "Manish"```. You cannot modify this part c[0] = 'a' not valid However you can reassign pointer to point to any other string literal.
+    c = "hrbrgfkrn".```char * c = "Manish"``` is not recommended use ```const char* c.```
+
+
+    In second case ```char b[]= "Hello"``` allocated 12 bytes (2 more for null).
+    b[0] = 'r' works but b cannot be reassigned, say
+    ```char m[]="hdjebfkrkrk";``` then we cannot do b=m.
+
+- ```##``` in cpp macro 
+- Array in c are non assignable
+Exception char c[]="abc"
+This means to copy an array you have to use memcpy and strcpy.
+- There is a difference between" and '. use " for string and ' for char
+- When defining a struct no memory is assigned but when you declare the structure variable
+StructName person; the memory is assigned.
+- doing StructName Person = new Person() will Assign memory twice.
+
+- Because members of incomplete types are not allowed , and q struct is not complete till the end of definition, a struct cannot have a member of it's own type. A pointer to it's own type is allowed which is how you implement linked list and trees in structs.
+- Array of strings in cpp char[4][5] = {"abd","hdjr","hdein","rkrhj"};
+- Cpp use 0 for Null
+- While writing strlen use \ not / this is major cause of errors
+- Explicitly intialize all pointers to 0
+- There is a difference between null pointer and unitialized pointers. And there is no way to identify unitialized pointer from initialized one
+- Always make the pointer null after freeing it.
+- You need to delete every pointer allocated by new to prevent memory leaks. In bare C++, there is no garbage collection mechanism. Else there will be memory leak.
+- Delete pointer and then make sure if it is used somewhere else set that pointer to 0. All the pointer pointing to the deleted object should be assigned to NULL.
+- You can't use free on objects created with new
+- New and malloc have different heaps
+- Delete also calls destructor but free doesnt.
+
+- Study about linker complier interpretter and make files and preprocessor header files vs cpp files and static and dynamic linking. .so .lib .o .DLL files
+
+- preprocessor's directives doesn't end in semicolumn like macros and include.
+- Cpp main function doesn't expect return statement it assumes you return 0 but this is only a special case for main function.
+- Constant folding
+- 32 bit computer means it can address memory of upto 2^32 which is 4GB.also it means the value of pointer (cpp) is 4 bytes i.e 32 bits. Pointers are integer which store memory address see cherno's video.
+- static variables is a variable that is allocated for the lifetime of program even if function is called multiple times space for static variable is allocated once.and value gets carried forward. Also you need the variable to be a constant initialiser i.e don't pass it return of objects methods.
+- static variables in class are shared by objects of class only. There can't be multiple copies of these variables in each objects. They cannot be initialised inside constructor.
+- objects declared as static have lifetime till end of program.
+- static member fucntions don't depend on object of class. Usually invoked using class name and scope resolution operator(::). They cannot access variable and methods which are not static.
+32.read about singleton stack overflow **1008019/** c-singleton-design-design-pattern.
+- Conditional variable needs unique_lock not lock_guard.
+- char* ="Hi" vs char[]="Hi"
+- Every thread has a different stack but heap memory is shared between all threads.
+- Also stack is faster than heap.
+- If you allocate more than stack you get stack overflow error and program crashes (4MB)
+- Heap is (256 MB).
+- If you want to allocate more than 10^6 array allocate using dynamic memory allocation or make it global else it might cause stack overflow. 
+- Global constant variables are stored in code section of the virtual memory
+- Global non constant are stored in data section.
+- For 64 bit integer the space allocated to a pointer is 8 bytes.
+- Dynamic 2D array in cpp
+    ```c++
+    int** graph = new int*[n];
+    for(int i=0;i<n;i++){
+        graph[i] = new int[m];
+    }
+    ```
+
+- Static class vs singleton
+Singleton is not global, cannot pass static class as a parameter, singleton can be initialized lazily, singleton allows inheritance.
+
+- Thread safe singleton Implementation using double check lock.
+
+- 0 vs delete function declaration. 0 means no function body like pure virtual function. and delete means you just remove that functionality.
+
+- Initialize an object of the following class
+
+    ```c++
+    Class man {
+        int &b;
+    }```
+    
+    ```c++
+    Class man{
+        //...
+        //Constructor
+        // It is important to see that you cannot achieve this without initializer list and passing by reference. If passed by value the int object is destroyed as soon as the constructor ends.
+        man (int &X) : b(X) {}
+    }
+    int main{
+        int X=4;
+        man(X);
+    }
+Concept of copy and move while passing to a function and returning from a function.
+
+

@@ -48,6 +48,7 @@
 - D -> Delete till end of line.
 
 - **daw -> Delete till word at the cursor.**
+- **di' - delete all inside quotes**
 
 - dd -> Delete entire line.
 

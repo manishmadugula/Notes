@@ -56,4 +56,16 @@
 - Any class extending the abstract class has to implement all its methods else be declared abstract itself.
 
 # User Input
-The Scanner.next()/ nextInt() won't consume the newline character so to use nextLine after nextInt you need to first consume newline by an additional nextLine.
+- The Scanner.next()/ nextInt() won't consume the newline character so to use nextLine after nextInt you need to first consume newline by an additional nextLine.
+
+- ```java 
+  String text = new Scanner( source ).useDelimiter("\\A").next();
+  ```
+    One line, one class. The only tricky is to remember the regex ```\A```, which matches the beginning of input. This effectively tells Scanner to tokenize the entire stream, from beginning to (illogical) next beginning. As a bonus, Scanner can work not only with an InputStream as the source, but also a File, Channel, or anything that implements the new java.lang.Readable interface. For example, to read a file:
+
+    ```java
+    String text = new Scanner( new File("poem.txt") ).useDelimiter("\\A").next();
+    ```
+
+    you can accommodate a specific character set with Scanner example you can pass a charset to the constructor.
+

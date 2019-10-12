@@ -27,9 +27,13 @@ The strategy pattern is about being able to change from one to the other at run 
 
 ## Observer Pattern
 
-
+## Builder Pattern
+[Link](https://medium.com/@ajinkyabadve/builder-design-patterns-in-java-1ffb12648850)
 
 # Anti Design Pattern
 
 ##  Class Explosion
 - Class explosion is when due to too many customization the number of classes you create for each customization becomes very huge.[Link](https://www.brevitaz.com/class-explosion-design-anti-pattern/)
+
+## Telescoping Constructor
+- The multiple constructor with combination of multiple parameters variation is called the telescoping constructor. Use builder pattern.
