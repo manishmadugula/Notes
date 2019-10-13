@@ -1,6 +1,6 @@
 # UML
 ##  Connector types in UML
-- ![UML](uml1.gif)
+- ![UML](res/uml1.gif)
 
 # Design Patterns
 ## Strategy Pattern
@@ -19,11 +19,11 @@
 The strategy pattern is about being able to change from one to the other at run time.
 
 - **Duck Example** and each duck type can have different fly methods and quack and display method. Instead of creating new subclasses you can perform dependency injection by passing the concrete implementation of Strategy Interfaces at runtime. Instead of hard coding these concrete implementation for each class.
-  - **Before Using Strategy Pattern**![Before Using Strategy Pattern](res\strategy_duck_1.jpg)
-  - **After Using Strategy Pattern**![After Using Strategy Pattern](res\strategy_duck_2.jpg)
-  - **Dependency Injection Code**![Dependency Injection Code](res\strategy_duck_3.jpg)
+  - **Before Using Strategy Pattern**![Before Using Strategy Pattern](res/strategy_duck_1.jpg)
+  - **After Using Strategy Pattern**![After Using Strategy Pattern](res/strategy_duck_2.jpg)
+  - **Dependency Injection Code**![Dependency Injection Code](res/strategy_duck_3.jpg)
 
-- **General Strategy UML**![General Strategy UML](res\strategy_general.jpg) 
+- **General Strategy UML**![General Strategy UML](res/strategy_general.jpg) 
 
 ## Observer Pattern
 

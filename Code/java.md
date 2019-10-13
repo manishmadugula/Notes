@@ -138,7 +138,7 @@
     - early binding or static binding.
     - static method dispatch
 
-![Difference between Method Overriding and Overloading](res\java-1.jpg)
+![Difference between Method Overriding and Overloading](res/java-1.jpg)
   
 ### Early Binding (Static binding)
   - Early Binding, methods, functions and properties are detected and checked during compile time and perform other optimizations before an application executes. The biggest advantage of using early binding is for performance and ease of development.

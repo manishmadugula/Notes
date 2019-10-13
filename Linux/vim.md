@@ -120,3 +120,6 @@
 ## Visual Mode
 - v,Ctrl+v,Shift + v -> normal visual,blockstyle, line style.
 - o -> go to the other end of selection.
+
+## Cheat Sheet
+![vim cheat sheet](./vi-vim-cheat-sheet.gif)
