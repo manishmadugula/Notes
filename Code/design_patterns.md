@@ -47,15 +47,23 @@ The strategy pattern is about being able to change from one to the other at run 
 - Methods in Observable 
     - register(IObserver)
     - unregister(IObserver) 
-    - notify() -> Broadcasts the message to all the observers.
+    - notify() -> Broadcasts the message to all the observers.(For loop all the observer and call update()/update(IObservable))
 
 - Observable Interface also has a collection to contain observers, it can be vector, array, linkedlist, hashmap etc.
 
 #### Observers Interface
 
 - Methods in Observers
-    - update() -> Invoked by Observable inside notify function.
+    - update() / update(IObservable) -> Invoked by Observable inside notify function. If observer has a reference to observable then first variation else second.
 
+#### Important
+
+- **A useful thing to add to concrete observer class is the reference to concrete observable class.** Doing above might feel strange as we are used to have dependecies between abstract interfaces and not concrete implementation of them. Here we have a concretion dependent on another concretion. **The idea behind this is when we instantiate the observer we pass the thing we want to observe in its constructor.** So it goes two ways the observer gets added to observable via add method and observable gets added to observer via the constructor. **Since the observer has a reference to observable, when we call update we don't need to pass anything to the update function since in a lot of cases to update we need to know what has changed.**
+- The above however gives entire access of observable to each observer which can be considered a bad practise. Instead we can maybe pass in only the data that is required by the observer in the notify method -> update(IObservable dataWhichIsRequired).
+
+- **Observer UML** 
+  
+  ![Observer UML](res/observer.png) 
 
 ## Builder Pattern
 [Link](https://medium.com/@ajinkyabadve/builder-design-patterns-in-java-1ffb12648850)
