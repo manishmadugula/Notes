@@ -975,6 +975,67 @@ By far the biggest reason non-const global variables are dangerous is because th
         cout << x <<endl;
     };
     ```
+
+## Function Pointers
+
+- Syntax for creating function pointers
+    ```c++
+    int (*fcnPtr) ();
+    ```
+
+- The parenthesis around *fcnPtr are necessary 
+for precedence reasons, as int *fcnPtr() would be interpreted as a forward declaration for a function named fcnPtr that takes no parameters and returns a pointer to an integer.
+
+- Syntax for creating a constant function pointer
+
+    ```c++
+    int foo(){...}
+    int (*const fcnPtr )() = foo;
+    ```
+
+- Default parameters won't work on function pointers. Default parameters are resolved at compile-time. However, function pointers are resolved at run-time. Consequently, default parameters can not be resolved when making a function call with a function pointer. You’ll explicitly have to pass in values for any defaulted parameters in this case.
+
+    ```c++
+    int func_default_arguments(int x,int y=34){
+        return x+y;
+    }
+
+
+    int main(){
+        int (*func_ptr) (int,int);
+        func_ptr = func_default_arguments;
+        cout << func_default_arguments(2)<<endl;;
+        //Too few arguments erro
+        //cout << func_ptr(2) <<endl;
+        cout << func_ptr(2,4) <<endl;
+        return 0;
+    }
+    ```
+- In c++11 a new way to declare function pointer was using functional headers.
+    
+    ```c++
+    #include <functional>
+    int main(){
+       std::function<int(int,int)> fncPtr;
+    }   
+    ```
+
+- Also a useful way to declare is to declare using auto keyword for type inference.
+
+    ```c++
+    std::unordered_map<int,int> func_complicated(int x,int y, double ew, std::vector<int> &v){
+        std::unordered_map<int,int> umap;
+        return umap;
+    }
+
+    int main(){
+        auto fcnPtr = func_complicated;
+        std::vector<int> vec;
+        fcnPtr(1,4,231.5,vec);
+        return 0;
+    }
+    ```
+
 ## Copying and Copy Constructor
 
 

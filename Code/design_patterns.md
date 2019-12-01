@@ -52,7 +52,7 @@ The strategy pattern is about being able to change from one to the other at run 
 - Observable Interface also has a collection to contain observers, it can be vector, array, linkedlist, hashmap etc.
 
 #### Observers Interface
-
+ 
 - Methods in Observers
     - update() / update(IObservable) -> Invoked by Observable inside notify function. If observer has a reference to observable then first variation else second.
 
