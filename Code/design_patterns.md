@@ -147,3 +147,9 @@ The strategy pattern is about being able to change from one to the other at run 
 - Interface seggregation Principle - A subclass should not be forced to depend on methods it does not use. It is better to have multiple smaller interfaces than a single large one.
 - Conditional are not great. Reason - ?
 - Singleton not great. Reason - ?
+
+# Some insights
+- The adapter adapter pattern changes the interface but does not change the implementation.
+- The proxy pattern changes the implementation but does not change the interface.
+- The decorator pattern changes the implementation but does not change the interface.
+- The facade pattern is a high-level level abstraction over low-level components, where the interface is changed.
