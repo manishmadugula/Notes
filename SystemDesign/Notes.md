@@ -76,5 +76,6 @@
 
 # Useful links
 - Indexing -> https://medium.com/hackernoon/fundamentals-of-system-design-part-3-8da61773a631
+            -> https://stackoverflow.com/questions/7306316/b-tree-vs-hash-table
 
             
