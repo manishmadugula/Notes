@@ -1,3 +1,4 @@
+
 ## Pointers
 - Pointer is just an address
 - Types of pointer doesn't matter much. Pointer for all types is just a number which holds an address.
@@ -719,7 +720,7 @@
 
         - Across all instances created of that class there will be only 1 variable shared between them.
 
-        - **Static data members declarations in the class declaration are not definition of them. The declaration in an implementation file outside of the header is required because otherwise every translation unit that includes this header would define its own object. This would violate the One Definition Rule. We want a single instance accessible from all Translational Units.**
+        - **Static data members declarations in the class declaration are not definition of them. The defination in an implementation file outside of the header is required because otherwise every translation unit that includes this header would define its own object. This would violate the One Definition Rule. We want a single instance accessible from all Translational Units.**
             
             code in Example.h
             ```c++
@@ -1148,6 +1149,7 @@ for precedence reasons, as int *fcnPtr() would be interpreted as a forward decla
     }
     ```
 
+- **Important** [**Why Friend is used in case of operater overloading functions**](https://stackoverflow.com/questions/4622330/operator-overloading-member-function-vs-non-member-function)
 
 ## Compilation and Linking
 - A translation unit is the basic unit of compilation in C++. It consists of the contents of a single source file, plus the contents of any header files directly or indirectly included by it, minus those lines that were ignored using conditional preprocessing statements. A single translation unit can be compiled into an object file, library, or executable program.
@@ -1266,6 +1268,8 @@ StructName person; the memory is assigned.
 Singleton is not global, cannot pass static class as a parameter, singleton can be initialized lazily, singleton allows inheritance.
 
 - Thread safe singleton Implementation using double check lock.
+
+- To know basic type use typeid(x).name
 
 - 0 vs delete function declaration. 0 means no function body like pure virtual function. and delete means you just remove that functionality.
 

@@ -1,4 +1,83 @@
 
+# Git Fundamentals
+
+
+## View Changes
+
+- git show HEAD~1 or git show commithash
+
+## Branch
+
+- View local branches `git branch`
+- View remote branches `git branch -r`
+- View tag `git tag`
+
+## Logging
+
+- Use `git log --oneline` for a condensed form of logs
+- Use `git log --graph --online` to get a visual interpretation of the entire repository where branching took place and where the merging took place.
+- Total commits `git log --oneline | wc -l`
+
+#### Author informations
+- `git shortlog`
+- `git shortlog -sne`(summary numbersort email)
+
+
+## Undo
+
+### Undoing Changes in the single working copy.
+
+- use git checkout (by default takes the one from the head commit)
+```
+git checkout filename
+```
+
+### Undo to the last commit 
+
+- git reset --hard
+
+### Undo the last commit and put changes in the staging area
+
+- git reset --soft HEAD~1
+
+### Undo the last commit completely
+
+- git reset --hard HEAD~1 
+
+## Important Points
+
+- To add a removed file to staging area use `git add -u`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # GIT
 
 ### Git Working Tree/ Directory
@@ -135,8 +214,6 @@ Saves all the uncommited files i.e staged and unstaged tracked files in a specia
         git log
 
 - **Checksum -> SHA-1 Hash 40 character string.**
-
-
 
 ### MISC
 
