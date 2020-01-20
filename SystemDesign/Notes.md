@@ -80,3 +80,8 @@
             ->https://www.youtube.com/watch?v=aZjYr87r1b8
 
             
+# Apache vs NGINX
+- Apache is process driven and create a new thread for each request.
+- NGINX is event driven and handles multiple requests within one thread.
+
+[Apache vs NGINX](res/apache_nginx.png)
