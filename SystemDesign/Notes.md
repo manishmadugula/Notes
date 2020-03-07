@@ -75,13 +75,17 @@
 
 
 # Useful links
-- Indexing -> https://medium.com/hackernoon/fundamentals-of-system-design-part-3-8da61773a631
-            -> https://stackoverflow.com/questions/7306316/b-tree-vs-hash-table
-            ->https://www.youtube.com/watch?v=aZjYr87r1b8
+- Indexing -
+  
+  -  https://medium.com/hackernoon/fundamentals-of-system-design-part-3-8da61773a631
+  
+  - https://stackoverflow.com/questions/7306316/b-tree-vs-hash-table
+  
+  - https://www.youtube.com/watch?v=aZjYr87r1b8
 
             
 # Apache vs NGINX
 - Apache is process driven and create a new thread for each request.
 - NGINX is event driven and handles multiple requests within one thread.
 
-[Apache vs NGINX](res/apache_nginx.png)
+![Apache vs NGINX](res/apache_nginx.png)
