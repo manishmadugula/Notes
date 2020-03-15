@@ -1158,6 +1158,8 @@ for precedence reasons, as int *fcnPtr() would be interpreted as a forward decla
 
 
 ## Random Insights
+- ## **c++ strings are mutable.**
+
 - Same version of function one with pass by value other with reference will cause ambiguity.
 void f(int) vs void f(int &)
 - We cannot predict the outcome of this.

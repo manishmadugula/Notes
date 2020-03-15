@@ -71,3 +71,207 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
       e) If x is smaller, do binary search between start and mid
     Note: The Binary Search can be further optimized to start with ‘start’ = 0 and ‘end’ = x/2. Floor of square root of x cannot be more than x/2 when x > 1.
   ```
+
+- c++ strings are mutable.
+
+- vector's iterator are bidirectional
+- list's iterator can't move in ++ or --.
+- umap's iterator can't move in ++ or --.
+- pair is very useful when you want a container for 2 data types without writing an additional class for it.
+  - First element is stored as "first"
+  - second as "second"
+  - You can create one as {first_int, second_int} too;
+- You can insert into a unordered_map<int,pair<int,int>> as
+  ```c++
+  umap[key] = {val1,val2};
+  ```
+- it is helpful to use _ before name for member variables.
+- Use typedef for long names.
+
+
+
+# STL Containers
+
+## Iterators
+
+## Vector
+
+### Iterators (Random Access Iterators)
+- Iterator to the beginning ```v.begin()```
+- Iterator to the past-the-end  ```v.end()```
+- Iterator to the i index ```v.begin()+i```
+- ### **You can perform addition in these iterators like it+3 because it is random access iterator** 
+
+
+### Get 
+- Value from the index - O(1) ```v[1];```
+- Iterator from index - O(1) ```v.begin()+i``` 
+- Value from iterator ```(*it)```
+- Size ```v.size()```
+
+### Add
+
+Single element
+
+- ```v.push_back()```
+- In middle using the iterator(before which to insert) ```v.insert(it,val)```
+- There is no push front.
+
+Multiple element
+- ```c++
+  int myarray [] = { 501,502,503 };
+  myvector.insert (myvector.begin(), myarray, myarray+3);
+  ```
+  
+### Erase
+
+- To clear all the elements ```v.clear()```
+- To erase an element using iterator ```v.erase(it)```
+- To erase a range of elements using iterator ```v.erase(it_first, it_last)```
+- Remove from the end ```pop_back()```
+- There is no pop front.
+
+### Modify
+ Single Element
+
+- ```v[index] = val```
+- #### Using iterator ```(*it) = val;```
+
+Multiple elements
+- ```c++
+  std::vector<int> first;
+  first.assign (7,100); / 7 ints with a value of 100
+  ```
+
+### Initialize
+
+- Fill with a value ```vector<int> v(size,val)```
+
+## Unordered Map
+
+### Iterator (Useful for looping through elements)
+
+- **Notice that an unordered_map object makes no guarantees on which specific element is considered its first element.**
+- Iterator to the beginning ```v.begin()```
+- Iterator to the past-the-end  ```v.end()```
+
+### Get
+
+- Value from key - O(1) ```v[key]```
+- Iterator from key - O(1) ```v.find(key)```
+- Value from iterator ```it->second``` or ```(*it).second``` since map contains Pair objects.
+- Key from iterator ```it->first```  or ```(*it).first```
+
+### Add
+- ```umap.insert(make_pair(1,1))```
+
+### Erase
+- To clear all the elements ```v.clear()```
+- **To erase by key ```mymap.erase ("France");```**
+- To erase an element using iterator  ```mymap.erase ( mymap.begin() );```
+- To erase a range of elements using iterator ```mymap.erase ( mymap.find("China"), mymap.end() );```
+
+### Modify
+- ```umap[key] = value```
+- Using iterator ```it->second = value```
+
+
+## List (Doubly linked list)
+
+### Iterator (Bidirectional Iterators)
+- get the iterator to the head ```l.begin()```
+- get the iterator to the back ```l.end()```
+- ### **You cannot perform addition in these iterators like it+3 only it++ or it-- because it is bidirectional iterator.**
+
+### Get
+- get the front element ```l.front()```
+- get the back element ```l.back()```
+- (*it)
+- ### To get value at an index - Important
+  ```c++
+  auto it = l.begin();
+  advance(it,index);
+  (*it)
+  ```
+
+
+### Add
+- To add at the front ```l.push_front(val)```
+- To add at the back ```l.push_back(val)```
+- ### To add in the middle ```l.insert(it,val)```
+
+### Erase
+- To clear all the elements ```l.clear()```
+- **To erase an element using iterator ```l.erase(it)```**
+- To erase a range of elements using iterator ```l.erase(it_first, it_last)```
+- To remove the last element ```l.pop_back()```
+- To remove the first element ```l.pop_front()```
+- **Removes from the container all the elements that compare equal to val. ```l.remove(val)```**
+- ### The remove is O(N) but erase is O(1) so be careful when to use what. 
+- remove if a condition is met ```l.remove_if(condition)```
+
+
+### Modify
+
+Multiple Elements
+- ```c++
+  std::list first;
+  first.assign(10,100);
+  ```
+
+### Useful Function
+The reason these algo are the part of this class and not stl algorithm is because the iterator in list is a bidirectional iterator and stl algo like sort and reverse don't work in them.
+- ### ```l1.merge(l2)```
+- ### ```l.reverse()```  -> Important
+- ### ```l.sort()```  -> Important
+- ### ```l.unique()``` -> Important
+## Priority Queue
+
+### Get
+
+### Add
+
+
+### Erase
+
+
+### Modify
+
+## Stack
+
+### Get
+
+### Add
+
+### Erase
+
+### Modify
+
+## Ordered Map
+
+### Get
+
+### Add
+
+### Erase
+
+### Modify
+
+
+## Queue (Use List rather than this.)
+
+## Misc
+- Difference b/w queue, list and deque
+  - queue can only add at the back. and remove at front.
+  - deque (Double ended queue) can add and remove at front and back.
+  - list can add and remove anywhere.
+  - A list has to allocate memory every single time something is added, and deallocate it when it goes away.
+  - A deque, on the other hand, allocates in chunks. It will allocate less often than a list. Think of it as a list, but each memory chunk can hold multiple nodes. 
+- forward_list is a singly linked list. where as list is a doubly linked list.
+
+# Important Questions
+
+- LRU Cache
+  -  Use a hash<int,pair<int,list<int>>> and a queue(i.e a list).
+  -  Use touch function to rearrange cache when necessary.
+- 
