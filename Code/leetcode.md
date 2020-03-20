@@ -5,6 +5,7 @@
 
 - check overflow
   ```c++
+  
   bool check_overflow_add(int x, int y) {
 	//Case x is +ve y +ve
 	if (x > 0 && y > 0){
@@ -17,13 +18,13 @@
     }	
 
 
-    bool check_overflow_multiply(int x, int y) {
-        if (x < 0) x = -1 * x;
-        if (y < 0) y = -1 * y;
-        if(x == 0 ) return false;
-        if (y > INT_MAX / x) return true;
-        return false;
-    }
+  bool check_overflow_multiply(int x, int y) {
+      if (x < 0) x = -1 * x;
+      if (y < 0) y = -1 * y;
+      if(x == 0 ) return false;
+      if (y > INT_MAX / x) return true;
+      return false;
+  }
 
   ```
 
@@ -88,6 +89,10 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 - it is helpful to use _ before name for member variables.
 - Use typedef for long names.
 
+
+# Dynamic Programming
+- Unique Path - 2
+  - You can just create an additional row and column to deal with boundary case and that will simplify the implementation a lot.
 
 
 # STL Containers
