@@ -273,6 +273,9 @@ The reason these algo are the part of this class and not stl algorithm is becaus
   - A list has to allocate memory every single time something is added, and deallocate it when it goes away.
   - A deque, on the other hand, allocates in chunks. It will allocate less often than a list. Think of it as a list, but each memory chunk can hold multiple nodes. 
 - forward_list is a singly linked list. where as list is a doubly linked list.
+- 1 and 7 are the only happy numbers.
+
+
 
 # Important Questions
 

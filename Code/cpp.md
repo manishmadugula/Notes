@@ -716,11 +716,13 @@
 
 - Inside of class
 
-    - **Static Variable**
+Static members of a class are not associated with the objects of the class: they are independent variables with static or thread (since C++11) storage duration or regular functions.
 
-        - Across all instances created of that class there will be only 1 variable shared between them.
+- **Static Variable**
 
-        - **Static data members declarations in the class declaration are not definition of them. The defination in an implementation file outside of the header is required because otherwise every translation unit that includes this header would define its own object. This would violate the One Definition Rule. We want a single instance accessible from all Translational Units.**
+    - Across all instances created of that class there will be only 1 variable shared between them.
+
+    - **Static data members declarations in the class declaration are not definition of them. The defination in an implementation file outside of the header is required because otherwise every translation unit that includes this header would define its own object. This would violate the One Definition Rule. We want a single instance accessible from all Translational Units.**
             
             code in Example.h
             ```c++
@@ -735,7 +737,7 @@
             int Example::x;
             ``` 
 
-        - **The only data you can declare and define inside the class is integral static constants.**
+    - **The only data you can declare and define inside the class is integral static constants.**
 
             ```c++
             struct Example {
@@ -751,7 +753,7 @@
             }
             ```
 
-        - Its like 2 variables which belong to namespace of "Example". Therefore it makes more sense to refer to static class variables as follows.
+    - Its like 2 variables which belong to namespace of "Example". Therefore it makes more sense to refer to static class variables as follows.
 
             ```c++
             Example::x=23;
@@ -770,6 +772,11 @@
         
         - Don't have access to a class instance and variables.
         
+        - Static member functions are not associated with any object. When called, they have no this pointer.
+
+        ## - **cannot be virtual or volatile or const.**
+
+        - The address of a static member function may be stored in a regular pointer to function, but not in a pointer to member function.
 
 
         - Cannot refer to class instance.
