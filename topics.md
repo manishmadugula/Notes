@@ -63,3 +63,6 @@
 - Binary lifting
 - Treap
 - Suffix array
+- paxos
+- vector clock dynamo paper. https://cse.buffalo.edu/~mpetropo/CSE736-SP10/slides/seminar100226a2.pdf
+- Merkel Trees https://www.youtube.com/watch?v=YIc6MNfv5iQ https://www.youtube.com/watch?v=qHMLy5JjbjQ

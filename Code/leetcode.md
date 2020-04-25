@@ -153,7 +153,7 @@ Multiple elements
 - Fill with a value ```vector<int> v(size,val)```
 
 ## Unordered Map
-
+## **IMP -> YOU CANNOT CREATE A MAP OF A MAP (Map as key) (Group Anagrams) by ```unordered_map<unordered_map<string,int>,int> umap();```**
 ### Iterator (Useful for looping through elements)
 
 - **Notice that an unordered_map object makes no guarantees on which specific element is considered its first element.**
@@ -231,16 +231,18 @@ The reason these algo are the part of this class and not stl algorithm is becaus
 - ### ```l.sort()```  -> Important
 - ### ```l.unique()``` -> Important
 ## Priority Queue
-
+### **By default min queue. If you want max queue.**
+```c++
+std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
+```
 ### Get
-
+- top of the queue -> pq.top()
+- size of the queue -> pq.size()
 ### Add
-
+- pq.push()
 
 ### Erase
-
-
-### Modify
+- pq.pop()
 
 ## Stack
 
@@ -282,4 +284,6 @@ The reason these algo are the part of this class and not stl algorithm is becaus
 - LRU Cache
   -  Use a hash<int,pair<int,list<int>>> and a queue(i.e a list).
   -  Use touch function to rearrange cache when necessary.
-- 
+  
+- https://leetcode.com/problems/jump-game/solution/
+  - Read this article after solving the jump game question.
