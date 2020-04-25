@@ -1,5 +1,6 @@
 # Tips
 
+- To get faster run-time (in case of lots of i/o bound input) add ios_base::sync_with_stdio(false); cin.tie(null). [Read](https://stackoverflow.com/questions/31162367/significance-of-ios-basesync-with-stdiofalse-cin-tienull) on when to use;
 - To get an idea of overflow solve - [link](https://leetcode.com/problems/reverse-integer/)
 
 
