@@ -1,6 +1,8 @@
 # Tips
 
 - To get faster run-time (in case of lots of i/o bound input) add ios_base::sync_with_stdio(false); cin.tie(null). [Read](https://stackoverflow.com/questions/31162367/significance-of-ios-basesync-with-stdiofalse-cin-tienull) on when to use;
+
+
 - To get an idea of overflow solve - [link](https://leetcode.com/problems/reverse-integer/)
 
 
@@ -35,6 +37,7 @@
 
 - Sometimes bruteforce is the best solution - [link](https://leetcode.com/problems/can-place-flowers/)
 
+- max of 3 numbers is max(max(a,b),c);
 
 - Sieve of Eratosthenes (To find all the prime numbers less than n). In this method, you first set the prime value ofall numbers to be true. Then, for a variable i starting from 2 to the square root of limit(the number given), you set the value of prime of all the multiples of i to be false.
 
@@ -96,26 +99,89 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   - You can just create an additional row and column to deal with boundary case and that will simplify the implementation a lot.
 
 
-# STL Containers
+# STL
 
 ## Iterators
 
-## Vector
+- Iterators are used to step through the elements of collections of objects. Offer a common interface for all the container types.
+- Just like template make algorithm independent of datatype, iterator make algorithm independent of container type.
+- Iterator actually denote a certain position in a container.
 
-### Iterators (Random Access Iterators)
+### Common Operations in iterator
+- ``*Iterator`` -> Returns element of current position.
+- ``Iterator++`` -> Returns next iterator
+- ``Iterator1 == Iterator2`` or ``Iterator1 != Iterator2`` -> If 2 iterators points to same location.
+- ``Iterator =`` -> assigns an iterator to the position of element it refers to.
+
+### Iterator vs Pointer
+- Iterator are not same as pointer, they can be thought of a special pointer which is designed for a specific container and can iterate efficiently for that container. Their internal behaviour is defined by the container over which they iterate. In fact each container defines its iterator type as a nested class. 
+
+### The logic behind the half open range of iterator i.e [begin(),end())
+- We have a simple end criterion for loops that iterate over the elements: They simply march through until they meet end().
+- It avoids special case handling for empty ranges, where begin() == end().
+
+### Types of Iterators (Important)
+
+#### Input iterator
+- The term input is used from the viewpoint of a program. Information going from the container to the program is considered input
+- An input iterator is one that a program can use to read values from a container.
+-  It does not allow us to alter the value. So algorithms that require an input iterator are algorithms that don't modify values of the container elements.
+
+
+#### Output iterator
+- They are just like input iterator but not for accessing elements, but for being assigned elements.
+- Single-pass and write-only iterator.
+
+#### Forward Iterators
+- They are higher in hierarachy than input and output iterators, and contain all the features present in these two iterators.
+- They also can only move in forward direction and that too one step at a time.
+- Unlike input and output iterators, however, it necessarily goes through a sequence of values in the same order each time we use it
+
+#### Bidirectional Iterator
+- they can move in both the directions, that is why their name is bidirectional.
+
+#### Random Access Iterator
+ - They are the most powerful iterators. They are not limited to moving sequentially, as their name suggests, they can randomly access any element inside the container. They are the ones whose functionality is same as pointers.
+
+![Iterator](res/iterator_functionality.PNG)
+
+![Iterator](res/iterator.PNG)
+
+
+### Functions on iterators
+- ``dist(Iterator1, Iterator2)``
+- ``advance(Iterator1, count)``
+- **``prev(Iterator, count=1) ``Used in prev(container.end())**
+- ``next(Iterator, count=1)``
+
+
+### Misc
+- Sort and binary search algorithm requires a random access so it can swap 2 non adjacent elements. So linkedlist iterator cannot be used. (That's why linked list provides a sort method in itslef)
+- Find needs a ++ operator, it doesnot need a write access but needs a read access.
+- You cannot do advance(container.begin(),12);
+- You need to first assign container.begin() to a iterator and then use that iterator to advance.
+
+- Compare iterator with a null, it is not straight forward. You need to do ``it != container.end()``
+
+
+## Containers
+
+### Vector
+
+#### Iterators (Random Access Iterators)
 - Iterator to the beginning ```v.begin()```
 - Iterator to the past-the-end  ```v.end()```
 - Iterator to the i index ```v.begin()+i```
 - ### **You can perform addition in these iterators like it+3 because it is random access iterator** 
 
 
-### Get 
+#### Get 
 - Value from the index - O(1) ```v[1];```
 - Iterator from index - O(1) ```v.begin()+i``` 
 - Value from iterator ```(*it)```
 - Size ```v.size()```
 
-### Add
+#### Add
 
 Single element
 
@@ -129,7 +195,7 @@ Multiple element
   myvector.insert (myvector.begin(), myarray, myarray+3);
   ```
   
-### Erase
+#### Erase
 
 - To clear all the elements ```v.clear()```
 - To erase an element using iterator ```v.erase(it)```
@@ -137,11 +203,11 @@ Multiple element
 - Remove from the end ```pop_back()```
 - There is no pop front.
 
-### Modify
+#### Modify
  Single Element
 
 - ```v[index] = val```
-- #### Using iterator ```(*it) = val;```
+- **Using iterator ```(*it) = val;```**
 
 Multiple elements
 - ```c++
@@ -149,47 +215,49 @@ Multiple elements
   first.assign (7,100); / 7 ints with a value of 100
   ```
 
-### Initialize
+#### Initialize
 
 - Fill with a value ```vector<int> v(size,val)```
 
-## Unordered Map
+### Unordered Map
+
 ## **IMP -> YOU CANNOT CREATE A MAP OF A MAP (Map as key) (Group Anagrams) by ```unordered_map<unordered_map<string,int>,int> umap();```**
-### Iterator (Useful for looping through elements)
+
+#### Iterator (Useful for looping through elements)
 
 - **Notice that an unordered_map object makes no guarantees on which specific element is considered its first element.**
 - Iterator to the beginning ```v.begin()```
 - Iterator to the past-the-end  ```v.end()```
 
-### Get
+#### Get
 
 - Value from key - O(1) ```v[key]```
 - Iterator from key - O(1) ```v.find(key)```
 - Value from iterator ```it->second``` or ```(*it).second``` since map contains Pair objects.
 - Key from iterator ```it->first```  or ```(*it).first```
 
-### Add
+#### Add
 - ```umap.insert(make_pair(1,1))```
 
-### Erase
+#### Erase
 - To clear all the elements ```v.clear()```
 - **To erase by key ```mymap.erase ("France");```**
 - To erase an element using iterator  ```mymap.erase ( mymap.begin() );```
 - To erase a range of elements using iterator ```mymap.erase ( mymap.find("China"), mymap.end() );```
 
-### Modify
+#### Modify
 - ```umap[key] = value```
 - Using iterator ```it->second = value```
 
 
-## List (Doubly linked list)
+### List (Doubly linked list)
 
-### Iterator (Bidirectional Iterators)
+#### Iterator (Bidirectional Iterators)
 - get the iterator to the head ```l.begin()```
 - get the iterator to the back ```l.end()```
 - ### **You cannot perform addition in these iterators like it+3 only it++ or it-- because it is bidirectional iterator.**
 
-### Get
+#### Get
 - get the front element ```l.front()```
 - get the back element ```l.back()```
 - (*it)
@@ -201,12 +269,12 @@ Multiple elements
   ```
 
 
-### Add
+#### Add
 - To add at the front ```l.push_front(val)```
 - To add at the back ```l.push_back(val)```
 - ### To add in the middle ```l.insert(it,val)```
 
-### Erase
+#### Erase
 - To clear all the elements ```l.clear()```
 - **To erase an element using iterator ```l.erase(it)```**
 - To erase a range of elements using iterator ```l.erase(it_first, it_last)```
@@ -217,7 +285,7 @@ Multiple elements
 - remove if a condition is met ```l.remove_if(condition)```
 
 
-### Modify
+#### Modify
 
 Multiple Elements
 - ```c++
@@ -225,45 +293,45 @@ Multiple Elements
   first.assign(10,100);
   ```
 
-### Useful Function
+#### Useful Function
 The reason these algo are the part of this class and not stl algorithm is because the iterator in list is a bidirectional iterator and stl algo like sort and reverse don't work in them.
 - ### ```l1.merge(l2)```
 - ### ```l.reverse()```  -> Important
 - ### ```l.sort()```  -> Important
 - ### ```l.unique()``` -> Important
-## Priority Queue
-### **By default min queue. If you want max queue.**
+### Priority Queue
+#### **By default min queue. If you want max queue.**
 ```c++
 std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 ```
-### Get
+#### Get
 - top of the queue -> pq.top()
 - size of the queue -> pq.size()
-### Add
+#### Add
 - pq.push()
 
-### Erase
+#### Erase
 - pq.pop()
 
-## Stack
+### Stack
 
-### Get
+#### Get
 
-### Add
+#### Add
 
-### Erase
+#### Erase
 
-### Modify
+#### Modify
 
-## Ordered Map
+### Ordered Map
 
-### Get
+#### Get
 
-### Add
+#### Add
 
-### Erase
+#### Erase
 
-### Modify
+#### Modify
 
 
 ## Queue (Use List rather than this.)
@@ -288,3 +356,6 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   
 - https://leetcode.com/problems/jump-game/solution/
   - Read this article after solving the jump game question.
+
+- https://leetcode.com/problems/binary-tree-maximum-path-sum/
+  - Solution is elegant few lines.
