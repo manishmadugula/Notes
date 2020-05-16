@@ -93,13 +93,105 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 - it is helpful to use _ before name for member variables.
 - Use typedef for long names.
 
+## Traverse While Deleting
+
+### Vector/ String
+- Use erase-remove idiom (Optimized)
+  - Motivation behind this idiom is in vector/ string calling erase multiple times on the same container generates lots of overhead from moving the elements.
+  - So a solution is to use remove/remove_if which do not remove elements from the container, but move all elements that don't fit the removal criteria to the front of the range, keeping the relative order of the elements. This is done in a single pass through the data range.  remove returns an iterator pointing to the first of these tail elements so that they can be deleted using a single call to erase.
+  - Doing the same using only erase results in as many passes as there are elements to remove. For each of these passes, all elements after the erased element have to be moved, which is more time-consuming than shifting elements in a single pass.
+  - Can't be used for set
+  ```c++
+  v.erase(std::remove_if(v.begin(), v.end(), IsOdd), v.end());
+  ```
+- Using just erase (Not optimized)
+  ```c++
+
+  while(it!=v.end()){
+    if(toDelete(it)){
+      it = v.erase(it);
+    }
+    else{
+      it++;
+    }
+  }
+  ```
+### Set/List
+- Using just erase (Not optimized)
+  ```c++
+  while(it!=s.end()){
+    if(toDelete(it)){
+      it = s.erase(it);
+    }
+    else{
+      it++;
+    }
+  }
 
 # Dynamic Programming
 - Unique Path - 2
   - You can just create an additional row and column to deal with boundary case and that will simplify the implementation a lot.
 
+- Look at the Boolean Parenthesis problem.
+  - Similar Problems
+  - Valid Parenthesis String
+  - Matrix Multiplication
+
 
 # STL
+
+## Strings
+
+
+#### Iterators (Random Access Iterators)
+- Iterator to the beginning ```s.begin()```
+- Iterator to the past-the-end  ```s.end()```
+- Iterator to the i index ```s.begin()+i```
+- ### **You can perform addition in these iterators like it+3 because it is random access iterator** 
+
+#### Get 
+- Value from the index - O(1) ```s[1];```
+- Iterator from index - O(1) ```s.begin()+i``` 
+- Value from iterator ```(*it)```
+- Size ```s.size()```'
+- ### **Get iterator of a character in string ```std::find(s.begin(), s.end(), 'x')``` Remember it is a char not string.**
+- ### Substring (Important)
+  - ### ```s.substr(firstIndex,length)``` returns substring for [pos, pos+len).
+  - ### ```s.substr(index)``` returns substring for pos to end.
+
+#### Add
+
+Single element
+
+- In middle using the iterator(before which to insert) ```s.insert(it,val)```
+- There is no push front.
+
+Multiple element
+- ```c++
+  string x = "Manish";
+  string y = "sdf"
+  x.insert( x.begin() + 2, y.begin(), y.end());
+  ```
+
+- Add at the end or beginning.
+- Use + operator ```s+x```
+
+#### Erase
+
+- To clear all the elements ```s.clear()```
+- To erase an element using iterator ```s.erase(it)```
+- To erase a range of elements using iterator ```s.erase(it_first, it_last)```
+-  ## Very Important erase-remove idiom.
+-  Look at vector explaination.
+
+#### Modify
+ Single Element
+
+- ```s[index] = character_element```
+- **Using iterator ```(*it) = val;```**
+
+
+
 
 ## Iterators
 
@@ -179,7 +271,8 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 - Value from the index - O(1) ```v[1];```
 - Iterator from index - O(1) ```v.begin()+i``` 
 - Value from iterator ```(*it)```
-- Size ```v.size()```
+- Size ```v.size()```'
+- **Get item with a specific value** ```std::find(vec.begin(), vec.end(), item)```
 
 #### Add
 
@@ -202,6 +295,12 @@ Multiple element
 - To erase a range of elements using iterator ```v.erase(it_first, it_last)```
 - Remove from the end ```pop_back()```
 - There is no pop front.
+-  ## Very Important erase-remove idiom.
+-  To erase multiple elements from an vector with a certain value, it is not recommended to use for loop and erase each element. Since this is a n^2 solution.
+-  Instead we should use erase with stl's remove to get O(n) solution.
+-   The way it works is first we call remove on the entire array. Remove doesn't erase the elements from array, it simply shifts the elements with the value to the end of the vector and returns the iterator to the tail of the remaining vector(non inclusive).
+-   You can then call erase on the remaining part and erase by range.
+-  ### ```v.erase(std::remove(v.begin(),v.end(),7), v.end())``` to erase all occurances of 7 from the vector. **This is called erase-remove idiom of c++**. It is also applicable for strings.
 
 #### Modify
  Single Element
@@ -221,7 +320,9 @@ Multiple elements
 
 ### Unordered Map
 
-## **IMP -> YOU CANNOT CREATE A MAP OF A MAP (Map as key) (Group Anagrams) by ```unordered_map<unordered_map<string,int>,int> umap();```**
+## **IMP -> YOU CANNOT CREATE A MAP OF A MAP (Map as key) (Group Anagrams) by ```unordered_map<unordered_map<string,int>,int> umap();```** -> You can get around by using a string representation of the map. Also holds for unordered_set
+
+## **IMP -> YOU CANNOT CREATE A MAP OF A Pair of T (pair<T,T> as key) by ```unordered_map<pair<int,int>,int> umap();```** -> You can get around by using a string representation of the pair. Also holds for unordered_set
 
 #### Iterator (Useful for looping through elements)
 
@@ -267,6 +368,7 @@ Multiple elements
   advance(it,index);
   (*it)
   ```
+- ### **To find if an element exist's in a list ```std::find(listOfElements.begin(), listOfElements.end(), element);```**
 
 
 #### Add
@@ -348,6 +450,9 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 
 
 
+
+
+
 # Important Questions
 
 - LRU Cache
@@ -359,3 +464,39 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 
 - https://leetcode.com/problems/binary-tree-maximum-path-sum/
   - Solution is elegant few lines.
+
+- https://leetcode.com/problems/unique-email-addresses/submissions/
+  - Solve this to get clarity of strings erase-remove idiom.
+
+- https://leetcode.com/problems/majority-element/
+  - Teaches the Boyer-Moore Voting Algorithm
+  - ### Boyer-Moore Voting Algorithm
+    - Explaination https://leetcode.com/problems/majority-element/solution/
+    - For Diagram
+
+- https://leetcode.com/problems/find-the-town-judge/
+  - Teaches importance of
+
+- https://leetcode.com/problems/cinema-seat-allocation/
+  - Importance of looking at constraints and also bit masking
+
+- https://leetcode.com/problems/cousins-in-binary-tree/
+  - Important in knowing the tips for trees
+  - https://leetcode.com/problems/cousins-in-binary-tree/discuss/238624/C%2B%2B-level-order-traversal
+  - Tip - 1 -> Using nullptr to separate siblings from cousins.
+  - Using 2 queues to keep track of levels.
+
+- Boolean Parenthesis DP.
+  - Different way of thinking bottom up.(Diagonal)
+
+- https://leetcode.com/problems/flood-fill/
+  - You don't need visited set.
+
+- #### IMPORTANT https://leetcode.com/problems/maximum-sum-circular-subarray/
+  - Tricky Question (Simple if you know solution).
+
+- https://leetcode.com/problems/valid-parenthesis-string/
+  - 3 Solution approaches
+    - **2 Stack (best to think and implement). [Link](https://www.youtube.com/watch?v=KuE_Cn3xhxI)**
+    - DP (Bad timecomplexity but good to know approach similar to boolean parenthesis). [Link](https://leetcode.com/problems/valid-parenthesis-string/solution/)
+    -  **Simple solution (most efficient, hard to think like this) [Link](https://leetcode.com/problems/valid-parenthesis-string/discuss/107570/JavaC%2B%2BPython-One-Pass-Count-the-Open-Parenthesis)** 
