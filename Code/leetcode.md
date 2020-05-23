@@ -93,6 +93,32 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 - it is helpful to use _ before name for member variables.
 - Use typedef for long names.
 
+- Use vector instead of map in dealing with characters.
+- Use vector instead of stack wherever possible.
+  - vector.push_back (s.push())
+  - vector.pop_back (s.pop())
+  - vector.back() (s.top())
+  - This trick is useful when dealing with string and you need to process them later. [Example](https://leetcode.com/problems/remove-k-digits/)
+
+- ### IMPORTANT -> While sorting objects in c++
+  - Remember to use the following constraint/requirement. The  compare requirement requires that If comp(a,b)==true then comp(b,a)==false. But if you write you  it returns true if b==a thus comp(b,a) == comp(a,b) which does not fulfil the requirement. 
+    #### NOT CORRECT WAY
+    ```c++
+      //NOT CORRECT WAY
+      if (da.x() > db.x())
+          return false;
+      else
+        return true;
+    ```
+
+    #### CORRECT WAY
+    ```c++
+      //NOT CORRECT WAY
+      return da.x()<db.x();
+    ```
+    - Refer https://stackoverflow.com/questions/2627166/difference-between-const-reference-and-normal-parameter
+    - https://en.cppreference.com/w/cpp/named_req/Compare
+
 ## Traverse While Deleting
 
 ### Vector/ String
@@ -500,3 +526,54 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
     - **2 Stack (best to think and implement). [Link](https://www.youtube.com/watch?v=KuE_Cn3xhxI)**
     - DP (Bad timecomplexity but good to know approach similar to boolean parenthesis). [Link](https://leetcode.com/problems/valid-parenthesis-string/solution/)
     -  **Simple solution (most efficient, hard to think like this) [Link](https://leetcode.com/problems/valid-parenthesis-string/discuss/107570/JavaC%2B%2BPython-One-Pass-Count-the-Open-Parenthesis)** 
+
+- https://leetcode.com/problems/remove-k-digits/
+  - Teaches efficient processing of strings.
+  - trimming zeros and all.
+  - Use vector instead of stack.
+
+- https://leetcode.com/problems/bulb-switcher-iii/
+  - Beautiful solution. Simple straight.
+
+- https://leetcode.com/problems/online-stock-span/
+  - Couldn't solve
+  - Simple solution
+
+
+
+# To-Do
+
+- Monotone Queue
+  - https://medium.com/@gregsh9.5/monotonic-queue-notes-980a019d5793
+  -  Minimum Cost Tree From Leaf Values
+  -  Sum of Subarray Minimums 907
+  -  Online Stock Span 901
+  -  Score of Parentheses 856
+  -  Next Greater Element II 503
+  -  Next Greater Element I 496
+  -  Largest Rectangle in Histogram 84
+  -  Trapping Rain Water 42
+  -  Daily Temperatures 739
+
+- Dynamic Programming Problems
+  - https://leetcode.com/discuss/general-discussion/458695/Dynamic-Programming-Patterns
+
+- Interview Questions
+  - Min(Subset) + Max(subset) == k or < k
+    - https://leetcode.com/discuss/interview-experience/637356/amazon-apple-facebook-l5-ict4-e5-seattle-april-2020-may-2020-offer-offer-offer
+    - https://leetcode.com/discuss/interview-question/268604/Google-interview-Number-of-subsets
+    - https://leetcode.com/discuss/interview-question/275785/facebook-phone-screen-count-subsets
+
+  - Is Split Possible in an array
+    - https://leetcode.com/discuss/interview-experience/637356/amazon-apple-facebook-l5-ict4-e5-seattle-april-2020-may-2020-offer-offer-offer
+    - no constraints
+    - splitted array has to be equal in size.
+    - geek for geek variations.
+
+  - Merge K Sorted Arrays
+
+
+
+# Look at
+- https://stackoverflow.com/questions/28138188/why-pass-by-value-and-not-by-const-reference
+- https://medium.com/@gregsh9.5/monotonic-queue-notes-980a019d5793
