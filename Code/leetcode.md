@@ -5,6 +5,10 @@
 
 - To get an idea of overflow solve - [link](https://leetcode.com/problems/reverse-integer/)
 
+- c++ vector changes its address on reallocation so don't rely your algo on vector's pointer or iterator.
+
+
+- greedy is a solution, where you never go back to improve and keep focussing on whatever is the present viable solution for each iteration.
 
 - check overflow
   ```c++
@@ -163,6 +167,10 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   - Valid Parenthesis String
   - Matrix Multiplication
 
+
+- Space can be heavily optimized in case in dp solution the present state only depends on the previous state. You only have 2 arrays  and toggle between them using flag = flag^1
+  - https://www.youtube.com/watch?v=UFMOzkUFEW4
+  - https://leetcode.com/problems/uncrossed-lines/
 
 # STL
 
@@ -475,9 +483,58 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 - 1 and 7 are the only happy numbers.
 
 
+# Upper Bound, Lower Bound and Binary Search
+  #### For a simple binary search always use the below structure.
+  ```c++
+  int start = start_of_search_range;
+  int end = end_of_search_range;
+  while(start<=end){  //For normal binary search you need to use start<=end else it will be complicated.
+    int mid = start + (end-start)/2; //To prevent overflow
+    if(x==mid) return mid; 
+    else if(x>mid) start = mid+1; //Answer is atleast bigger than mid;
+    else end = mid -1;  //Answer is atleast smaller than mid;
+  }
+  return -1; //Can't find x
+  ```
+
+  #### For Lower Bound (First element greater or equal to the given element).
+  ```c++
+  int start = start_of_search_range;
+  int end = end_of_search_range + 1 //### Important cause we also need to take care of case where the required answer is more than last item in the array.
+  while(start<end) // You can use start<= end but then you need to write condition for the return value.
+  {
+    int mid = start + (end-start)/2;
+    if(mid<x){
+      start=mid+1;//If x is greater than mid. The search space cannot include mid and is higher than mid.
+    }
+    else{
+      end = mid;//If mid is equal or greater than x, then elements to right of mid are not the first since, mid is already greater or equal.  But mid can be the upper bound.
+    }
+  }
+  return start; //Takes care of case where lower bound isn't even present in array/
+  ```
 
 
+  #### For upper Bound (First element greater than the given element)
+  ```c++
+  int start = start_of_search_range;
+  int end = end_of_search_range + 1 //### Important cause we also need to take care of case where the required answer is more than last item in the array.
+  while(start<end) // You can use start<= end but then you need to write condition for the return value.
+  {
+    int mid = start + (end-start)/2;
+    if(mid<=x){
+      start = mid+1;//If x is greater than or equal to mid. The search space cannot include mid and is higher than mid. 
+    }
+    else{
+      end = mid; //If mid is greater than x, then elements to right of mid are not the first since, mid is already greater than x. But mid can be the upper bound.
+    }
 
+  }
+  return start; //Takes care of case where upper bound isn't even present in array
+
+  ```
+
+  ### Note: In both Upper and lower bounds, the high index is set to end_of_search_range+1 instead of end_of_search_range. These functions can return an index which is one beyond the bounds of the array. I.e., it will return the size of the array if the search key is not found and it is greater than all the array elements.
 
 # Important Questions
 
@@ -539,11 +596,54 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   - Couldn't solve
   - Simple solution
 
+- https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
+  - Beautiful Simple solution
+
+- https://leetcode.com/problems/contiguous-array/submissions/
+  - Couldn't Solve.
+
+- https://leetcode.com/problems/counting-bits/
+  - Very beautiful solution.
+  - https://leetcode.com/problems/counting-bits/discuss/656474/C%2B%2B-simple-in-3-liner.... **There is a meaning behind the solution, not just pattern matching.** 
+
+- https://leetcode.com/problems/k-closest-points-to-origin/
+  - Teaches the power of stl.
+  - Important concept in sorting.
+  - https://leetcode.com/problems/k-closest-points-to-origin/discuss/220235/Java-Three-solutions-to-this-classical-K-th-problem. **IMPORTANT CONCEPT WHAT IF ONLINE DATA**
+
+- https://leetcode.com/problems/two-city-scheduling/
+  - Took too much time
+  - easy solution.
+
+- If we have a stream of strings and we need to check if it is a subsequence of a particular string.
+  - Followup of https://leetcode.com/problems/is-subsequence/
+
+- https://leetcode.com/problems/find-the-duplicate-number/
+  - Could not solve
+  - Good concepts.
 
 
 # To-Do
 
-- Monotone Queue
+
+## Backlog
+
+  - Prefix Sum Array Concept - Rachit Jain.
+  - Buy and sell stocks part 2
+  - Kth Smallest Element in a BST followup.
+  - Largest Divisible Set
+  - Cheapest Flights within K stops followup
+  - Longest Duplicate Substring
+  - Count Square Submatrices with All Ones O(n*m) solution.
+  - Dungeon Game
+  - Single Number and similar questions discussion.
+
+
+
+
+
+
+## Monotone Queue
   - https://medium.com/@gregsh9.5/monotonic-queue-notes-980a019d5793
   -  Minimum Cost Tree From Leaf Values
   -  Sum of Subarray Minimums 907
@@ -555,10 +655,15 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   -  Trapping Rain Water 42
   -  Daily Temperatures 739
 
-- Dynamic Programming Problems
-  - https://leetcode.com/discuss/general-discussion/458695/Dynamic-Programming-Patterns
+## Graph Questions 
 
-- Interview Questions
+
+## Dynamic Programming Problems
+
+## Trees
+  -  Construct Binary Search Tree from Preorder Traversal (Check O(N)) Solutions
+
+## Interview Questions
   - Min(Subset) + Max(subset) == k or < k
     - https://leetcode.com/discuss/interview-experience/637356/amazon-apple-facebook-l5-ict4-e5-seattle-april-2020-may-2020-offer-offer-offer
     - https://leetcode.com/discuss/interview-question/268604/Google-interview-Number-of-subsets
@@ -574,6 +679,20 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 
 
 
-# Look at
+## Lists
+ - https://docs.google.com/document/d/1wUCqhVHydWiDk6FJdFLSMpgigNrGcs4OFZg0Wa7JGEw/edit#
+ - https://leetcode.com/discuss/general-discussion/691825/binary-search-for-beginners-problems-patterns-sample-solutions
+ - https://leetcode.com/discuss/general-discussion/458695/Dynamic-Programming-Patterns
+ - https://leetcode.com/discuss/general-discussion/655708/graph-problems-for-beginners-practice-problems-and-sample-solutions
+
+
+# Concepts
 - https://stackoverflow.com/questions/28138188/why-pass-by-value-and-not-by-const-reference
 - https://medium.com/@gregsh9.5/monotonic-queue-notes-980a019d5793
+- https://en.wikipedia.org/wiki/
+- Pigeonhole_principle
+  - https://leetcode.com/problems/find-the-duplicate-number/discuss/72844/Two-Solutions-(with-explanation)%3A-O(nlog(n))-and-O(n)-time-O(1)-space-without-changing-the-input-array
+  - Look at his comment -> StefanPochmann
+- Boyer-Moore Voting Algorithm
+- Floyd's Tortoise and Hare (Cycle Detection)
+  - https://www.quora.com/How-does-Floyds-cycle-finding-algorithm-work-How-does-moving-the-tortoise-to-the-beginning-of-the-linked-list-while-keeping-the-hare-at-the-meeting-place-followed-by-moving-both-one-step-at-a-time-make-them-meet-at-starting-point-of-the-cycle/answer/Brian-Quanz?ch=3&share=75229003&srid=bQkw
