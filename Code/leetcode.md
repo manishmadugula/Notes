@@ -536,6 +536,44 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 
   ### Note: In both Upper and lower bounds, the high index is set to end_of_search_range+1 instead of end_of_search_range. These functions can return an index which is one beyond the bounds of the array. I.e., it will return the size of the array if the search key is not found and it is greater than all the array elements.
 
+# Floyd's Tortoise and Hare (Cycle Detection)
+
+- Used to detect a cycle in linked list.
+
+## Theorem -> If you have a hare and tortoise both starting at first node in the linked list. hare moving at 2(node unit) times the speed of tortoise. They both eventually meet.
+
+### Physical Proof
+
+  For showing that they eventually must meet, consider the first step at which the tortoise enters the loop. If the hare is on that node, that is a meeting and we are done. If the hare is not on that node, note that on each subsequent step the distance the hare is ahead of the tortoise increases by one, which means that since they are on a loop the distance that the hare is BEHIND the tortoise decreases by one. Hence, at some point the distance the hare is behind the tortoise becomes zero and the meet.
+
+### Mathematical Proof
+
+  Let's assume T is the length of the tail part of the linked list, and C is the length of cycle.
+  If we use division algorithm, T = Q*C + r (Q->Quotient and r is remainder). After T time units, the tortoise is at the start of the cycle and hare is at r (Since T=Q*C +r and the first QC didn't amount to anything and it made hare come back to start of loop, the remaining r is it's position). 
+  
+  ![The point where tortoise is at start of loop](res/floydcycle1.jpg)
+  
+  
+  Now at this position, you can infer hare is r ahead of the tortoise, but since it is a loop, tortoise is C-r nodes ahead of hare, Now since the distance between hare and tortoise decrease by 1 in each time step, they will eventually meet, after C-r time steps. In the mean while the tortoise would have travelled C-r steps. Thus they both meet at C-r'th node from the start of loop.  
+
+  ![Distance between hare and tortoise](res/floydcycle2.jpeg)
+
+  ![The point where tortoise and hare meet](res/floydcycle3.jpeg)
+
+
+## Theorem -> If from the point they meet, another tortoise starts from the first node, the old and new tortoise meet at the start of the loop. 
+
+### Mathematical Proof.
+
+  Now, let's say we are at the time hare and tortoise meet, from that point the remaining distance to get the start of the loop would be r for the old tortoise.(It is at point C-r and advancing r steps brings it to the start of the loop). **So r is the distance required by the old tortoise to reach the start of the loop.**
+  
+  ![Distance to travel to start of loop](res/floydcycle4.jpeg)
+  
+   Now let's say the new tortoise travelled T distance from start of linked list to start of loop. Now since both are tortoise, even the old tortoise must have travelled T distance. **T can also be represented as Q*C +r. But the Q*C part doesn't amount to anything as the old tortoise just reaches the same point it already is. So in essense the old tortoise travelled r distance along the cycle**, while the new tortoise travelled T distance to come to start of loop. But r is exactly the same amount of distance the old tortoise needed to reach the start of the loop. **So when they eventually reach at the same point it is at the start of the loop**. 
+
+## References
+- https://math.stackexchange.com/questions/913499/proof-of-floyd-cycle-chasing-tortoise-and-hare
+
 # Important Questions
 
 - LRU Cache
@@ -621,6 +659,8 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 - https://leetcode.com/problems/find-the-duplicate-number/
   - Could not solve
   - Good concepts.
+  - https://leetcode.com/problems/find-the-duplicate-number/discuss/72844/Two-Solutions-(with-explanation)%3A-O(nlog(n))-and-O(n)-time-O(1)-space-without-changing-the-input-array
+  - Look at his comment -> StefanPochmann
 
 
 # To-Do
