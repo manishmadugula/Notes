@@ -50,3 +50,24 @@
 - vector clock dynamo paper. https://cse.buffalo.edu/~mpetropo/CSE736-SP10/slides/seminar100226a2.pdf
 - Merkel Trees https://www.youtube.com/watch?v=YIc6MNfv5iQ https://www.youtube.com/watch?v=qHMLy5JjbjQ
 - String interning
+- IPV4 local link addressing
+- Is inner class inherited
+- No reason why inner class should be non static
+- Impl idiom
+- Scheduling algorithms
+- Memory profiler
+- Match making algorithm
+- Placeholder In c++ and binding to member function like std::bind(&A::printVal, &a); a is an instance of A. Placeholder swallows extra params.
+- Lambda is a struct with operator overloading. It has concept of stateful. Capturing groups is member of struct.
+- See function pointers
+- Matching algorithms
+- Fireship io cloud master firebase
+- SQL query optimization
+- Why multiple inheritance is bad and how interface help deal with it.
+- Cors
+- Garbage collector vs smart pointer 
+
+
+
+# Articles
+- https://medium.com/@yashgirdhar/11-companies-55-interviews-9-offers-including-google-and-amazon-heres-what-i-have-to-share-293852c1c98f
