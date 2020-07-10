@@ -19,6 +19,8 @@ To-Do
   - System Design Donnemartin
   - Docker Kubernetes
   - AWS
+  - Kafka
+  - Tech Dummies
 
 - Databases
   - Cassandra functionality
@@ -35,3 +37,8 @@ To-Do
 - Networking
   - Top Down Approach Book
   - Basics of Networking Course
+
+- Behavorial
+  - General Questions
+  - Leadership principles
+  - 

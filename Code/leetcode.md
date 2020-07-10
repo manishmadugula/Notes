@@ -172,6 +172,15 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   - https://www.youtube.com/watch?v=UFMOzkUFEW4
   - https://leetcode.com/problems/uncrossed-lines/
 
+
+- Not apparent problems
+  - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/
+    - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/discuss/192341/Super-Intuitive-solution(recursive-%2B-memoization)
+
+    
+
+
+
 # STL
 
 ## Strings
@@ -574,6 +583,35 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 ## References
 - https://math.stackexchange.com/questions/913499/proof-of-floyd-cycle-chasing-tortoise-and-hare
 
+# Brian Kernighan's Counting Algorithm
+- It is used to detect the number of set bits in an integer.
+- If we had an operator which can unset the right most bit on each iteration. We can count the number of set bit as follows
+  ```c++
+  int ans =0;
+  while(n){
+    n=operator(n);
+    ans++;
+  }
+  return ans;
+  ```
+- If we think about it, subtracting one from a number, unsets the rightmost bit and toggles/set every other bit to right of the this bit. If we can modify this operation such that the toggling effect is gone, we have our desired operator. If we AND the subtraction with the original number itself, we have that desired effect.
+  ```c++
+  int ans =0;
+  while(n){
+    n&=n-1;
+    ans++;
+  }
+  return ans;
+  ```
+### - If one is using c++ they can also use __builtin_popcount(n) to return the number of set bits.
+
+
+
+
+
+
+
+
 # Important Questions
 
 - LRU Cache
@@ -662,6 +700,16 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   - https://leetcode.com/problems/find-the-duplicate-number/discuss/72844/Two-Solutions-(with-explanation)%3A-O(nlog(n))-and-O(n)-time-O(1)-space-without-changing-the-input-array
   - Look at his comment -> StefanPochmann
 
+- https://leetcode.com/problems/word-search-ii/
+  - Time Limit Exceeded
+  - Great solution
+  - https://leetcode.com/explore/challenge/card/june-leetcoding-challenge/543/week-5-june-29th-june-30th/3376/discuss/59841/My-AC-very-clean-C++-code
+
+
+- https://leetcode.com/problems/prison-cells-after-n-days/
+  - Was able to solve
+  - But the answer is bit tricky, I was able to solve with a very nice approach to problem.
+  - See personal submission.
 
 # To-Do
 
@@ -677,6 +725,7 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   - Count Square Submatrices with All Ones O(n*m) solution.
   - Dungeon Game
   - Single Number and similar questions discussion.
+  - Find the duplicate number using floyd cycle detection.
 
 
 
@@ -734,5 +783,6 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   - https://leetcode.com/problems/find-the-duplicate-number/discuss/72844/Two-Solutions-(with-explanation)%3A-O(nlog(n))-and-O(n)-time-O(1)-space-without-changing-the-input-array
   - Look at his comment -> StefanPochmann
 - Boyer-Moore Voting Algorithm
+- Brian Kerighan's Counting Algorithm
 - Floyd's Tortoise and Hare (Cycle Detection)
   - https://www.quora.com/How-does-Floyds-cycle-finding-algorithm-work-How-does-moving-the-tortoise-to-the-beginning-of-the-linked-list-while-keeping-the-hare-at-the-meeting-place-followed-by-moving-both-one-step-at-a-time-make-them-meet-at-starting-point-of-the-cycle/answer/Brian-Quanz?ch=3&share=75229003&srid=bQkw
