@@ -1,8 +1,7 @@
 # Topic to see
-- Read about obj uml
 - Static class vs singleton
 - Thread safe singleton
-- Websockets vs http2
+- Websockets vs http2 vs long polling vs mqtt vs grpc vs android notification service vs chrome notification vs Kafka vs RPC
 - 0 vs delete function declaration
 - Linked list intersection
 - Unique ptr passing function
@@ -11,7 +10,7 @@
 - In a n-ary tree there is a unique path between any 2 nodes Euler walk.
 - Think about #define vs typedef in terms of char*
 - A a() not working
-- Async
+- //Async
 - Return Value optimisation
 - 50 Questions ByteByByte -> 1 3 7 8 10 12 15 19 coin change 33 36
 - Hidden binary search questions
@@ -39,7 +38,7 @@
 - Firecode.io
 - Learn about iterators
 - Competitive coding practises cpp
-- MVCC
+- //MVCC
 - Dynamic hashing
 - Thread creation join conditiobal variable mutexes lock_guard unique_lock
 - Heavy light decomposition

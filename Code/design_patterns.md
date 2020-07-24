@@ -118,17 +118,28 @@ The strategy pattern is about being able to change from one to the other at run 
  ![UML](res/decorator_uml.png)
 
  - In the above diagram we can see we are attaching additional responisbilities(the decorator class) to an object(component class) dynamically/at run-time.
- 
- 
-
-
-
-
 
 - If you interested in order of how you wrap objects then decorator is not suitable.
 
 ## Builder Pattern
 [Link](https://medium.com/@ajinkyabadve/builder-design-patterns-in-java-1ffb12648850)
+
+## Filter Design Pattern
+- Useful when designing the filtering system in E-Commerce websites, say you have a laptop shop, and would like to give users ability to filter the laptops based on variety of criterias, which can change in future, The most effective pattern for this is filter pattern.
+
+![](res/filter_pattern.jpg)
+
+The main method for this would look like
+```c++
+  void main(){
+    List<Laptop> laptops = LaptopFactory.manufactureInBulk();
+    ICriteria searchCriteria = new AndCriteria(new RamCriteria(4), new CPUCriteria("i5"), new SSDCriteria(128));
+    List<Laptop> filteredLaptops = searchCriteria.meets(laptops);
+  }
+
+```
+ref-> https://singhajit.com/filter-design-pattern/
+
 
 # Anti Design Pattern
 

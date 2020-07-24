@@ -74,8 +74,7 @@
 
 
 
-# Useful links
-- Indexing -
+# Indexing -
   
   - https://medium.com/hackernoon/fundamentals-of-system-design-part-3-8da61773a631
   
@@ -113,10 +112,17 @@ In software engineering, a connection pool is a cache of database connections ma
 # Optimistic Lock vs Pessimistic Lock
 
 ## Pessimistic Lock
+- This approach assumes that conflicting operations happen more frequently (that's why it's called pessimistic). Since the conflicts are common, this approach makes use of locks to prevent conflicting operations from executing, assuming that there is no significant overhead from their usage.
 - Usual file locking mechanism, where if one thread/process acquires the lock, no one is allowed to update the locked file till the process with the lock/mutex releases the lock
 - Used in db and log read write.
 - It holds on to resources, no other concurrent actors can modify.
 - Useful when more conflicts are there.
+- Suceptible to deadlocks.
+- Read Lock/Shared Lock -> Concurrent Process can read but can't write
+- Write Lock/Exclusive Lock -> Concurrent Process can't read not write.
+- Widely known algo for pessimestic lock is 2 Phase Locking (Not to be confused with 2 Phase Commit in Distributed Transaction).
+
+
 
 ## Optimistic Lock
 - It is lock based on version number. The process/thread/person first reads both data and version number, he does processing on data and when he goes back to write the updated information, he checks if the version number is same as the time he read the data, if yes he writes the data and increments the version number, else someone else already updated the original data after it has been first read by the process. 
@@ -125,36 +131,89 @@ In software engineering, a connection pool is a cache of database connections ma
 - More performant since, optimistic lock won't hold on to resource.
 - Useful when few conflicts are the
 
-# Check these algorithms
-Count Min Sketch
-Consistent Hashing
-Bloom Filter
-LRU Cache
-B-Tree
-Merkel Trees
-Fenwick Tree
-Geohash / S2 Geometry
-Quadtree / Rtree
-Reverse index
-Distributed Rate Limiting
-HyperLogLog 
-Leaky bucket / Token bucket
-Trie algorithm
+## Optimistic Lock Vs MVCC
+- I think they are sometimes used interchangeably, and if the transaction only involves one object then they are essentially the same, but MVCC is an extension of optimistic concurrency (or a version of it) that provides guarantees when more than one object is involved. Say that you have two objects, A and B, which must maintain some invariant between them, e.g. they are two numbers whose sum is constant. Now, a transaction T1 subtracts 10 from A and adds it to B, while, concurrently, another transaction T2 is reading the two numbers. Even if you optimistically update A and B independently (CAS them), T2 could get an inconsistent view of the two numbers (say, if it reads A before it's modified but reads B after it's been modified). MVCC would ensure T2 reads a consistent view of A and B by possibly returning their old values, i.e., it must save the old versions.
 
-Rsync algorithm
-Frugal Streaming
-Loosy Counting
-Operational transformation
-Ray casting
-Alon Matias Szegedy
-Hierarchical Timing Wheels
+- To sum up, optimistic locking (or optimistic concurrency control), is a general principle for synchronization w/o locks. MVCC is an optimistic technique which allows isolated transactions which span multiple objects.
+
+
+# Distributed Transaction/Data Consistency
+- 2 Phase Commit
+  - Bad since co-ordinator is single point of failure.
+- Sagas
+  - You have a sub transaction (POST Payment and return ID) and a corresponding compensating transaction (Delete By Payment ID)
+  - https://www.youtube.com/watch?v=xDuwrtwYHu8
+  - You need an SEC, Stateless co-ordinator
+  - You need a commit log/ kafka message bus to keep track of all the events happened
+  - You need your comensating transaction to be idempotent.
+  - You need your sub transaction to be idempotent too if you are going for forward recovery.
+- ACID
+  - Atomicity
+    - Atomicity requires rolling back to previous state if the transaction wasn't successful.
+    - You either have a succesful transaction(unit of work), or you roll back to previous state, there is no intermediate state.
+  - Consistency
+    - Different meaning than that of the CAP theorem's C.
+    - Here it means all the data constraints are valid.
+    - In CAP what C means if we are in a master slave architecture, the data should update in slave as soon as it updates in master.  
+  - Isolation
+    - We can't assume serializability cause concurrent process can also try to access the same resource. Interleaving concurrent transaction should execute as if they came in a serial way, once after the other. You need to use some sort of concurrency control.
+
+    - You can avoid using 2 Phase Locking/ Pessimistic Locks
+      - Acquire lock, process then commit/roll back the release the lock.
+      - Locking is costly,
+    - You can detech using Multi Version Concurrency control.
+
+  - Durability
+    - Once we commit, all the changes should be persisted, i.e they shouldnt go away once the power shuts off. Some databases delay the sync between memory and disk since that would lead to a lot of IO operation on disk, and they only write to disk at checkpoints. A solution to this is to use an append only logs, any time there is a write, you write to a commit log along with memory. Commit log append is fast and if the system shuts down with data in memory but not synced with disk, commit log can be used to recover the data.
+
+
+# Amazon Locking System
+- You can discuss 2 concepts, 
+  - KD-Tree 
+    -  All the lockers can be put in a data structure like (K_dimension tree), to effectively search lockers, based on k dimensions 
+    - Implement ```find_Locker(item_id,size_requested,customer_latitude,customer_longitude)```
+  - Distributed Transaction 
+    -  Locker should only be booked when the payment's service is succeded. This will involve a distributed transaction like SAGAS.
+
+
+
+# Check these algorithms
+- Count Min Sketch
+- Consistent Hashing
+- Bloom Filter
+- LRU Cache
+- B-Tree
+- K-D Tree
+- Merkel Trees
+- Fenwick Tree
+- Geohash / S2 Geometry
+- Quadtree / Rtree
+- Reverse index
+- Distributed Rate Limiting
+- HyperLogLog 
+- Leaky bucket / Token bucket
+- Trie algorithm
+
+- Rsync algorithm
+- Frugal Streaming
+- Loosy Counting
+- Operational transformation
+- Ray casting
+- Alon Matias Szegedy
+- Hierarchical Timing Wheels
 
 Ref -> https://leetcode.com/discuss/interview-question/547669/Algorithm-you-should-know-before-system-design.
 
 
+# Misc
+- HDFS -> Distributed File System.
+- Transaction is a unit of work. And needs to be completed as a whole. The work should only be completed if all instructions inside the work are successful, else if there is some error in one of the instruction, the system should go back to previous state.
+- Each transaction should aquire a lock on the db resource which is only to be released when the entire transaction is completed, to prevent concurrent access.
+- Most databases implement transaction using a Write Ahead Lock ->
 
 
 # Blogs to read
 - https://medium.com/@Alibaba_Cloud/redis-vs-memcached-in-memory-data-storage-systems-3395279b0941#:~:text=Memcached%20has%20a%20higher%20memory,while%20Memcached%20utilizes%20multiple%20cores.
 - https://gist.github.com/vasanthk/485d1c25737e8e72759f
 - https://www.evernote.com/shard/s576/client/snv?noteGuid=75fbe53c-baed-47ca-9f58-a44038c63468&noteKey=05d51df458ea2cff&sn=https%3A%2F%2Fwww.evernote.com%2Fshard%2Fs576%2Fsh%2F75fbe53c-baed-47ca-9f58-a44038c63468%2F05d51df458ea2cff&title=2.%2BSystem%2BDesign%2BInterviews%2B-%2BWHERE%252C%2BWHAT%252C%2BHOW
+- https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html

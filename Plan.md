@@ -2,25 +2,37 @@ To-Do
 - DS Algo
   - Leet Code Lists
   - Top Coder Tutorial
-  - CP 3
-  - Algoexpert question
-  - Ardendertat blog
   - Backlogs
+  - Ardendertat blog
+  - Hybrid Datastructures
+  
+  - Algoexpert question
+  - CP 3
   - Some theoritical knowledge
+
+- Learn coding language
+  - C++
+  - Java
+  - Python
+  - Multithreading in all these 3.
+  - Test cases.
+  - Low Level Design (Hard)
+
 
 - Operating System
   - Dinosaur Book / Coursera Course
 
 - System Design
-  - Udi's Tuts
+  - AWS
+  - Grokking the system design interview
   - Gaurav Sen's
   - System Expert's
-  - Grokking the system design interview
+
+  - Tech Dummies
+  - Udi's Tuts
   - System Design Donnemartin
   - Docker Kubernetes
-  - AWS
   - Kafka
-  - Tech Dummies
 
 - Databases
   - Cassandra functionality
@@ -33,6 +45,7 @@ To-Do
 - Design Patterns
   - Christopher Okhravi's Course
   - Object Oriented Design by educative io.
+  - Thread safe code.
 
 - Networking
   - Top Down Approach Book
@@ -41,4 +54,4 @@ To-Do
 - Behavorial
   - General Questions
   - Leadership principles
-  - 
+  - Story behind each principle.

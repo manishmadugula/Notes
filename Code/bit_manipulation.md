@@ -1,5 +1,7 @@
 # Bit Programming
 
+## Always enclose the bit operations in parenthesis, since they have low precidence.
+
 ## Basics
 - [Deal with negative number](https://www.youtube.com/watch?v=lKTsv6iVxV4)
 - A 4 bit 2's complement representation can go from 7 to -8.
@@ -35,3 +37,13 @@
   - If only one set bit then it is a power of 2.
   - Brian Kernighan's Method -> If a number is power of 2 (n&(n-1)) is 0. You however need to take care of 0 case. so ```return x&&(!(x&(x-1)))```.
   - Take log2 of the number if you get integer value it is power of 2.
+
+### Get the right most set bit
+- n & -n will give you right most set bit.
+
+
+
+
+# To Solve
+- Single Number II
+- Single Number III

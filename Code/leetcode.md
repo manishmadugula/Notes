@@ -69,6 +69,8 @@
 
 Now, all the numbers left whose prime value is true are prme numbers and can be displayed.
 
+
+
 - Time complexity for a sqrt function is log(n);
   ```
   1) Start with ‘start’ = 0, end = ‘x’,
@@ -122,6 +124,28 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
     ```
     - Refer https://stackoverflow.com/questions/2627166/difference-between-const-reference-and-normal-parameter
     - https://en.cppreference.com/w/cpp/named_req/Compare
+
+## Tokenizing a string in c++
+###  Using stringstream
+  ```c++
+    string s = "Hello how are you";
+    stringstream ss(s);
+    string token;
+    while(getline(ss,token,' ')){
+      cout<<token<<endl;
+    }
+    /*Prints->
+      Hello
+      how
+      are
+      you
+    */
+  ```
+## Operator Precedence in c++
+- ### Bit operator precedence is less than equality operator.
+  ![](res/operator.png)
+
+
 
 ## Traverse While Deleting
 
@@ -297,6 +321,23 @@ Multiple element
 - You need to first assign container.begin() to a iterator and then use that iterator to advance.
 
 - Compare iterator with a null, it is not straight forward. You need to do ``it != container.end()``
+
+
+## Tuple
+  A tuple is an object that can hold a number of elements. The elements can be of different data types. The elements of tuples are initialized as arguments in order in which they will be accessed.
+  ```c++
+    tuple <int,char,float> tup1(20,'g',17.5); 
+    tie(i_val,ch_val,f_val) = tup1; 
+    cout << i_val << " " << ch_val << " " << f_val; 
+  ```
+  ### Use tuple instead of creating structs
+  **Can also use ```make_tuple()``` is used to assign tuple with values.**
+
+  ### tie can also be used to unpack pair<X,Y>;
+
+## Priority Queue
+  - Need to ```#include<queue>```
+  - ## In C++ if the element is in the form of pairs/ tuple, then by default the priority of the elements is dependent upon the first element. Very useful to know.
 
 
 ## Containers
@@ -606,6 +647,16 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 ### - If one is using c++ they can also use __builtin_popcount(n) to return the number of set bits.
 
 
+# For Bit questions it can be useful to know how to convert the truth table to logical circuit.
+
+Say for instance we have to add 2 bits, with carry.
+Truth Table Looks like.
+![](res/truth_table.png)
+
+Let us find the logical circuit for Carry Out. You need to just consider the cases where C-Out is 1, i.e A*B*(!C) + A*(!B)*C + A*B*C + (!A)*B*C = A*B + (A^B)*C 
+
+Similarly you can do for any truth table.
+
 
 
 
@@ -711,6 +762,33 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   - But the answer is bit tricky, I was able to solve with a very nice approach to problem.
   - See personal submission.
 
+- https://leetcode.com/problems/subsets/
+  - Was able to solve using backtracking.
+  - Good concepts.
+  - Elegant bit manipulation solution -> https://leetcode.com/problems/subsets/discuss/27278/C%2B%2B-RecursiveIterativeBit-Manipulation
+
+- https://leetcode.com/problems/maximum-width-of-binary-tree/
+  - One test case was failing due to overflow.
+  - Could not solve using dfs, use bfs. https://www.youtube.com/watch?v=le-ZZSQRebw
+  - To circumvent the overflow error, at each level you should know the leftmost index, which is not straightforward with dfs.
+
+- https://leetcode.com/problems/3sum/
+  - Important Question in interviews
+  - Was able to solve with TLE.
+  - 2 Approaches, convert to 2Sum(Works) or use hash map(TLE).
+  - https://www.youtube.com/watch?v=Ca7k53qcTic&t=1043s
+  - Everyone of the iterator should be incremented if same.
+
+- https://leetcode.com/problems/reverse-words-in-a-string/
+  - Couldn't solve the inplace solution
+  - https://leetcode.com/problems/reverse-words-in-a-string/discuss/47840/C%2B%2B-solution-in-place%3A-runtime-O(n)-memory-O(1)
+  - Teaches the good use of stringstream of non-inplace solution
+
+
+- https://leetcode.com/problems/single-number-iii/
+  - Couldn't solve, constant space
+  - Remember bit's order precidence is less than equality.
+
 # To-Do
 
 
@@ -726,6 +804,8 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   - Dungeon Game
   - Single Number and similar questions discussion.
   - Find the duplicate number using floyd cycle detection.
+  - Subset II
+  - To find the time complexity in backtracking problems like Subset.
 
 
 
@@ -757,6 +837,7 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
     - https://leetcode.com/discuss/interview-experience/637356/amazon-apple-facebook-l5-ict4-e5-seattle-april-2020-may-2020-offer-offer-offer
     - https://leetcode.com/discuss/interview-question/268604/Google-interview-Number-of-subsets
     - https://leetcode.com/discuss/interview-question/275785/facebook-phone-screen-count-subsets
+    - https://leetcode.com/discuss/interview-question/747879/de-shaw-online-assessment-questions-2020
 
   - Is Split Possible in an array
     - https://leetcode.com/discuss/interview-experience/637356/amazon-apple-facebook-l5-ict4-e5-seattle-april-2020-may-2020-offer-offer-offer
@@ -773,6 +854,7 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
  - https://leetcode.com/discuss/general-discussion/691825/binary-search-for-beginners-problems-patterns-sample-solutions
  - https://leetcode.com/discuss/general-discussion/458695/Dynamic-Programming-Patterns
  - https://leetcode.com/discuss/general-discussion/655708/graph-problems-for-beginners-practice-problems-and-sample-solutions
+ - https://leetcode.com/problems/subsets/discuss/27281/A-general-approach-to-backtracking-questions-in-Java-(Subsets-Permutations-Combination-Sum-Palindrome-Partitioning)
 
 
 # Concepts
