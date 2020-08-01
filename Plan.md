@@ -1,26 +1,21 @@
 To-Do
 - DS Algo
   - Leet Code Lists
-  - Top Coder Tutorial
   - Backlogs
+  - CP 3
   - Ardendertat blog
   - Hybrid Datastructures
   
   - Algoexpert question
-  - CP 3
   - Some theoritical knowledge
 
 - Learn coding language
-  - C++
-  - Java
-  - Python
-  - Multithreading in all these 3.
-  - Test cases.
+  - Java - Rest (Spring maybe a bit),Concurrency, LLD etc.
+  - C++ - Competitive Programming STL, algorithms.
+  - Python (just see the written notes)
+  - Multithreading in Java.
+  - Test cases. Junit
   - Low Level Design (Hard)
-
-
-- Operating System
-  - Dinosaur Book / Coursera Course
 
 - System Design
   - AWS
@@ -28,11 +23,20 @@ To-Do
   - Gaurav Sen's
   - System Expert's
 
-  - Tech Dummies
-  - Udi's Tuts
   - System Design Donnemartin
+  - Tech Dummies
   - Docker Kubernetes
+  - Udi's Tuts
   - Kafka
+
+
+- Design Patterns
+  - Object Oriented Design by educative io.
+  - Thread safe code.
+  - Christopher Okhravi's Course
+
+- Operating System
+  - Dinosaur Book / Coursera Course
 
 - Databases
   - Cassandra functionality
@@ -42,10 +46,6 @@ To-Do
     - Metrics
   - Basics of SQL
 
-- Design Patterns
-  - Christopher Okhravi's Course
-  - Object Oriented Design by educative io.
-  - Thread safe code.
 
 - Networking
   - Top Down Approach Book

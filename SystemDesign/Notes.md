@@ -175,7 +175,33 @@ In software engineering, a connection pool is a cache of database connections ma
   - Distributed Transaction 
     -  Locker should only be booked when the payment's service is succeded. This will involve a distributed transaction like SAGAS.
 
+# North South, East West Traffic
+North/South traffic is the traffic heading in and out of your network. East/West traffic is the traffic from one server to another inside your network.
 
+
+# Cache 
+Read -> https://roadmap.sh/guides/http-caching
+
+![](Cache.PNG)
+
+## Cache Control
+
+### private
+Setting the cache to private means that the content will not be cached in any of the proxies and it will only be cached by the client (i.e. browser)
+
+### public
+If set to public, apart from being cached by the client, it can also be cached by the proxies; serving many other users
+
+### no-store
+no-store specifies that the content is not to be cached by any of the caches
+
+### no-cache
+no-cache indicates that the cache can be maintained but the cached content is to be re-validated (using ETag for example) from the server before being served. That is, there is still a request to server but for validation and not to download the cached content.
+```Cache-Control: max-age=3600, no-cache, public```
+
+
+# Forward and Reverse Proxy
+https://roadmap.sh/guides/proxy-servers
 
 # Check these algorithms
 - Count Min Sketch
@@ -206,6 +232,8 @@ Ref -> https://leetcode.com/discuss/interview-question/547669/Algorithm-you-shou
 
 
 # Misc
+- Browser is sometimes called as **user-agent**.
+- **User agent** flag in http request lets server knows from where the request came from operating system browser etc.
 - HDFS -> Distributed File System.
 - Transaction is a unit of work. And needs to be completed as a whole. The work should only be completed if all instructions inside the work are successful, else if there is some error in one of the instruction, the system should go back to previous state.
 - Each transaction should aquire a lock on the db resource which is only to be released when the entire transaction is completed, to prevent concurrent access.

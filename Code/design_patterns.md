@@ -140,6 +140,161 @@ The main method for this would look like
 ```
 ref-> https://singhajit.com/filter-design-pattern/
 
+## Singleton
+
+A Singleton class can be implemented in 2 ways, lazy loading or eager loading.
+
+### Lazy Loading
+### Static Class Singleton Holder (Best way for lazy)
+  ```java
+  public class Singleton {
+    private static class LazyLoader {
+        private static Singleton instance = new Singleton();
+    }
+
+    private Singleton() {
+      //Prevent reflection from creating another instance
+        if(_instance !=null) throw Exception();
+    }
+
+    public static Singleton getInstance() {
+        return LazyLoader.instance;
+    }
+  }
+  ```
+This pattern is beneficial for at least 3 reasons:
+  - Static factory
+  - **Lazy initialization**
+  - **Thread Safe** (the class initialization phase is guaranteed by the JLS (Java Language Specification) to be serial)
+
+The JVM defers initializing the InstanceHolder class until it is actually used, and because the Singleton is initialized with a static initializer, no additional synchronization is needed. The first call to getInstance by any thread causes InstanceHolder to be loaded and initialized, at which time the initialization of the Singleton happens through the static initializer.
+
+**Static holder pattern is also considered as the smartest replace for Double-check-locking antipattern.**
+
+The implementation of the idiom relies on the initialization phase of execution within the Java Virtual Machine (JVM) as specified by the Java Language Specification (JLS). When the class Something is loaded by the JVM, the class goes through initialization. Since the class does not have any static variables to initialize, the initialization completes trivially. **The static class definition LazyHolder within it is not initialized until the JVM determines that LazyHolder must be executed**. The static class LazyHolder is only executed when the static method getInstance is invoked on the class Something, and the first time this happens the JVM will load and initialize the LazyHolder class. The initialization of the LazyHolder class results in static variable INSTANCE being initialized by executing the (private) constructor for the outer class Something. Since the class initialization phase is guaranteed by the JLS to be sequential, i.e., non-concurrent, no further synchronization is required in the static getInstance method during loading and initialization. And since the initialization phase writes the static variable INSTANCE in a sequential operation, all subsequent concurrent invocations of the getInstance will return the same correctly initialized INSTANCE without incurring any additional synchronization overhead.
+
+Few important things to keep in mind in this pattern
+- only nested classes can have static keyword in their class defination.
+-  The nested class is not loaded until some thread references one of its fields or methods
+- See Nested in java.md for more information.
+- the class initialization phase is guaranteed by the JLS (Java Language Specification) to be serial
+
+
+### Double Check Lock with volatile (Anti Pattern)
+```java
+public class Singleton{
+  private volatile static Singleton _instance;
+
+  private Singleton(){
+      //Prevent reflection from creating another instance
+      if(_instance !=null) throw Exception();
+  }
+
+  public Singleton getInstance(){
+    if(_instance == null){
+      //Important see how lock has been taken
+      synchronised(Singleton.class){
+        if(_instance == null){
+          _instance = new Singleton();
+        }
+      }
+    }
+    return _instance;
+  }
+
+}
+```
+- The above code is thread safe since we are using synchronised and only 1 thread can be inside that block at a time.
+- Sychronised is only used when instance is not initialized so there is no overhead after instance is already initialized.
+- There is double check in case another thread was waiting while the original thread was initializing so once that new thread acquires the lock it should recheck to see if any other thread already initialized it.
+- Without volatile modifier it's possible for another thread in Java to see half initialized state of _instance variable, but with volatile variable guaranteeing happens-before relationship, all the write will happen on volatile _instance before any read of _instance variable. 
+
+### Enums (Best overall)
+```java
+  public enum EasySingleton{
+      INSTANCE;
+  }
+
+  public static void main(String[] args){
+    .
+    .
+    .
+    EasySingleton.INSTANCE
+    .
+    .
+    .
+  }
+```
+
+
+#### Advantages
+- Easiest to write
+- Lazy loaded, the singleton will be initialised when the enum class is loaded, i.e. the first time enum class is referenced in your code.
+- Enum Singletons handled Serialization by themselves
+- Creation of Enum instance is thread-safe, reatino of Enum instance is thread-safe by default you don't need to worry about double checked locking.
+#### Disadvantages
+- Can't be inherited or inherit from something, not a class.
+
+### Eager Loading
+### Static factory method
+  - thread safe (the class initialization phase is guaranteed by the JLS (Java Language Specification) to be serial)
+  ```java
+  public class Singleton{
+    private static final Singleton _instance = new Singleton();
+    private Singleton(){
+      //Prevent reflection from creating another instance
+      if(_instance !=null) throw Exception();
+    }
+    public static getInstance(){
+      return _instance;
+    }
+  }
+  ```
+
+
+### Static Class vs Singleton
+- here static class refers to a class, having all static methods.
+- It’s important to remember fundamental difference between Singleton pattern and static class, former gives you an Object, while later just provide static methods. 
+- java.lang.Math is a final class with full of static methods, on the other hand java.lang.Runtime is a Singleton class in Java. 
+#### When to use static class
+- If your Singleton is not maintaining any state, and just providing global access to methods, than consider using static class, as static methods are much faster than Singleton, because of static binding during compile time, But remember its not advised to maintain state inside static class, especially in concurrent environment, where it could lead subtle race conditions when modified parallel by multiple threads without adequate synchronization.
+  
+
+#### When to use Singleton
+- Since **static methods in Java cannot be overridden** (See top), they leads to inflexibility. On the other hand, you can override methods defined in Singleton class by extending it.
+- If your requirements needs to maintain state than Singleton pattern is better choice than static class, because
+maintaining  state in later case is nightmare and leads to subtle bugs.
+- Singleton classes can be lazy loaded if its an heavy object, but static class doesn't have such advantages and always eagerly loaded.
+
+
+### Singleton is bad because
+#### You Give Up on Testability
+- With singletons — the bad thing is that the getInstance() method is globally accessible. That means that you usually call it from within a class, instead of depending on an interface you can later mock.
+- ```Singletons are nothing more than global state. Global state makes it so your objects can secretly get hold of things which are not declared in their APIs, and, as a result, Singletons make your APIs into pathological liars.```
+
+#### Tight Coupling
+- a small change in the singleton can and will bring your system to it’s knees, since it is often used everywhere in the code.
+
+#### Singletons carry state till the app dies
+- Persistent state is the enemy of unit testing. One of the things that makes unit testing effective is that each test has to be independent of all the others. If this is not true, then the order in which the tests run affects the outcome of the tests. This can lead to cases where tests fail when they shouldn’t, and even worse, it can lead to tests that pass just because of the order in which they were run. This can hide bugs and is evil.
+
+
+### Misc
+- **Prevent Cloning of Singleton**
+  
+  Preferred way is not to implement Cloneable interface as why should one wants to create clone() of Singleton and if you do just throw Exception from clone() method as “Can not create clone of Singleton class”.
+
+- **Prevent reflection from creating another instance**
+  
+  ```java
+  private Singleton() {
+    //Prevent reflection from creating another instance
+    if(_instance !=null) throw Exception();
+  }
+  ```
+
+- How do you prevent for creating another instance of Singleton during serialization?
+  [Link](https://javarevisited.blogspot.com/2011/03/10-interview-questions-on-singleton.html)
 
 # Anti Design Pattern
 
@@ -148,6 +303,7 @@ ref-> https://singhajit.com/filter-design-pattern/
 
 ## Telescoping Constructor
 - The multiple constructor with combination of multiple parameters variation is called the telescoping constructor. Use builder pattern.
+
 
 
 # Common Concepts
@@ -164,3 +320,8 @@ ref-> https://singhajit.com/filter-design-pattern/
 - The proxy pattern changes the implementation but does not change the interface.
 - The decorator pattern changes the implementation but does not change the interface.
 - The facade pattern is a high-level level abstraction over low-level components, where the interface is changed.
+
+# OOPs Concepts
+- When should one use abstract class over interface
+  - On time critical application prefer abstract class is slightly faster than interface.
+  - If there is a genuine common behavior across the inheritance hierarchy which can be coded better at one place than abstract class is preferred choice. Some time interface and abstract class can work together also where defining function in interface and default functionality on abstract class.

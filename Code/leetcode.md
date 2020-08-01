@@ -78,9 +78,11 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
       a) Compute ‘mid’ as (start + end)/2
       b) compare mid*mid with x.
       c) If x is equal to mid*mid, return mid.
-      d) If x is greater, do binary search between mid+1 and end. In this case, we also update ans (Note that we need floor).
+      d) If x is greater, do binary search between mid+1 and end. In this case, we also update ans (Note that
+       we need floor).
       e) If x is smaller, do binary search between start and mid
-    Note: The Binary Search can be further optimized to start with ‘start’ = 0 and ‘end’ = x/2. Floor of square root of x cannot be more than x/2 when x > 1.
+    Note: The Binary Search can be further optimized to start with ‘start’ = 0 and ‘end’ = x/2. 
+    Floor of square root of x cannot be more than x/2 when x > 1.
   ```
 
 - c++ strings are mutable.
@@ -538,7 +540,8 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   ```c++
   int start = start_of_search_range;
   int end = end_of_search_range;
-  while(start<=end){  //For normal binary search you need to use start<=end else it will be complicated.
+  while(start<=end){  //For normal binary search you need to use start<=end else it will be 
+  //complicated.
     int mid = start + (end-start)/2; //To prevent overflow
     if(x==mid) return mid; 
     else if(x>mid) start = mid+1; //Answer is atleast bigger than mid;
@@ -550,15 +553,19 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   #### For Lower Bound (First element greater or equal to the given element).
   ```c++
   int start = start_of_search_range;
-  int end = end_of_search_range + 1 //### Important cause we also need to take care of case where the required answer is more than last item in the array.
-  while(start<end) // You can use start<= end but then you need to write condition for the return value.
+  int end = end_of_search_range + 1 //### Important cause we also need to take care of case 
+  //where the required answer is more than last item in the array.
+  while(start<end) // You can use start<= end but then you need to write condition
+  // for the return value.
   {
     int mid = start + (end-start)/2;
     if(mid<x){
-      start=mid+1;//If x is greater than mid. The search space cannot include mid and is higher than mid.
+      start=mid+1;//If x is greater than mid. The search space cannot include mid
+      // and is higher than mid.
     }
     else{
-      end = mid;//If mid is equal or greater than x, then elements to right of mid are not the first since, mid is already greater or equal.  But mid can be the upper bound.
+      end = mid;//If mid is equal or greater than x, then elements to right of mid are 
+      //not the first since, mid is already greater or equal.  But mid can be the upper bound.
     }
   }
   return start; //Takes care of case where lower bound isn't even present in array/
@@ -568,15 +575,19 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   #### For upper Bound (First element greater than the given element)
   ```c++
   int start = start_of_search_range;
-  int end = end_of_search_range + 1 //### Important cause we also need to take care of case where the required answer is more than last item in the array.
-  while(start<end) // You can use start<= end but then you need to write condition for the return value.
+  int end = end_of_search_range + 1 //### Important cause we also need to take care of
+  // case where the required answer is more than last item in the array.
+  while(start<end) // You can use start<= end but then you need to 
+  //write condition for the return value.
   {
     int mid = start + (end-start)/2;
     if(mid<=x){
-      start = mid+1;//If x is greater than or equal to mid. The search space cannot include mid and is higher than mid. 
+      start = mid+1;//If x is greater than or equal to mid. The search space cannot include 
+      //mid and is higher than mid. 
     }
     else{
-      end = mid; //If mid is greater than x, then elements to right of mid are not the first since, mid is already greater than x. But mid can be the upper bound.
+      end = mid; //If mid is greater than x, then elements to right of mid are not 
+      //the first since, mid is already greater than x. But mid can be the upper bound.
     }
 
   }
@@ -789,6 +800,10 @@ Similarly you can do for any truth table.
   - Couldn't solve, constant space
   - Remember bit's order precidence is less than equality.
 
+- https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/
+  - Solved but too many submissions
+  - corner cases a lot.
+
 # To-Do
 
 
@@ -798,7 +813,7 @@ Similarly you can do for any truth table.
   - Buy and sell stocks part 2
   - Kth Smallest Element in a BST followup.
   - Largest Divisible Set
-  - Cheapest Flights within K stops followup
+  - Cheapest Flights within K stops followup with tutorial on topcoder
   - Longest Duplicate Substring
   - Count Square Submatrices with All Ones O(n*m) solution.
   - Dungeon Game

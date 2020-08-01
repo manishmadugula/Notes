@@ -65,6 +65,8 @@
 - Why multiple inheritance is bad and how interface help deal with it.
 - Cors
 - Garbage collector vs smart pointer 
+- webhooks
+- REST constraints and features
 
 
 
