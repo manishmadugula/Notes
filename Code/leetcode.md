@@ -7,6 +7,7 @@
 
 - c++ vector changes its address on reallocation so don't rely your algo on vector's pointer or iterator.
 
+- #### If you want to implement a hashmap you can solve collision cases by using a tree for each node, in that case your get will be O(log(n)) in worst case instead of O(n) if you use linked list.
 
 - greedy is a solution, where you never go back to improve and keep focussing on whatever is the present viable solution for each iteration.
 

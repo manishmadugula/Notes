@@ -42,11 +42,13 @@
 - Static nested classes do not have access to other members of the enclosing class.
 
 ### Static and non Static initialization blocks
-- The non-static block gets called every time an instance of the class is constructed. The static block only gets called once, when the class itself is initialized, no matter how many objects of that type you create.
+- The non-static block gets called every time an instance of the class is constructed. The static block only gets called once, when the class itself is initialized, no matter how many objects of that type you create. Used for initialization not for declaration.
   ```java
   public class Test {
-
+      public static final StaticClass timevarman;
       static{
+          //Used for initialization not for declaration.
+          timevarman = new StaticClass();
           System.out.println("Static Block");
       }
 
@@ -101,6 +103,150 @@
 
 - Every class inherits from Object class of Java.
 - Use IntelliJ's Generate to generate code for getter and setter in class.
+
+## Class Initialization
+### When is a class loaded in java
+- Class loading is done by ClassLoaders in JAVA. They can be implemented to load a class as soon as they are referenced in code(```ClassName c = null```) or until the need to for initialization is required(```ClassName c = new ClassName()```)
+
+### When is a class initialized
+- After class loading, initialization takes place which means initializing all static members of the class.
+- A class is initialized when
+  - An instance of class is created using new/reflection.
+  - A Static method of class is invoked.
+  - A Static field of class is assigned.
+  - ### A Static field of class is used which is not a compile time constant. Use of compile time constant doesn't trigger class initialization.
+  - if Class is a top-level class and an assert statement lexically nested within the class is executed.
+
+### How is a class initialized
+#### If static initialization
+- static block of super classes
+- static block of current class
+- If new is used inside the static block
+  - Then non-static block is also initialized followed by constructor. 
+    ```java
+    public class CurrentClass {
+
+        public static final CurrentClass staticmembervariable;
+
+        {
+            System.out.println("Non Static Block");
+        }
+
+        static{
+            System.out.println("Static Block");
+            staticmembervariable = new CurrentClass();
+        }
+
+        private CurrentClass(){
+            System.out.println("Constructor block");
+        }
+    }
+
+    public class Main{
+        public static void main(String[] args) {
+            System.out.println("progRAM STARTED");
+            //(Class is initialized here since a non compile time constant is called)
+            System.out.println(StaticClass.staticmembervariable);
+        }
+    }
+
+    //Prints out
+    /*progRAM STARTED
+    Static Block 
+    Non Static Block
+    Constructor Block
+    */
+    ```
+#### Some more points
+- Classes are initialized from top to bottom so field declared on top initialized before field declared in bottom.
+- ###  If Class initialization is triggered due to access of static field, only Class which has declared static field is initialized and it doesn't trigger initialization of super class or sub class even if static field is referenced by Type  of Sub Class, Sub Interface or by implementation class of interface
+- ### Interface initialization in Java doesn't cause super interfaces to be initialized.
+-  ### Static fields are initialized before non-static fields in Java.
+   Static fields are initialized during static initialization of class while non static fields are initialized when an instance of the class is created.
+- ### non-static fields are initialized by constructors in Java. sub class constructor implicitly call super class constructor before doing any initialization, which guarantees that non static or instance variables of super class is initialized before sub class.
+
+#### Some examples
+- ```NotUsed o = null;``` this class is not used, should not be initialized on hitting this code.
+- The following example ->
+  ```java
+  class Parent{
+    //Not a compile time constant since no final.
+    protected static String familyName = "Madugula";
+    {
+      System.out.println("Non static block in super class is intialized");
+    }
+    static{
+      System.out.println("static block in Super class is intialized");
+    }
+  }
+  class Child extends Parent{
+    {
+      //never called
+        System.out.println("Child non static block");
+    }
+    static {
+      //never called
+        System.out.println("Child static block");
+    }
+  }
+  class Main{
+     public static void main(String[] args) {
+        System.out.println("progRAM STARTED");
+        System.out.println(Child.familyName);
+    }
+  }
+
+  //Prints
+  /*
+  progRAM STARTED
+  static block in Super class is intialized
+  Madugula
+  */
+  ```
+  - Here class initialization occurs because static field is accessed which is not a compile time constant. had you declare "familyName" **compile time constant using final keyword in Java, class initialization of super class would not have occurred**.
+  - Only super class is initialized even though static field is referenced using sub type.
+
+- ### The following example -> Singleton Holder Pattern.
+  ```java
+  public class OuterClass {
+    public static int x = 23;
+    static {
+        System.out.println("Outer Class initialized");
+    }
+
+    private static class InnerClass {
+        static {
+            System.out.println("Inner Class initialized");
+            s = new InnerClassInitialization();
+        }
+        private static OuterClass s;
+    }
+    
+    public static OuterClass getInstance() {
+        return InnerClass.s;
+    }
+  }
+
+  public class Main{
+    public static void main(String[] args) {
+        System.out.println("progRAM STARTED");
+        //This is where Outer class was intialized.
+        System.out.println(OuterClass.x);
+        System.out.println("Break");
+        //This is where Inner class was intialized.
+        System.out.println(OuterClass.getInstance());
+    }
+  }
+  //Prints
+  /*
+  progRAM STARTED
+  Outer Class initialized
+  23
+  Break
+  Inner Class initialized
+  */
+  ```
+  - Even if the Outer Class is initialized, the InnerClasses's initialization was deferred till it was actually used. i.e on line ```System.out.println(OuterClass.getInstance());```
 
 ## Constructor
 - Use IntelliJ's Generate to generate code for constructors.
@@ -164,7 +310,7 @@
   interface Session extends Serializable, Clonnable{ }
   ```
 
-- In java 8 and above you can define a body inside interface if the method is static/ default.[Link](https://stackoverflow.com/questions/22713652/can-an-interface-method-have-a-body)
+- In java 8 and above you can define a body inside interface if the method is static/ default.[Link](https://stackoverflow.com/questions/22713652/can-an-interface-method-have-a-body). But these static methods cannot be overridden just like any other class.
 
 #### Some design points
 - Very useful for declaring Constants since all variables are implicitly final public variable.
@@ -247,6 +393,7 @@
     FS = new System.IO.FileStream("C:\\temp.txt", System.IO.FileMode.Open);
   ```
   Above code, create a variable FS to hold a new object and then assign a new object to the variable. Here type is known before the variable is exercised during run-time, usually through declarative means. The FileStream is a specific object type, the instance assigned to FS is early bound. Early Binding is also called static binding or compile time binding.
+  - ### static, private and final methods and variables are resolved using static binding which makes there execution fast because no time is wasted to find correct method during runtime.
 
 ### Late Binding (Dynamic Binding)
   - Late binding functions, methods, variables and properties are detected and checked only at the run-time. It implies that the compiler does not know what kind of object or actual type of an object or which methods or properties an object contains until run time. The biggest advantages of Late binding is that the Objects of this type can hold references to any object, but lack many of the advantages of early-bound objects.
@@ -258,6 +405,8 @@
 
   - Above code does not require a reference to be set beforehand, the instance creation and type determination will just happen at runtime.
   - ### It is important to note that the Late binding can only be used to access type members that are declared as Public. Accessing members declared as Friend or Protected Friend resulted in a run-time error.
+  - Static Binding uses type, while dynamic binding uses actual object to bind. 
+  
 
 ## Nested Classes
 - The Java programming language allows you to define a class within another class. Such a class is called a nested class.
@@ -437,8 +586,230 @@ public enum SitePointChannel {
 - ### SomeClass.class
 
 
+# Collections 
+
+## HashMap
+- It uses a tree instead of linkedlist to make sure in worst case item retrieval is O(log(n)) for collisions.
+- Accepts null
+  ```java
+    HashMap<Integer, String> hashMap = new HashMap<Integer, String>();
+    hashMap.put(null, "value");
+    System.out.println(hashMap.get(null));
+    //Prints
+    //"value"
+    ```
+- ### HashMap in Java stores both key and value object as Map.Entry in a bucket.
+
+- ### Map.Entry has the following fields ex->
+  ```java
+  {
+    int hash = 11314241,
+    Key key = {"Manish"},
+    Integer value = 24,
+    Node next = null
+    //If tree is used left and right nodes.
+  }
+  ```
+  ![](res/hashmap_java.jpg)
+- ### HashMap is not thread safe.
+- To be a key hashmap has to implement both hashCode() and equals method( to resolve collisons).
+- When we pass Key and Value object  to put() method on Java HashMap, HashMap implementation calls **hashCode** method on Key object and applies returned hashcode into its own hashing function to find a bucket location for storing Entry object. Objects like String, Integer, and other wrapper classes (Double) are good candidates for key since they are immutable and also implement the hashCode method.
+- **Your non immutable custom object can also be the key if it implements the hashCode and equals contract and a few fields which are used to calculate the hashCode implementation for you object are defined final i.e its hashCode should not vary once the object is inserted into Map. If the custom object is Immutable than this will be already taken care because you can not change it once created.**
+
+
+### Rehashing / Exceeding Load Factor
+- If a hashmap's size exceeds a given threshold which is the **load factor**, say .75, it will re-size itself, creating a new array of buckets, twice the size of the previous bucket array and then **it starts putting old elements in the new bucket array.** This process is called **Rehashing**. The HashMap cannot be used in a multithreaded environment, since if 2 threads trigger rehashing this can lead to race conditions.
+
+  ### ```capacity = number of buckets * load factor```
+
+[Working of hashmap](https://www.geeksforgeeks.org/internal-working-of-hashmap-java/#:~:text=As%20HashMap%20also%20allows%20null,null%20will%20always%20be%200.&text=hashCode()%20method%20is%20used,of%20object%20in%20integer%20form.&text=In%20HashMap%2C%20hashCode()%20is,and%20therefore%20calculate%20the%20index.)
+## HashTable
+- HashTable doesn't accept null
+  ```java
+  Hashtable<Integer, String> hashTable = new Hashtable<Integer, String>();
+  hashTable.put(null, "342");
+  //Exception -> java.lang.NullPointerException
+  ```
+
+- ### HashMap is thread safe.
+
+
+## Concurrent HashMap
+
+
+# JVM
+[Link for video](https://www.youtube.com/watch?v=ZBJ0u9MaKtM&t=2s)
+![JVM](res/JVM_java.PNG)
+## Class Loader
+
+![Class-Loader](res/class_loader_java.PNG)
+
+## Runtime Data Areas
+![Runtime Data Areas](res/method_heap_area_java.PNG)
+![Runtime Data Areas](res/register_stack_java.PNG)
+
+### Method Area / Perm Gen Space (JAVA-8 Metaspace) (Shared - Not Thread Safe) 
+- (Shared - Not Thread Safe)
+- class/static variables
+- byte code
+- class level constant pool
+- ?reflection uses this area.
+- #### Moved to metaspace in java 8, native OS Memory, as much memory/virtual memory as there is available for operating system.
+- before java 8 -> (64 MB - Default) change using -XX:MaxPermSize, if low perm size you get java.lang.OutOfMemoryError:PermGen
+
+### Heap (Shared - Not Thread Safe)
+- (Shared - Not Thread Safe)
+- Object data is stored.
+- Every time you instantiate an object your object is stored in heap.
+- Instance variables etc.
+- Tuned using -Xms (Minimum) and -Xmx (Maximum)
+- Default Xms is 1/4 of memory.
+
+### PC Register (Isolated Per Thread) i.e Thread Safe
+- Contains the Program counter, i.e pointer to the next instruction to be executed per thread, In image above T1 is program counter for thread 1.
+
+### Java Stack (Isolated Per Thread) i.e Thread Safe
+- Contains stack frame corresponding to current method execution per thread. In above image, T1 has 3 methods, method 1 calling method 2 and it calling method 3 in turn.
+- local variables inside a method.
+- operand stacks/ scratch area.
+- parameters, return values.
+- For each thread we have a unique stack.
+- Depth controlled using -Xss. If too much stack then we get StackOverFlow Error.
+
+### Native Method Stack (Isolated Per Thread) i.e Thread Safe
+Suppose you are trying to load a dll, and calling a method inside that dll, we use Native Method Stack.
+
+## Execution Engine
+![Execution Engine](res/execution_engine_java.PNG)
+
+### Interpreter
+- Takes bytecode, looks at it and finds out what native operation has to be done and executes that native operation using Native Method Interface(JNI) and native methods are in .dll/.so files.
+### Just in Time Compiler (JIT)
+- JIT Compiler on the fly, compiles the repeated code (hotspots) (so they won't be interpretted again and again) to native machine code.
+### Hotspot Profiler/VM
+- It keeps the eye on bytecode that is running and identifies hotspots for use by the JIT Compiler.
+### Garbage collector
+- Cleans up unused classes, objects in memory areas.
+
+
+# String
+
+- Backed by character array.
+- It is immutable ```s1.toUpperCase()``` doesn't modify the string s1 but returns a new String with upperCase letters.
+- Using code like ```String s = "This " + 20 + "is" + Boolean.valueOf(true)"; ``` was discouraged since these kinds of statements lead to creation of lots of intermediate String objects. This issue is no longer an issue since these statements are now implemented using StringBuilder.
+
+## String Pool
+- ### Strings are stored in a separate memory pool in permGen space(<Java 1.7) or main heap(>=Java1.8) called string pool. Each string you create is cached/interned if it is created using string literal.
+  ```java
+  //Creating string using a string literal. 
+  String s1 = "Hello";  //Caches the s1 object.
+  String s2 = "Hello"; //JVM, searches the permGen space to see if it already has "Hello" object, and returns its reference if it is found.
+  ``` 
+  Both s1 and s2 in above code point to same object. You can test this by checking ```s1==s2```.
+- ### Strings created using new keyword/ constructor are not interned
+  ```java
+  String s1 = "Hello";
+  String s2 = new String("Hello"); // Not gonna search for the cached string.
+  System.out.println("are references equal? :" + (s1 == s2).toString()); //Prints false.
+  ```
+  s1 and s2 are not pointing to same object.
+
+
+- ### You can explictly tell JVM to intern the object created using new by using intern keyword.
+  ```java
+  String s1 = "Hello";
+  String s2 = new String("Hello").intern();
+  s1 == s2 //prints true.
+  ```
+
+## Why Strings are immutable
+- To preserve the strings cached in string pool, it is restricted to modify the string since that same string object might be being used in multiple other places and changing it will lead to unexpected results.
+- By making it immutable, Strings are immutable.
+- Since Strings are immutable, their hashcode are cached(inside object itself) and this improves performance.
+
+## Useful Methods
+### indexOf
+- Used to find the index of substring.
+- Use indexOf(substring, fromIndex) to find additional occurance of the substring. By default returns the first found index.
+
+### lastIndexOf
+- Find the last index of a substring in a string.
+
+### contains
+- boolean, if a given string contains a substrings.
+
+### substring
+- returns a new string which is a substring of the given string.
+  ```java
+    s1.substring(startIndex,endIndex);
+  ```
+- ### endIndex is non inclusive
+- ### Pecular behavior of substring is that if startIndex/endIndex is too large it throws arrayIndexOutOfBounds Exception. But if the startIndex == length of string, it doesn't throw an exception just returns an empty string. 
+- Till Java 1.7, substring operation was a source of memory leak. The substring method was actually storing the reference of the original string and was using offset parameter in String to return substring.
+
+## Regular Expressions
+
+### matches
+
+
+### Find occurances of a pattern in a string using regular expression
+```java
+        String s = "HelloHelloafsdafa fasfasfasfHellohello";
+        Pattern pattern = Pattern.compile("(H|h)ello");
+        Matcher matcher = pattern.matcher(s);
+        int occurances =0;
+        while (matcher.find()){
+            occurances++;
+        }
+        System.out.println(occurances); //Prints 4
+```
+
+## Good Practises
+- If you are trying to compare 2 strings, one of which can be null(Maybe a return value from other function). Compare using the other String.
+  ```java
+  class Main{
+    static final SUCCESS = "success";
+
+    void process(){
+
+      string s = getString(); // may return null
+      if(SUCCESS.equal(s)){ //Instead of s!=null && s.equal(SUCCESS)
+        ...
+      }
+      else{
+        ...
+      }
+
+    }
+    String getString(){
+      return null;
+    }
+
+  }
+  ```
+
+- String is not a good way to store passwords, since string are created and cached in string pool for some time. Use a char array, and after you are done using the password, set char array elements to 0.
+
+
+# StringBuffer
+- mutable character array, similar to strings.
+- synchronised implementation.
+
+
+# StringBuilder
+- not synchronised.
+- Use stringBuilder when you want to concat large number of strings or do lots of changes to string.
+## append
+- Example ->
+  ```java
+    StringBuilder s = new StringBuilder("This ").append(20).append("is").append(true);
+  ```
+## concat
+
+
 
 # To read
+
 - https://javarevisited.blogspot.com/2012/05/how-to-access-private-field-and-method.html
 - https://stackoverflow.com/questions/596462/any-reason-to-prefer-getclass-over-instanceof-when-generating-equals
 - https://javarevisited.blogspot.com/2011/04/top-10-java-serialization-interview.html

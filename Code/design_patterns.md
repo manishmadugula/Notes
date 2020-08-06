@@ -144,8 +144,8 @@ ref-> https://singhajit.com/filter-design-pattern/
 
 A Singleton class can be implemented in 2 ways, lazy loading or eager loading.
 
-### Lazy Loading
-### Static Class Singleton Holder (Best way for lazy)
+### Lazy Loading (Singleton is initialized when the getInstance is called, not when class is first initialized.)
+### 1. Static Class Singleton Holder (Best way for lazy)
   ```java
   public class Singleton {
     private static class LazyLoader {
@@ -177,10 +177,11 @@ Few important things to keep in mind in this pattern
 - only nested classes can have static keyword in their class defination.
 -  The nested class is not loaded until some thread references one of its fields or methods
 - See Nested in java.md for more information.
+- See Class Initialization in java.md 
 - the class initialization phase is guaranteed by the JLS (Java Language Specification) to be serial
 
 
-### Double Check Lock with volatile (Anti Pattern)
+### 2. Double Check Lock with volatile (Anti Pattern)
 ```java
 public class Singleton{
   private volatile static Singleton _instance;
@@ -209,7 +210,10 @@ public class Singleton{
 - There is double check in case another thread was waiting while the original thread was initializing so once that new thread acquires the lock it should recheck to see if any other thread already initialized it.
 - Without volatile modifier it's possible for another thread in Java to see half initialized state of _instance variable, but with volatile variable guaranteeing happens-before relationship, all the write will happen on volatile _instance before any read of _instance variable. 
 
-### Enums (Best overall)
+
+### Eager Loading (Singleton is initialized when the class is first intialized to not when the getInstance is called.)
+
+### 1. Enums (Best overall)
 ```java
   public enum EasySingleton{
       INSTANCE;
@@ -225,18 +229,16 @@ public class Singleton{
     .
   }
 ```
-
+- Have a look at enums/enums as class in java.md.
 
 #### Advantages
 - Easiest to write
-- Lazy loaded, the singleton will be initialised when the enum class is loaded, i.e. the first time enum class is referenced in your code.
 - Enum Singletons handled Serialization by themselves
 - Creation of Enum instance is thread-safe, reatino of Enum instance is thread-safe by default you don't need to worry about double checked locking.
 #### Disadvantages
 - Can't be inherited or inherit from something, not a class.
 
-### Eager Loading
-### Static factory method
+### 2. Static factory method
   - thread safe (the class initialization phase is guaranteed by the JLS (Java Language Specification) to be serial)
   ```java
   public class Singleton{
