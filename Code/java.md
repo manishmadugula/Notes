@@ -1,3 +1,112 @@
+- [Datatypes](#datatypes)
+  - [Primitive Datatypes](#primitive-datatypes)
+- [Access Modifiers](#access-modifiers)
+  - [For Classes and Interfaces.](#for-classes-and-interfaces)
+  - [For Methods](#for-methods)
+- [Non Access Modifiers](#non-access-modifiers)
+  - [Static](#static)
+    - [Static Variable](#static-variable)
+    - [Static Methods](#static-methods)
+    - [Static class](#static-class)
+    - [Static and non Static initialization blocks](#static-and-non-static-initialization-blocks)
+  - [Final](#final)
+    - [Instance Variable](#instance-variable)
+    - [For Variable](#for-variable)
+    - [For Method](#for-method)
+    - [For Class](#for-class)
+- [Abstract](#abstract)
+  - [Method](#method)
+  - [Class](#class)
+- [Object Oriented Programming](#object-oriented-programming)
+  - [Class Initialization](#class-initialization)
+    - [When is a class loaded in java](#when-is-a-class-loaded-in-java)
+    - [When is a class initialized](#when-is-a-class-initialized)
+    - [How is a class initialized](#how-is-a-class-initialized)
+      - [If static initialization](#if-static-initialization)
+      - [Some more points](#some-more-points)
+      - [Some examples](#some-examples)
+  - [Constructor](#constructor)
+  - [this and super](#this-and-super)
+  - [Inheritance](#inheritance)
+  - [Abstraction](#abstraction)
+    - [Abstract Classes](#abstract-classes)
+      - [Abstract Classes and static methods](#abstract-classes-and-static-methods)
+      - [Abstract Classes and constructor](#abstract-classes-and-constructor)
+    - [Interfaces](#interfaces)
+      - [Some design points](#some-design-points)
+      - [Marker Interfaces](#marker-interfaces)
+    - [Abstract Classes vs Interfaces](#abstract-classes-vs-interfaces)
+  - [Encapsulation](#encapsulation)
+    - [Abstraction vs Encapsulation](#abstraction-vs-encapsulation)
+  - [Polymorphism](#polymorphism)
+    - [Method Overriding](#method-overriding)
+    - [Method Overloading](#method-overloading)
+    - [Early Binding (Static binding)](#early-binding-static-binding)
+    - [Late Binding (Dynamic Binding)](#late-binding-dynamic-binding)
+  - [Nested Classes](#nested-classes)
+    - [Reason to use nested classes](#reason-to-use-nested-classes)
+    - [Types of Nested Classes](#types-of-nested-classes)
+      - [Static Nested Classes](#static-nested-classes)
+      - [Inner Class/ Non Static Nested Class.](#inner-class-non-static-nested-class)
+  - [Accessors - Getters and Setters](#accessors---getters-and-setters)
+  - [Enums in Java](#enums-in-java)
+    - [Advantages](#advantages)
+    - [Enums as fixed number of constants](#enums-as-fixed-number-of-constants)
+    - [Enums as a class - Important](#enums-as-a-class---important)
+      - [Methods in enum](#methods-in-enum)
+      - [Enums with Fields (IMPORTANT)](#enums-with-fields-important)
+      - [Enums with Methods](#enums-with-methods)
+  - [Type of class and object.](#type-of-class-and-object)
+- [Collections](#collections)
+  - [HashMap](#hashmap)
+    - [Rehashing / Exceeding Load Factor](#rehashing--exceeding-load-factor)
+    - [```capacity = number of buckets * load factor```](#capacity--number-of-buckets--load-factor)
+  - [HashTable (Deprecated)](#hashtable-deprecated)
+  - [Concurrent HashMap](#concurrent-hashmap)
+    - [You can also deal with such situation using replace API on concurrentHashMap which will update the hashMap with newValue only if the oldValue matches the currentValue.](#you-can-also-deal-with-such-situation-using-replace-api-on-concurrenthashmap-which-will-update-the-hashmap-with-newvalue-only-if-the-oldvalue-matches-the-currentvalue)
+  - [LinkedHashMap](#linkedhashmap)
+  - [TreeMap](#treemap)
+  - [ConcurrentSkipListMap](#concurrentskiplistmap)
+  - [IdentityHashMap](#identityhashmap)
+  - [EnumMap](#enummap)
+    - [ConcurrentModificationException](#concurrentmodificationexception)
+  - [WeakHashMap](#weakhashmap)
+  - [SynchronizedMap](#synchronizedmap)
+- [JVM](#jvm)
+  - [Class Loader](#class-loader)
+  - [Runtime Data Areas](#runtime-data-areas)
+    - [Method Area / Perm Gen Space (JAVA-8 Metaspace) (Shared - Not Thread Safe)](#method-area--perm-gen-space-java-8-metaspace-shared---not-thread-safe)
+    - [Heap (Shared - Not Thread Safe)](#heap-shared---not-thread-safe)
+    - [PC Register (Isolated Per Thread) i.e Thread Safe](#pc-register-isolated-per-thread-ie-thread-safe)
+    - [Java Stack (Isolated Per Thread) i.e Thread Safe](#java-stack-isolated-per-thread-ie-thread-safe)
+    - [Native Method Stack (Isolated Per Thread) i.e Thread Safe](#native-method-stack-isolated-per-thread-ie-thread-safe)
+  - [Execution Engine](#execution-engine)
+    - [Interpreter](#interpreter)
+    - [Just in Time Compiler (JIT)](#just-in-time-compiler-jit)
+    - [Hotspot Profiler/VM](#hotspot-profilervm)
+    - [Garbage collector](#garbage-collector)
+- [String](#string)
+  - [String Pool](#string-pool)
+  - [Why Strings are immutable](#why-strings-are-immutable)
+  - [Useful Methods](#useful-methods)
+    - [indexOf](#indexof)
+    - [lastIndexOf](#lastindexof)
+    - [contains](#contains)
+    - [substring](#substring)
+  - [Regular Expressions](#regular-expressions)
+    - [matches](#matches)
+    - [Find occurances of a pattern in a string using regular expression](#find-occurances-of-a-pattern-in-a-string-using-regular-expression)
+  - [Good Practises](#good-practises)
+- [StringBuffer](#stringbuffer)
+- [StringBuilder](#stringbuilder)
+  - [append](#append)
+  - [concat](#concat)
+- [Java Language Features](#java-language-features)
+  - [Weak Reference](#weak-reference)
+  - [Soft Reference](#soft-reference)
+  - [User Input](#user-input)
+- [To read](#to-read)
+
 # Datatypes
 ## Primitive Datatypes
 - Byte -> 1 byte -128 to 127
@@ -84,20 +193,6 @@
 ## Class
 - Class having one or more abstract method has be declared abstract.
 - Any class extending the abstract class has to implement all its methods else be declared abstract itself.
-
-# User Input
-- The Scanner.next()/ nextInt() won't consume the newline character so to use nextLine after nextInt you need to first consume newline by an additional nextLine.
-
-- ```java 
-  String text = new Scanner( source ).useDelimiter("\\A").next();
-  ```
-    One line, one class. The only tricky is to remember the regex ```\A```, which matches the beginning of input. This effectively tells Scanner to tokenize the entire stream, from beginning to (illogical) next beginning. As a bonus, Scanner can work not only with an InputStream as the source, but also a File, Channel, or anything that implements the new java.lang.Readable interface. For example, to read a file:
-
-    ```java
-    String text = new Scanner( new File("poem.txt") ).useDelimiter("\\A").next();
-    ```
-
-    you can accommodate a specific character set with Scanner example you can pass a charset to the constructor.
 
 # Object Oriented Programming
 
@@ -623,7 +718,7 @@ public enum SitePointChannel {
   ### ```capacity = number of buckets * load factor```
 
 [Working of hashmap](https://www.geeksforgeeks.org/internal-working-of-hashmap-java/#:~:text=As%20HashMap%20also%20allows%20null,null%20will%20always%20be%200.&text=hashCode()%20method%20is%20used,of%20object%20in%20integer%20form.&text=In%20HashMap%2C%20hashCode()%20is,and%20therefore%20calculate%20the%20index.)
-## HashTable
+## HashTable (Deprecated)
 - HashTable doesn't accept null
   ```java
   Hashtable<Integer, String> hashTable = new Hashtable<Integer, String>();
@@ -632,9 +727,112 @@ public enum SitePointChannel {
   ```
 
 - ### HashMap is thread safe.
+- ### Has synchronised keyword on all public methods. So it is going to cause overhead on read and writes to maps. 
 
 
 ## Concurrent HashMap
+- Reads don't require a lock, so full concurrency during retrieval. Most retrieval operations are not blocked even if other threads are writing to it, unless both read and write are in the same segment. 
+- Writes require the lock at a granular level called segments, this makes sures reads are rarely blocked.
+- ### Does not fail-fast. Won't cause ConcurrentModificationException (Look at EnumMap).
+- Null key isn't allowed, unlike HashMap since, on map.get(null) returns null, it is not sure, if null is mapped to null value or if null is not mapped. In HashMap it is allowed since we can use contains() call to check it it has value, but in concurrent Map values can changes in between API calls so null isn't allowed.
+- No guarantee on operation times, can be O(Log(N)) sometimes during collision.(Trees used instead of linked list).
+- Multiple operations are not atomic. Will still need to use synchronized/ Atomic Types sometimes.
+  - Say we are trying to run the following method in multiple threads
+  ```java
+
+    static Map<String, Integer> orders = new ConcurrentHashMap<>();
+    
+    
+    //Not thread safe
+    static void processOrder(){
+      for(String city : orders.keySet()){
+        for(int i=0; i<50;i++){
+          //The combination of below 2 operations are not atomic.
+          Integer x = orders.get(city);
+          //another thread can overwrite city's value before we are going to write to it.
+          orders.put(city, x+1);
+        }
+      }
+    }
+  ```
+
+  This causes synchronization issues, one easy fix is to just write get and put in synchornized block, instead for incrementing it you can use AtomicInteger.getAndIncrement() operation which is more performant and also atomic.
+  ```java
+  static Map<String, AtomicInteger> orders = new ConcurrentHashMap<>();
+    
+    
+  //thread safe
+  static void processOrder(){
+    for(String city : orders.keySet()){
+      for(int i=0; i<50;i++){
+        //Atomic operation.
+        orders.get(city).getAndIncrement();
+        
+      }
+    }
+  }
+  ```
+  ### You can also deal with such situation using replace API on concurrentHashMap which will update the hashMap with newValue only if the oldValue matches the currentValue.
+  ```replace(K key, V oldValue, V newValue)```
+
+
+
+## LinkedHashMap
+- ### It is similar to hashMap, but with Iteration guaranteed to be in order of insertion order.
+- Maintains a doubly linked list to keep track of insertion order.
+
+## TreeMap
+- Iteration is ordered according to natural sorted order
+- ### Keys should implement Comparable if they are Custom Object. Else exception will be thrown.(ClassCastException). You can instead pass a custom comparator in constructor.
+- Uses red-black tree to make sure bst is balanced.
+- Also implements methods which returns the closest match to the key.
+- Log(N) is complexity
+- Implementation of SortedMap and NavigableMap Interfaces
+
+## ConcurrentSkipListMap
+- A scalable concurrent implementation of SortedMap and ConcurrentNavigableMap
+- This is equivalent of TreeMap in concurrent world.
+- Guarantees O(Log(N)).
+- Parallel reads are very rarely blocked, and writes only lock on segments. Just like ConcurrentHashMap
+- Keys sorted on natural order.
+
+## IdentityHashMap
+- Instead of .equals method, it uses "==" operator to check implement reference equality.
+- not synchronised
+- Uses System.identityHashCode(key) instead of key.hashCode().
+- ### The memory footprint is smaller than HashMap since there are no Entry/Nodes, this is useful incase of dealing with interned strings, since all strings which are equal refer to same object unless created using new.
+
+## EnumMap
+- Takes enum as a key
+- Null key is not permitted 
+- not synchronised
+- ### Does not fail-fast. Won't cause ConcurrentModificationException
+### ConcurrentModificationException
+- It happens when a read is happening from a Map, and if the currentThread/ someOtherThread is also trying to write to the map, the ConcurrentModificationException comes.
+- #### It can also come in single threaded application
+  ```java
+  Map<String,Integer> m = new HashMap<String,Integer>();
+  m.put("user1",2);
+  m.put("user2",2);
+  m.put("user3",2);
+  Iterator<String> iter = m.keySet().iterator();
+  while(iter.hasNext())
+  {
+      iter.next();
+      m.put("user7",6);
+  }
+  //Causes Exception, won't cause exception in case of EnumMap.
+  ```
+
+## WeakHashMap
+- Elements in weak hashmap can be reclaimed by the garbage collector. The weak hashmap has the weak reference to the object, and if there are no other strong reference to the object then garbage collector will destroy that item.
+- Uses in case of lookup/cache. As the lifetime of cache entries are determined by external refernces to the key.
+
+## SynchronizedMap
+- ### A convinient decorator to create a fully synchronized map.
+- It is gonna make all the public methods synchronised and thus is similar to HashTable. 
+- This is not recommended.
+
 
 
 # JVM
@@ -805,6 +1003,30 @@ Suppose you are trying to load a dll, and calling a method inside that dll, we u
     StringBuilder s = new StringBuilder("This ").append(20).append("is").append(true);
   ```
 ## concat
+
+
+
+# Java Language Features
+## Weak Reference
+- If no other reference is available for the object pointed by weak reference, the object is marked for garbage collection.
+
+## Soft Reference
+- Like weak reference, but the garbage collection will wait till there is need to perform garbage collection, if heap is getting full.
+
+## User Input
+
+- The Scanner.next()/ nextInt() won't consume the newline character so to use nextLine after nextInt you need to first consume newline by an additional nextLine.
+
+- ```java 
+  String text = new Scanner( source ).useDelimiter("\\A").next();
+  ```
+    One line, one class. The only tricky is to remember the regex ```\A```, which matches the beginning of input. This effectively tells Scanner to tokenize the entire stream, from beginning to (illogical) next beginning. As a bonus, Scanner can work not only with an InputStream as the source, but also a File, Channel, or anything that implements the new java.lang.Readable interface. For example, to read a file:
+
+    ```java
+    String text = new Scanner( new File("poem.txt") ).useDelimiter("\\A").next();
+    ```
+
+- you can accommodate a specific character set with Scanner example you can pass a charset to the constructor.
 
 
 
