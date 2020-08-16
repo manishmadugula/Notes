@@ -194,10 +194,13 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   - Valid Parenthesis String
   - Matrix Multiplication
 
+- Essence of Knapsacks 
+  - https://leetcode.com/problems/ones-and-zeroes/
 
-- Space can be heavily optimized in case in dp solution the present state only depends on the previous state. You only have 2 arrays  and toggle between them using flag = flag^1
+- Space can be heavily optimized in case in dp solution the present state only depends on the previous state. You only have 2 arrays  and toggle between them using flag = flag^1. Sometimes you can just do it in one array, just overwrite the previous value using the  current value. Doing this however you loose the chance to backtrack to get the steps that produce the optimum solution.
   - https://www.youtube.com/watch?v=UFMOzkUFEW4
   - https://leetcode.com/problems/uncrossed-lines/
+
 
 
 - Not apparent problems
@@ -537,6 +540,8 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 
 
 # Upper Bound, Lower Bound and Binary Search
+  ## This article superseeds the below discussion [Link](https://leetcode.com/discuss/general-discussion/786126/python-powerful-ultimate-binary-search-template-solved-many-problems)
+
   #### For a simple binary search always use the below structure.
   ```c++
   int start = start_of_search_range;
@@ -551,6 +556,22 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   return -1; //Can't find x
   ```
 
+  #### To make sure we adhere to the template in the article
+  ```c++
+  int start = start_of_search_range;
+  int end = end_of_search_range;
+  while(start<end){
+    int mid = start + (end-start)/2;
+    if(mid>=target){
+      end = mid;
+    }
+    else{
+      start = mid+1;
+    }
+  }
+  return start == mid ? start : -1;
+  ```
+
   #### For Lower Bound (First element greater or equal to the given element).
   ```c++
   int start = start_of_search_range;
@@ -560,13 +581,13 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   // for the return value.
   {
     int mid = start + (end-start)/2;
-    if(mid<x){
-      start=mid+1;//If x is greater than mid. The search space cannot include mid
-      // and is higher than mid.
+    if(mid>=target){
+      end = mid;//If mid is equal or greater than target, then elements to right of mid are 
+      //not the first since, mid is already greater or equal.  But mid can be the lower bound.
     }
     else{
-      end = mid;//If mid is equal or greater than x, then elements to right of mid are 
-      //not the first since, mid is already greater or equal.  But mid can be the upper bound.
+      start=mid+1;//If target is greater than mid. The search space cannot include mid
+      // and is higher than mid.
     }
   }
   return start; //Takes care of case where lower bound isn't even present in array/
@@ -582,13 +603,13 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
   //write condition for the return value.
   {
     int mid = start + (end-start)/2;
-    if(mid<=x){
-      start = mid+1;//If x is greater than or equal to mid. The search space cannot include 
-      //mid and is higher than mid. 
-    }
-    else{
+    if(mid > target){
       end = mid; //If mid is greater than x, then elements to right of mid are not 
       //the first since, mid is already greater than x. But mid can be the upper bound.
+    }
+    else{
+      start = mid+1;//If x is greater than or equal to mid. The search space cannot include 
+      //mid and is higher than mid. 
     }
 
   }

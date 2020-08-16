@@ -85,6 +85,31 @@
     - [Just in Time Compiler (JIT)](#just-in-time-compiler-jit)
     - [Hotspot Profiler/VM](#hotspot-profilervm)
     - [Garbage collector](#garbage-collector)
+- [Garbage Collector](#garbage-collector-1)
+  - [Types of garbage collections](#types-of-garbage-collections)
+  - [Based on hypothesis](#based-on-hypothesis)
+  - [Terminology](#terminology)
+    - [Live Objects](#live-objects)
+    - [Dead Objects](#dead-objects)
+  - [Steps](#steps)
+    - [Mark](#mark)
+    - [Sweep](#sweep)
+    - [Compaction](#compaction)
+  - [Heap space division](#heap-space-division)
+    - [Young Generation](#young-generation)
+      - [Eden Space](#eden-space)
+      - [Survivor Space](#survivor-space)
+    - [Old/ Tenured Generation](#old-tenured-generation)
+  - [GC Types based on implementation.](#gc-types-based-on-implementation)
+    - [Performace of GC](#performace-of-gc)
+      - [Latency](#latency)
+      - [Throughput](#throughput)
+    - [Serial GC](#serial-gc)
+    - [Concurrent GC (Low Latency GC)](#concurrent-gc-low-latency-gc)
+    - [Parallel GC](#parallel-gc)
+    - [G1 Garbage First GC (Java 9 onwards default)](#g1-garbage-first-gc-java-9-onwards-default)
+  - [Finalize Method.](#finalize-method)
+  - [Debug GC](#debug-gc)
 - [String](#string)
   - [String Pool](#string-pool)
   - [Why Strings are immutable](#why-strings-are-immutable)
@@ -889,6 +914,120 @@ Suppose you are trying to load a dll, and calling a method inside that dll, we u
 ### Garbage collector
 - Cleans up unused classes, objects in memory areas.
 
+
+# Garbage Collector
+- Java provides automatic memory management using program management.
+- Garbage collection is carried by a daemon thread called Garbage collector.
+- We cannot force gc to happen (but calling System.gc() might trigger it).
+- ```java.lang.outOfMemoryError``` heap space is full. Even with Garbage Collector you can have memory leaks.
+
+## Types of garbage collections
+- There are 2 types of garbage collections, minor(eden space) and major(across the heap).
+- Both are stop the world garbage collection.
+
+## Based on hypothesis
+- Most objects soon become unreachable.
+- Objects which are going to live an extending period of time usually don't refer to freshly created objects.
+
+## Terminology
+### Live Objects
+- Reachable objects
+### Dead Objects
+- Unreachable objects
+
+## Steps
+### Mark
+- Garbage collector walks through object graph, and marks reachable object as reachable.
+
+### Sweep
+- unreachable objects are deleted.
+
+### Compaction
+- arrange everything in order, defragmentation. Make allocation contigious. Takes time.
+
+## Heap space division
+- Java garbage collectors are generational collectors.
+- Below is a diagram of heap.
+![](res/generational_collectors.jpg)
+### Young Generation
+- Place where objects are created initially.
+
+#### Eden Space
+- The space where objects are created.
+
+#### Survivor Space
+- When eden space is full, a minor garbage collection kicks in and moves reachable objects from eden to survivor space.
+- There are 2 survivor space.
+- The below pic shows the state of the heap after the first cycle of minor gc.
+![](res/gc_ani1.jpg)
+- As time passes now more objects are added to eden space and some objects in survivor space become unreachable. And when eden space becomes full again, it triggers another minor gc across eden and survivor and are moved to survivor space 2.
+![](res/gc_ani2.jpg)
+- The presence of 2 survivors spaces is to avoid an additional compaction step.
+- Similarly there is toggling/reordering of survivor spaces occurs in alternative minor gc cycle till a threshold is reached. At the end of that threshold all the survivor objects are moved to old/tenured generation.
+
+### Old/ Tenured Generation
+- Objects which survives for a long time.
+- When old generation becomes almost full/reaches a threshold ```(-XX:MaxTenuringThreshold)``` we run major gc.
+- Will block the application execution and is very heavy operation.
+
+
+
+## GC Types based on implementation.
+
+### Performace of GC
+#### Latency
+- How quickly an application responds with requested piece of data.
+- How fast a website is loaded or how fast a query is returned.
+- Application that requires high responsiveness, large pauses in time are not acceptable. 
+#### Throughput
+- Maximize the amount of work by application over a period of time.
+- Batch Processing or total db queries in an hour.
+- High pauses are acceptable. Since we focus on benchmarks over longer period of time.
+- Based on above 
+
+Based on the discussion above we should choose gc that is apt for us.
+
+### Serial GC
+- Single thread for all mark, sweep and compaction
+- Stops the world at all steps.
+- for basic application/ console apps.
+
+### Concurrent GC (Low Latency GC)
+- Performs GC along with application execution.
+- Does not wait for old generation to be full.
+- ### Stops the world only during mark/re-mark step.
+- Application demands short pauses not long pauses.
+
+### Parallel GC
+- Uses multiple cores of CPU.
+- Multiple thread doing mark/sweep/compaction.
+- It doesn't run at the same time as application.
+- ### (NOT SURE) The GC Actions stops the world at all steps but the execution is fast.
+- Doesn't trigger till GC is near full.
+- Application demands high throughput.
+
+### G1 Garbage First GC (Java 9 onwards default)
+- Tunable GC Pauses.
+- Low pauses in fragmentation
+- Parallelism and Concurrency Together
+- Better heap utilization
+- Divides the heap into small regions of memory, each of these region can be eden/survivor/tenured.
+- It dynamically selects a region to act as young generation in the next gc cycle, Regions with most unreachable places will be collected first
+
+![](res/gc_types.jpg)
+
+You can configure the gc to use in the flag passed.
+![](res/gc_flags.jpg)
+
+
+## Finalize Method.
+- This method is called when the object is garbage collected.
+- But it is not recommended to put dbconnection.close kind of the important methods. Since the object can stay in heap for a long time and the dbconnection will be consuming the memory till that time. So better to remove expensive resources once you know you no longer need it.
+- If you recreate the object during finalizer. The object is recreated and is not garbage collected, to avoid permanent object persistence there is a contract which says an object's finalizer can only be run once.
+
+## Debug GC
+- You can print details of gc using ```-Xloggc:gc.log```.
+- jvisualvm
 
 # String
 

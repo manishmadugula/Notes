@@ -87,8 +87,7 @@ To-Do
     - SpinLocks
     - Asynchronous Code vs Synchronous CompletableFuture vs Future.
     - Interview Cases from educative io course 
-    
-  - ### Garbage Collection
+
   - OOPS
     - ### Anonymous classes
     - Local classes
