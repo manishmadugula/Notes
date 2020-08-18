@@ -186,24 +186,119 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   }
 
 # Dynamic Programming
-- Unique Path - 2
+## Unique Path - 2
   - You can just create an additional row and column to deal with boundary case and that will simplify the implementation a lot.
 
-- Look at the Boolean Parenthesis problem.
+## Look at the Boolean Parenthesis problem.
   - Similar Problems
   - Valid Parenthesis String
   - Matrix Multiplication
 
-- Essence of Knapsacks 
+## Essence of Knapsacks 
   - https://leetcode.com/problems/ones-and-zeroes/
 
-- Space can be heavily optimized in case in dp solution the present state only depends on the previous state. You only have 2 arrays  and toggle between them using flag = flag^1. Sometimes you can just do it in one array, just overwrite the previous value using the  current value. Doing this however you loose the chance to backtrack to get the steps that produce the optimum solution.
+### Space can be heavily optimized in case in dp solution the present state only depends on the previous state. You only have 2 arrays  and toggle between them using flag = flag^1. Sometimes you can just do it in one array, just overwrite the previous value using the  current value. Doing this however you loose the chance to backtrack to get the steps that produce the optimum solution.
   - https://www.youtube.com/watch?v=UFMOzkUFEW4
   - https://leetcode.com/problems/uncrossed-lines/
 
 
+## Coin Change 2 vs Combination Sum IV - Loop Ordering Dilemma
+  - Coin Change 2 -> Combinations
+  - Combination Sum IV -> Permutations
 
-- Not apparent problems
+  ### Coin Change 2
+  ```c++
+      int change(int amount, vector<int>& coins) {
+        vector<int> dp(amount+1, 0);
+        dp[0] = 1;
+        for(int i=0;i<coins.size();i++){
+            for(int j=1;j<=amount;j++){
+                if(j>=coins[i]){
+                    dp[j]+=dp[j-coins[i]];
+                }
+            }
+          }
+          return dp[amount];
+      }
+  ```
+
+
+  ### Combination Sum IV
+  ```c++
+      int combinationSum4(vector<int>& nums, int target) {
+        vector<int> dp(target+1,0);
+        dp[0] = 1;
+        //order of loop different from the coin change 2.
+        //outer loop is over the target
+        for(int i=1;i<=target;i++){
+          //inner loop.
+            for(int j=0;j<nums.size();j++){
+                if(i>=nums[j]){
+                    dp[i]+=dp[i-nums[j]];                   
+                }
+            }
+          }
+          return dp[target];
+      }
+  ```
+  ### Loop Ordering matters?
+  Well, the real reason why the answer changes because of loops is because of the change in dp definition when you try to reduce the space complexity.If we define dp[i][j] as "number of ways to get sum 'j' using 'first i' coins", then the answer doesn't change because of loop arrangement.
+
+
+  So why does the answer change only when we try to reduce the space complexity?
+
+  To get the correct answer, the correct dp definition should be dp[i][j]="number of ways to get sum 'j' using 'first i' coins". Now when we try to traverse the 2-d array row-wise by keeping only previous row array(to reduce space complexity), we preserve the above dp definition as dp[j]="number of ways to get sum 'j' using 'previous /first i coins' " but when we try to traverse the 2-d array column-wise by keeping only the previous column, the meaning of dp array changes to dp[j]=**"number of ways to get sum 'j' using 'all' coins", Which is what we for the Combination Question. 
+
+  #### For Coin Change
+  dp[j]="number of ways to get sum 'j' using first i coins"
+  ![](res/Combination_Sum4-c.jpeg)
+  
+  #### For Combination Sum IV 
+  dp[j]=**"number of ways to get sum 'j' using 'all' coins"
+  ![](res/Combination_Sum4-b.jpeg)
+
+  #### Why does the above solution produce unique permutations.
+  - First Assumption -> Say you are calculating for ith target value, and assume all answers/groups for target<i comprise of unique permutation of elements.
+  - At each iteration we take a number for the given list of nums and add that to group denoted by dp[i-nums[j]] at the end. Since according to first assumption we have all unique elements in the i-nums[j] group, even the new group after adding the number (nums[j]) to dp[i-nums[j]] group will be unique.
+  - Since nums[0], nums[1], nums[2] are different, so adding these numbers to the end of each group and combining all groups also produces a unique element group.
+
+  ![](res/Combination_Sum4-a.jpg)
+
+  
+### Bottom up is not intuitive in this question. You need to implement Top down then go for bottom up. Since Top down gives TLE
+```c++
+class Solution {
+
+    int helper(int target, vector<int> &nums, vector<int> &dp){
+        
+        if(target < 0) return 0;
+
+        if(dp[target]!=-1){
+            return dp[target];
+        }
+        
+        int ans=0;
+        for(int i=0;i<nums.size();i++){
+            ans+=helper(target-nums[i], nums, dp);
+        }
+        
+        return ans;
+    }
+    
+public:
+    int combinationSum4(vector<int>& nums, int target) {
+        vector<int> dp(target+1,-1);
+        dp[0] = 1;
+        return helper(target, nums, dp);
+    }
+};
+```
+
+
+
+
+
+## Not apparent problems
   - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/
     - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/discuss/192341/Super-Intuitive-solution(recursive-%2B-memoization)
 

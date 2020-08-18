@@ -35,6 +35,195 @@
 # Thread Local
 
 
+# Blocking Queue
+
+
+# CountDownLatch
+ 
+
+# Rentrant Lock
+
+We can use any object as a lock in synchronised block and use wait and notify inside the synchronised block to communicate between threads and notify the threads.
+```java
+    public class ObjectLockExample {
+        static Object lock = new Object();
+        public static void main(String[] args) throws InterruptedException {
+            ExecutorService service = Executors.newFixedThreadPool(2);
+            service.submit(new Runnable(){
+                @Override
+                public void run() {
+                    synchronized (lock) {
+                        try {
+                            System.out.println("Waits till enter is pressed");
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+
+            service.submit(new Runnable(){
+                @Override
+                public void run() {
+                    synchronized (lock) {
+                        System.out.println("Press enter key to proceed");
+                        new Scanner(System.in).nextLine();
+                        lock.notify();
+                        System.out.println("THis has to complete first");
+                    }
+
+                }
+            });
+            service.shutdown();
+            service.awaitTermination(10000, TimeUnit.SECONDS);
+        }
+    }
+```
+
+We can also use specialized locks known as rentrant locks and Conditions class to do the exact same thing. Instead of calling wait and notify on the Object (Lock) itself, we call await and signal on Condition Object while using reentrant locks.
+
+## While using rentrant locks remember to unlock in the finally block.
+```java
+public class ReentrantLockExample {
+
+    static Lock lock = new ReentrantLock();
+    static Condition cv = lock.newCondition();
+
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        service.submit(new Runnable(){
+            @Override
+            public void run() throws InterruptedException {
+                lock.lock();
+                try{             
+                    System.out.println("Waits till enter is pressed");
+                    cv.await();
+                    System.out.println("Lock is acquired again");
+                }
+                finally{
+                    lock.unlock();
+                }
+            }
+        });
+
+        service.submit(new Runnable(){
+            @Override
+            public void run() throws InterruptedException {
+                lock.lock();
+                try{
+                    System.out.println("Press enter key to proceed");
+                    new Scanner(System.in).nextLine();
+                    cv.signal();
+                    System.out.println("THis has to complete first");
+                }
+                finally{
+                    lock.unlock;
+                }
+            }
+        });
+        service.shutdown();
+        service.awaitTermination(10000, TimeUnit.SECONDS);
+    }
+}
+```
+
+- ### Rentrant Locks are called rentrant since they allow us to get a lock on the same lock object multiple times, you also need to call the unlock the same number of times. There is a method ```lock.getHeldCount()``` it will return the number of times the lock method was called. 
+
+- Rentrant Locks(explicit lock) also allow locking and unlocking in any scopes in any order. Unlike using synchronised keyword(implicit lock)
+
+## DeadLock and tryLock
+
+**Rentrant locks have a method called tryLock**, which can be used to elegantly deal with deadlock situations. Say 2 threads T1 and T2 want to acquire 2 locks l1 and l2. A dead lock occurs when they try to acquire locks in different order than the other thread. T1 acquires l1 first and then l2, T2 acquires l2 first then l1. In such situation if l1 is acquired by T1 and l2 by T2 then the program is in state of deadlock. We can deal with deadlock by trying to acquire both locks together, if not don't acquire any. We do that using the tryLock method of rentrant locks as follows.
+### Look at the implementation of acquire locks, it is important. The While true part.
+
+```java
+    static Lock l1 = new ReentrantLock();
+    static Lock l2 = new ReentrantLock();
+
+    static void acquireLock(Lock l1, Lock l2){
+        while(true){
+            boolean l1IsLocked = false;
+            boolean l2IsLocked = false;
+            try{
+                l1IsLocked =  l1.tryLock();
+                l2IsLocked = l2.tryLock();
+            }
+            finally {
+                if(l1IsLocked && l2IsLocked) return;
+                else{
+                    if(l1IsLocked) {
+                        l1.unlock();
+                    }
+                    if(l2IsLocked){
+                        l2.unlock();
+                    }
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                acquireLock(l1,l2);
+                try {
+                    System.out.println("Acquired Both Locks....");
+                }
+                finally {
+                    l1.unlock();
+                    l2.unlock();
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                acquireLock(l2,l1);
+                try {
+                    System.out.println("Acquired Both Locks....");
+                }
+                finally {
+                    l1.unlock();
+                    l2.unlock();
+                }
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+    }
+```
+
+- You can also use tryLock to not block the thread and try something else if the lock is not available.
+```java
+boolean lockAcquired = lock.tryLock();
+//Not blocked if lock not acquired.
+if(lockAcquired){
+    try{
+        //access resources
+    }
+    finally{
+        lock.unlock
+    }
+}
+else{
+    do something else.
+}
+```
+- tryLock doesn't honor fairness, even if fairness is enabled, it will barge-in and acquire the lock.
+- You can use timeout parameter in try lock to wait till a specified time to acquire lock, if not acquired by that time continue returning false.
+- You can use ```lock.isHeldByCurrentThread()``` to know if the current thread holds the lock.
+
+## Lock Fairness
+- by default the lock is unfair.
+- When multiple threads try to access a lock, they are put into a wait queue.
+- If fairness is enabled, then the lock is acquired based on first come first served basis, the first thread is poped from the queue and is assigned the lock. 
+- ```Lock lock = new RentrantLock(true)``` you can enable fairness. Default value is false.
+### Barge-in
+- When the lock is released, if fairness is disabled(default value), a thread which has just tried to acquire the lock at this time might get the lock, even though threads arriving earlier are the queue so that **we can skip the pushing new thread into queue and popping old thread step** to gain some performance benifit. This however can lead to thread   starvation. 
 
 # Executor Service
 
