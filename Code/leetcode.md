@@ -294,6 +294,14 @@ public:
 };
 ```
 
+## For Questions involving counts
+- Combination Sum IV 
+- Knight Dialer 
+- Dice Roll Simulation 
+
+We can usually solve these problems easily using top-down approach. By recursive memoization.
+Think simple working recursive solution, which satisfies all constraints of the problem. The recurse function will return the count of ways in a particular case and you need to combine all possible combinations and return the answer.
+ To memoize, think of what defines the state of each recursive call and use it to make the dp table.m
 
 
 
@@ -787,8 +795,15 @@ Similarly you can do for any truth table.
 
 
 
+# nth_element
+- Quick select algorithm.
+- ### Can find the median of sorted array in O(n) average time.
+``` std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());```
 
-
+# partial_sort
+- it returns the k smallest or k largest elements of the array using heap at the backend.
+- Useful for finding kth smallest or kth largest.
+- ``` void partial_sort (RandomAccessIterator first, RandomAccessIterator middle,                    RandomAccessIterator last, Compare comp);```
 
 
 # Important Questions

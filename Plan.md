@@ -72,9 +72,6 @@ To-Do
     - ### Blocking Queues
     - Synchronous Queue
     - Synchronized Map
-    - ### Rentrant Lock
-      - Conditionals
-      - trylock avoid deadlock.
     - ### Producer Consumer Patterns
     - ### CountDownLatch
     - ForkJoinPool

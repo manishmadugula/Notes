@@ -1,0 +1,2 @@
+# It takes O(n) time for a heap to be built and O(nlogn) for a tree
+- https://www.growingwiththeweb.com/data-structures/binary-heap/build-heap-proof/#:~:text=The%20binary%20heap%20data%20structure,%2F2%20n%2F2%20times.
