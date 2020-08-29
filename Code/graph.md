@@ -17,3 +17,43 @@
 
 ## Matching Problem.
 - Solution TMA (Stable Marriage problem).
+
+# Terminology
+## Path
+- A path (of length n) in an (undirected) graph G is a sequence of vertices {v0, v1, ..., vn-1, vn} such that there is an edge between vi and vi+1 ∀i ∈ [0..n-1] along the path.
+
+## Directed Graph
+### Degree
+- In a directed graph, we have to further differentiate the degree of a vertex v into in-degree and out-degree. The in-degree/out-degree is the number of edges coming-into/going-out-from v, respectively. For example, vertex 1 has in-degree/out-degree of 2/1, respectively.
+
+### Strongly Connected Components
+- A directed graph is strongly connected if there is a path between all pairs of vertices. 
+-  The strongly connected components of an arbitrary directed graph form a partition into subgraphs that are themselves strongly connected. 
+
+# Special Graphs
+## Tree
+- Tree is a connected graph with V vertices and E = V-1 edges,
+- acyclic,
+- ### has one unique path between any pair of vertices.
+- Usually a Tree is defined on undirected graph.
+
+## Rooted Tree
+- Tree with one of its vertex designated as root vertex is called a rooted Tree.
+
+
+- We can always transform any Tree into a rooted Tree by designating a specific vertex (usually vertex 0) as the root, and run a DFS or BFS algorithm from the root.
+
+### Binary Tree
+- A binary tree is a rooted tree in which a vertex has at most two children that are aptly named: left and right child. We will frequently see this form during discussion of Binary Search Tree and Binary Heap.
+
+### Full Tree
+- A full binary tree is a binary tree in which each non-leaf (also called the internal) vertex has exactly two children. The binary tree shown above fulfils this criteria.
+![](res/full_tree.jpg)
+
+### Complete Tree
+- A complete binary tree is a binary tree in which every level is completely filled, except possibly the last level may be filled as far left as possible. We will frequently see this form especially during discussion of Binary Heap.
+![](res/complete_tree.jpg)
+
+### Bipartite Graph
+- Bipartite graph is an undirected graph with V vertices that can be partitioned into two disjoint set of vertices of size m and n where V = m+n.
+- There is no edge between members of the same set. Bipartite graph is also free from odd-length cycle.

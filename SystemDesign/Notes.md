@@ -200,6 +200,9 @@ no-cache indicates that the cache can be maintained but the cached content is to
 ```Cache-Control: max-age=3600, no-cache, public```
 
 
+# UDP Usecases
+- For videos and real time gaming, it doesn't make sense to resend the lost packet, since on recieving it you will see things back in time so udp is a good protocol.[Link](https://www.youtube.com/watch?v=oIRkXulqJA4&list=PLIhvC56v63IJVXv0GJcl9vO5Z6znCVb1P&index=6)
+
 # Forward and Reverse Proxy
 https://roadmap.sh/guides/proxy-servers
 

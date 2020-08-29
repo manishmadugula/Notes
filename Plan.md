@@ -18,7 +18,7 @@ To-Do
 - System Design (3 months)
   - AWS (2 months)
   - Grokking the system design interview (2 weeks)
-  - Gaurav Sen's (2 day)
+  - Gaurav Sen's (1 day)
   - System Expert's (5 days)
  
   - System Design Donnemartin
@@ -55,6 +55,8 @@ To-Do
   - General Questions
   - Leadership principles
   - Story behind each principle.
+  - Algoexpert vids
+  - educative-io lessons
 
 
 - Java (2.5 months)

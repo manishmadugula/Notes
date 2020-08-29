@@ -128,6 +128,7 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
     - Refer https://stackoverflow.com/questions/2627166/difference-between-const-reference-and-normal-parameter
     - https://en.cppreference.com/w/cpp/named_req/Compare
 
+
 ## Tokenizing a string in c++
 ###  Using stringstream
   ```c++
@@ -298,17 +299,19 @@ public:
 - Combination Sum IV 
 - Knight Dialer 
 - Dice Roll Simulation 
+- Minimum swaps to make sequence increasing.
 
 We can usually solve these problems easily using top-down approach. By recursive memoization.
 Think simple working recursive solution, which satisfies all constraints of the problem. The recurse function will return the count of ways in a particular case and you need to combine all possible combinations and return the answer.
  To memoize, think of what defines the state of each recursive call and use it to make the dp table.m
 
-
+  - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/
+    - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/discuss/192341/Super-Intuitive-solution(recursive-%2B-memoization)
+  - Pretty simple if you do bottom up approach.
+  - This question was in the not apparent problem list.
 
 
 ## Not apparent problems
-  - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/
-    - https://leetcode.com/problems/minimum-swaps-to-make-sequences-increasing/discuss/192341/Super-Intuitive-solution(recursive-%2B-memoization)
 
     
 
@@ -935,6 +938,15 @@ Similarly you can do for any truth table.
 - https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/
   - Solved but too many submissions
   - corner cases a lot.
+
+- https://leetcode.com/problems/soup-servings/
+  - Couldn't Solve
+  - Very Important Question
+  - ### Will teach you about conditional probability
+    - You can't simply use (aEndCount)/(totalCount) + (abEndCount)/(totalCount)*1/2;
+    - There is a probability attached with each soup serving.
+    - There is a probability attached with each soup serving. So conditional probability rules applies. Say a person serves using 1st operation, no more soup to feed so probability of this operation is .25, now he does 3rd operation and then 1st operation probability of this happening is 0.25(For 3rd Operation)*(0.25)(For the 1st Operation) = .0625. According to your logic both these states of a becoming empty first will have equal probability which is not true.
+  - ### Also there is another concept, since it is unfeasible to maintain a dp table that huge, it is important to notice once N>very large answer is the same i.e 1.
 
 # To-Do
 
