@@ -964,6 +964,8 @@ Similarly you can do for any truth table.
   - Single Number and similar questions discussion.
   - Find the duplicate number using floyd cycle detection.
   - Subset II
+  - Last Stone Weight II
+  - Lucky Horse Prefix Sum
   - To find the time complexity in backtracking problems like Subset.
 
 

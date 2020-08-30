@@ -76,7 +76,6 @@ To-Do
     - ForkJoinPool
     - Phaser
     - CyclicBarrier
-    - ### ThreadLocal
     - ### Semaphore
     - Future
     - CompletableFuture

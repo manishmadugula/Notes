@@ -67,6 +67,8 @@
 - Garbage collector vs smart pointer 
 - webhooks
 - REST constraints and features
+- Binary stride
+- Jump Search
 
 
 

@@ -99,11 +99,150 @@ Since the instance variables(frame) has not been declared volatile or the method
 
 ### In summary, Happens before guarantee are a set of instructions to avoid instruction reordering and prevent it from breaking visibility guarantees.
 
+
+# Synchronised
+- ## Monitor object cannot be null
+- You should not use literal strings/string constants as monitor objects because of string interning.
+    ```java
+    synchronised("mon")
+    ```
+
+- Monitor object can also be thought of as lock.
+- Monitor object can be passed in constructor and shared across multiple threads, such that only one thread can get access of monitor object's lock.
+- Java synchronised block are **RENTRANT**, meaning if a thread already has hold of a lock/monitor object, it is allowed to go into blocks which also needs the same monitor object. Execution doesn't stop when you reach b().
+  ```java
+  public class RentrantExample{
+
+      public synchronised static void a(){
+          b();
+      }
+
+      public static void b(){
+          synchronised(RentrantExample.class){
+              ....
+          }
+      }
+  }
+  ```
+- There is no guarantee about the sequence in which threads get access to synchronised lock, not fair. This can lead to starvation of threads.
+
+## For static methods
+- Only one thread can access this per class.
+- monitor object is the class.
+
+```java
+public static synchronised void setObject(Object O){
+    object = O;
+}
+```
+
+or 
+
+```java
+public static void setObject(Object O){
+    synchronised(StaticSynchronisedExample.class){
+        object = O;
+    }
+}
+```
+
+## For non static methods
+- Only one thread can access this per instance.
+- There can be multiple threads accessing a non static method in a class (one for each instance).
+- "this" is the monitor object.
+```java
+public synchronised void setObject(Object O){
+    object = O;
+}
+```
+
+or 
+
+```java
+public void setObject(Object O){
+    synchronised(this){
+        object = O;
+    }
+}
+```
+
+## Using both in a class
+Say for example
+```java
+public class MixedSychExample{
+    public static Object staticObj = null;
+    public Object instanceObj = null;
+
+    public static synchronised setStaticObject(Object o){
+        staticObj = o;
+    }
+
+    public static synchronised setInstanceObject(Object o){
+        instanceObj = o;
+    }
+}
+```
+### Both the setStaticObject and setInstanceObject can be called by 2 threads parallely, since they have different monitor object. 
+
 # Volatile 
 
 
 # Thread Local
+- Use case is to have Per thread instances for memory efficiency and thread safety.
+- Say if we want to run a task 1000 times, and we use a thread pool of size 10. This task requires a SimpleDateFormat Object.
+- If we move the initialization of this SimpleDateFormatObject inside the task, the program will create 1000 objects. This causes memory issue.
+- One solution is to have a single SimpleDateFormatObject globally, but to make the program thread safe we need to have locks which will decrease performace of program.
+- The solution is to use middle ground and use ThreadLocal, one instance per thread and across each Runnable, this ThreadLocal instance is shared for all task run by a thread.
+- There is never a synchronisation issue, since each thread calls its own copy of instance.
+![](res/threadlocal1.PNG)
 
+```java
+public class ThreadLocalExample2 {
+    //Using Anonymous Class
+    public static ThreadLocal<SimpleDateFormat> dateFormatter = new ThreadLocal<>(){
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd");
+        }
+        @Override
+        public SimpleDateFormat get() {
+            return super.get();
+        }
+    };
+    public static void main(String[] args) {
+        ....
+    }
+    public static String birthDate(int userId){
+        Date birthDate = birthDateFromDB(userId);
+        final SimpleDateFormat df = ThreadLocalExample2.dateFormatter.get();
+        return df.format(birthDate);
+    }
+}
+```
+
+In Java 8 it is even more simple, **using withInitial factory** method
+```java
+
+    public static ThreadLocal<SimpleDateFormat> dateFormatter = 
+                                ThreadLocal.withInitial(()->new SimpleDateFormat("yyyy-MM-dd")); 
+```
+
+## Thread Local for per thread context.
+Say, we have a web server, and a request goes through 4 services, and throughout the request we are guaranteed that we deal with the same thread. So instead of passing the user from one service to another, we can use a ThreadLocal<User> such that for this thread, we can get a User Object for any service/task.
+
+![](res/threadlocal2.PNG)
+This time we don't know the intial value, so we set the initial value in the service1. And subsequent access of User by other Services can use this set value.
+![](res/threadlocal3.PNG)
+
+
+### This concept of ContextHolder and ThreadLocal is used throughout the Spring Framework
+- LocaleContextHolder
+- TransactionContextHolder
+- RequestContextHolder
+- SecurityContextHolder
+- DateTimeContextHolder
+
+### We need to also ensure once the request is processed, we remove the User Object in Service4 using ```UserContextHHolder.holder.remove()```
 
 # Blocking Queue
 
@@ -471,7 +610,10 @@ While Thread 2 and 4 are still working on the read lock, if another thread 5 whi
 - You can create custom executor using ThreadPoolExecutor
 - You can use any blocking queue you want even arrayblockingqueue for fixedsize task, if a task is added after the queue is full, a new thread is created.
     ```java
-    ExecutorService service = new ThreadPoolExecutor(10,10,1, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(10),new ThreadPoolExecutor.CallerRunsPolicy());
+    ExecutorService service = new ThreadPoolExecutor(10,10,1, 
+        TimeUnit.MINUTES,
+        new ArrayBlockingQueue<Runnable>(10),
+        new ThreadPoolExecutor.CallerRunsPolicy());
     ```
 
 ## Lifecycle Methods

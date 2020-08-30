@@ -222,6 +222,15 @@ https://roadmap.sh/guides/proxy-servers
 - HyperLogLog 
 - Leaky bucket / Token bucket
 - Trie algorithm
+- Data lake
+- Scale Cube Concept
+- Twelve-Factor App
+- Event-Sourcing (ES)
+- Command Query Separation
+- Command and Query Responsibility Segregation (CQRS) 
+- Polyglot Persistence (PP)
+- Domain Driven Design (DDD)
+- Bounded Context (BC)
 
 - Rsync algorithm
 - Frugal Streaming
