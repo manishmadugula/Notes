@@ -67,9 +67,6 @@ To-Do
     - Concurrent Collections
     - Write about volatile
       - How does volatile fix uncompleted objects. double check lock
-    - ### Write about JMM
-    - ### Write about happens before guarantee
-    - ### Write about visibility guarantee
     - AtomicVariables
     - ### Blocking Queues
     - Synchronous Queue

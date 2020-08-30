@@ -22,12 +22,82 @@
 - Using Completable futures
 - Using callbacks and not wait.
 
-# Java Memory Model
+# Java Memory Model (Hardware Perspective)
+![](res/jmm_hardware.PNG)
+- Let's take the above diagram as an example.
+- Two java threads are running in 2 different CPU Core. Each CPU has some registers and cache related to them and there is shared memory i.e RAM.
+- When a thread needs some data from thread stack or heap, it has to access the RAM, what happens is the data from RAM is copied to cache and then loaded on to CPU's register.
+- Also when the data changes, it has to go from register to cache to RAM.
+
+## Problems
+- This model of memory causes some problems we need to be aware of like race condition and data visibility.
+
+### Race condition
+- Say T1 is trying to increment obj.count from Heap(RAM) and T2 is also to increment obj.count from Heap.
+- Both load up their CPU registers at the same time so both get data obj.count == 1 in CPU registers.
+- Both increment the data and the final value ends up being 2 (instead of 3) 
+![](res/jmm_race1.PNG)
+
+- To avoid this use synchronised keyword or make count volatile.
+
+### Data Visibility
+- Say T1 updated the value of count in it's register, and only after than T2 tried to read from heap.
+- The JMM doesn't guarantee (by default) that the data updated in register is flushed back to main memory
+- So T2 might end up reading a stale value.
+![](res/jmm_visibility1.PNG)
+- To avoid this use synchronised and volatile keyword.
 
 
-## Happens Before Guarantee
+## Cache coherance strategies
+- It is an optimization technique/ strategies in some CPUs.
+- Data is written to all the cache across all CPUs before it is written to Main memory
+![](res/jmm_cachecoherance.PNG)
+- You still have to use volatile and synchronised if this is enabled since there is no guarantee when the data in registers in flushed back to cache/RAM.
 
-## Visibility Guarantee
+## Instruction Reordering
+- CPUs can execute multiple instructions in parallel, if the end outcome is same and it leads to an optimization of run time. 
+![](res/jmm_instruction_reordering.PNG)
+- In the figure first and 3rd are independent and thus can be run parallely. CPU has some optimizations where it looks ahead and figures out if some instructions can run in parallel.
+- **JVM/Compiler to make CPUs job easy can reorder the instructions.** So even if instructions are listed in order, the order of instructions isn't guaranteed. 1st 3rd then 2nd then 4th.
+
+
+## Volatile Visibility Guarantee
+- The above instruction reordering may affect correctness of multi-threaded programs.
+- Let's take an example of a GUI application with 2 methods, storeFrame and takeFrame.
+- Say these 2 methods are running on 2 separate threads.
+![](res/jmm_visibility2.PNG)
+Since the instance variables(frame) has not been declared volatile or the methods are not surrounded by synchronised, there is no guarantee that the frame object in CPU's register is flused to main memory, so we are suffering from visibility problem.
+- This problem can be avoided by simply declaring the instance variables as volatile.
+- ### Not only all volatile varibles are flushed to main memory on write, they are also read always from main memory, so thread 2 will also read the updated instance variables from main memory.
+- However, we don't need to declare all the instance variables as volatile, just last one is enough. This is because of java volatile visibility guarantee.
+- ### It says that at the time that you write to a volatile variable, all variables that are visible in register till this point are also written to main memory.
+![](res/jmm_visibility3.PNG)
+- As can be seen only hasNewFrame has been declared volatile.
+- When hasNewFrame is written, all the fields(frame, frameStoredCount and hasNewFrame) are pushed to main memory.
+- ### Java volatile visibility guarantee also says that during the time we are reading a volatile variable, all the values of (non-volatile) variables will also be refreshed in the registers.
+- So when we load hasNewFrame in CPU 2's register, the non-volatile variables i.e frame and framesStoredCount are also refreshed in CPU 2's registers.
+
+
+
+## Volatile Happens before Guarantee
+
+- ### Since frames, frameStoredCount and hasNewFrame are independent of each other, you might think CPU will be free to reorder their execution (which might affect visibility guarantee). But the Java's HAPPENS BEFORE GUARANTEE prevents this instruction reordering from happening.
+- ### Any write to a field or variable that happens(in code) before a write to a volatile variable will remain before the write to the volatile variable(in cpu execution), i.e instruction reordering doesn't happen in this case. Same in case of read.
+
+## Synchronised Visibility Guarantee.
+- ### When a thread enters a synchronised block, it will refresh all of the values in register and cache from the main memory.
+- ### When a thread exits a synchronised block, all values in register will be flushed back to main memory.
+
+![](res/jmm_visibility4.PNG)
+
+## Synchronised Happens before Guarantee
+- ### Any write to a variable that happens before exit of synchronised block is guaranteed to remain before(cannot be reordered) the exit of synchronised block. This also includes the variables that are before the entry of synchronised block. Same for reads in case of entrance to synchronised block.
+- Similar to volatile, instruction reordering doesn't happen such that a code in synchronised block comes before or after the synchronised block.
+- The following if permitted can break the logic, since now valC may not have been flushed.
+- ![](res/jmm_visibility5.PNG)
+
+
+### In summary, Happens before guarantee are a set of instructions to avoid instruction reordering and prevent it from breaking visibility guarantees.
 
 # Volatile 
 
