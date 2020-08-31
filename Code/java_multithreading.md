@@ -657,6 +657,236 @@ While Thread 2 and 4 are still working on the read lock, if another thread 5 whi
 
 ### Execution Exception
 
+
+# Fork Join Pool
+- ### It implements the Executor Service Interface (just like ThreadPoolExecutor class).
+
+- 2 ways in which it differs from ThreadPoolExecutor:
+## Tasks producing subtasks
+
+- It is optimised for the problems where the task can produce their own sub tasks.
+- There are 2 operations involved, forking or separating into multiple subtasks, and then later joining these subtask to return the answer.
+![](res/forkjoinpool1.jpg)
+
+- Let's take the example of fibonacci sequence, where subtask is fib(n-1) and fib(n-2).
+
+## Per-Thread Queueing
+Let's consider the following case, we have 2 threads in our thread pool.
+- In ForkJoinPool, each thread has it's own queue, a double-ended queue, known as deque.
+- When we fork, the subtasks are not stored in the main queue but in the deque/local queue.
+- So leveraging data locality, it becomes easy for the thread to pick up the next task and start solving the task.
+
+![](res/forkjoinpool2.jpg)
+## Work Stealing
+- Say thread1 has lots of subtasks in queue, and thread2 is idle, in this case thread2 can take up tasks from thread1's local queue.
+- In such cases data synchronisation issues can come up if we use shared data, so be careful.
+
+## Things to keep in mind.
+- Avoid synchronisation
+- Don't use shared variables across task
+- Don't perform Blocking IO Operation
+- Task should be isolated
+- It can be used in
+  - Sorting
+  - Matrix Multiplication
+  - Tree traversal
+
+## Advantages
+- Use-case for this is you want a parallel execution but you want to maximize data locality.
+- It is better than just simply executing the entire task in a single time i.e no subtask creation since, if there are free threads they can pick up subtask from local queue(stealing) and lead to parallelism.
+- Also since the threads are always busy there are very less context switching between multiple threads.
+
+## Code
+- ### We extend the RecursiveTask Interface, which is a thin wrapper of ForkJoinTask. Remember Recursive Task is a abstract class not interface.
+- We overload the compute method.
+```java
+class FibonacciTask extends RecursiveTask<Integer>{
+    final int n;
+    final int taskId;
+    FibonacciTask(int x, int id){
+        taskId = id;
+        n = x;
+    }
+    @Override
+    protected Integer compute() {
+        System.out.println(taskId + " " + Thread.currentThread().getId());
+        if(n == 1 || n == 0) return n;
+        FibonacciTask f1 = new FibonacciTask(n-1, taskId);
+        f1.fork();
+        FibonacciTask f2 = new FibonacciTask(n-2, taskId);
+        f2.fork();
+        //If there are multiple threads in threadPool, f1 and f2 runs parallely.
+        return f1.join() + f2.join();
+    }
+}
+public class ForkJoinPoolExample {
+    public static void main(String[] args) throws InterruptedException {
+        //Don't use ExecutorService, since submit needs to be overloaded to accept 
+        //RecursiveTask.
+        //parallelism = Number of processors = 2.
+        ForkJoinPool service = new ForkJoinPool(2);
+        service.submit(new FibonacciTask(5,1));
+        service.submit(new FibonacciTask(5,2));
+        System.out.println("This is main thread");
+        service.shutdown();
+        service.awaitTermination(1, TimeUnit.MINUTES);
+    }
+}
+```
+- In above code since we have set parallelism = 2 but also there are 2 tasks,  the execution of a task and it's subtasks(identified by taskId context variable) is performed by the same thread.
+
+
+
+
+
+
+
+## Questions
+
+### Q: Why use ForkJoinPool since one of the thread breaks task into subtask and stores it in it's own deque. In that case there is no parallelism involved but there is over head to break the main task into subtasks and then later joining the results, Aren't we better off just to execute the main task in whole ?
+
+You don't want to execute the main task as a whole, since you can perform fib(n-1) and fib(n-2) parallely. 
+
+There are 2 cases: 
+1. Say all threads are busy, if you use ForkJoinPool, even though you don't get parallelism, you still can still leverage data locality benifits, if you don't use forkjoinpool the subtasks might go to different Thread and you don't benifit from data locality. In this case since all threads are busy, there was no way to leverage parallelism so atleast we were able to leverage data locality.
+
+
+2. Say some threads are idle, and thread1 is busy and has lots of subtasks in it's local queue, other threads can take up these tasks(stealing) from local queue and leverage parallelism (We loose up on data locality but that's okay we get parallelism).
+
+So in both these cases we were able to get some optimization (data locality or parallelism). Thus using ForkJoinPool makes sense.
+
+### Q: How you could use memioization(in fibonacci) to re-use already computed values across the various threads in order to optimize for speed. Avoiding synchronised blocks
+- Use Concurrent Hash Maps.
+
+### Q: Why is blocking io intensive task not a good candidate for ForkJoinPool
+- Blocking IO is not recommended because ForkJoinPool tries to use limited threads, running on same cores, to take advantage of data locality and is thus faster. If we block the thread because of IO, ForkJoinPool will have to assign a new thread and flush the cache, which will still work but will be slower. In fact, then it is similar to using ExecutorService.
+
+# Completable Futures
+
+## Problem
+- Use Future is going to lead to blocking code since doing Future.get() will block the entire code execution in main thread.
+- This is especially a problem when you have multiple tasks and we are doing a for loop over the Future.get().
+- Even if there are completed futures in the program, if the first future item is not done, our code execution stops on calling the Future.get().
+![](res/completablefuture1.jpg)
+
+### Dependent Tasks
+Let's take the following example. We have a Task Fetch Order and the following dependent Tasks.
+![](res/completablefuture2.jpg)
+On converting the following to code we have
+```java
+    ExecutorService service = Executors.newFixedThreadPool(10);
+    for(int i =0;i<100;i++){
+        Future<Order> future = service.submit(getOrderTask());
+        Order order = future.get() //blocking
+
+        Future<Order> future1 = service.submit(enrichTask(order));
+        order = future1.get() //blocking
+
+        Future<Order> future2 = service.submit(performPaymentTask(order));
+        order = future2.get() //blocking
+
+        Future<Order> future3 = service.submit(dispatchTask(order));
+        order = future3.get() //blocking
+    }
+```
+- If the above code is implemented we will not have any sort of parallelism since the second loop/order will only be processed once the first is over, Even if the orders are independent among them.
+- This is bad for scaling, we need n threads all processing n orders.
+- Within one flow tasks are dependent on each other but one flow is not dependent on another flow.
+
+## Solution
+- This is the exact reason why completable future was designed for. We never want the main thread to be blocked. The above code will be simplified to 
+```java
+    for(int i=0;i<100;i++){
+        CompletableFuture.supplyAsync(()->getOrder())
+                        .thenApply(order -> enrich(order))
+                        .thenApply(order -> performPayment(order))
+                        .thenApply(order -> dispatch(order))
+                        .thenAccept(order -> sendEmail(order))
+    }
+```
+- In above code the main method is never blocked
+- ### The CompletableFuture represents a single independent flow. Such that within one flow tasks are dependent on each other but one flow is not dependent on another flow.
+- ### There is no thread management in above code, no executor service, no future.get()
+
+## thenApply vs thenApplyAsync
+- thenApply means the same thread will do all the tasks in the same flow. Same thread will do get, enrich, performPayment, dispatch.
+- thenApplyAsync, you can pass a thread pool to thenApplyAsync and it will use this threadPool.
+- This is useful when you want different pools for cpu bound operation and io bound operation.
+
+```java
+    ExecutorService cpuBound = Executors.newFixedThreadPool(4);
+    ExecutorService ioBound = Executors.newCachedThreadPool();
+    for(int i=0;i<100;i++){
+        CompletableFuture.supplyAsync(()->getOrder(), ioBound)
+                        .thenApplyAsync(order -> enrich(order), cpuBound)
+                        .thenApplyAsync(order -> performPayment(order), ioBound)
+                        .thenApplyAsync(order -> dispatch(order), ioBound)
+                        .thenAccept(order -> sendEmail(order))
+    }
+```
+
+## Default Pool
+- If we don't supply the executor service, internally the default pool being used is a ForkJoinPool.
+
+## Exeception Handling
+- If getOrder or enrich or performPayment threw an exception return a failedOrder
+```java
+    ExecutorService cpuBound = Executors.newFixedThreadPool(4);
+    ExecutorService ioBound = Executors.newCachedThreadPool();
+    for(int i=0;i<100;i++){
+        CompletableFuture.supplyAsync(()->getOrder(), ioBound)
+                        .thenApplyAsync(order -> enrich(order), cpuBound)
+                        .thenApplyAsync(order -> performPayment(order), ioBound)
+                        .exceptionally(e -> new FailedOrder()) // dispatch FailedOrder if exception
+                        .thenApplyAsync(order -> dispatch(order), ioBound)
+                        .thenAccept(order -> sendEmail(order))
+    }
+```
+
+## Code Example
+- Better way to write and join might exist, need to see.
+```java
+class WrapperCFExample{
+    public int findAccountNumber() {
+        int order = 1;
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return order;
+    }
+    public int calculateBalance(int x) {
+        int balance = 1000 + x;
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return balance;
+    }
+    public void notifyBalance(int x)  {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getId());
+    }
+    public void startExample() throws InterruptedException {
+        List<CompletableFuture> l = new ArrayList<CompletableFuture>();
+        for (int i = 0; i < 10; i++) {
+            l.add(CompletableFuture.supplyAsync(this::findAccountNumber)
+                    .thenApply(this::calculateBalance)
+                    .thenAccept(this::notifyBalance));
+        }
+        for(CompletableFuture x : l){
+            x.join();
+        }
+    }
+}
+```
+
 # Asynchronous Programming
 ## Problem
 - Every thread in Java is a native OS thread/kernel thread
@@ -669,3 +899,4 @@ While Thread 2 and 4 are still working on the read lock, if another thread 5 whi
 ## Solution
 - We need non blocking IO operation.
 ![](res/async_2.jpg)
+- Have a look at [Video](https://www.youtube.com/watch?v=M3jNn3HMeWg) to understand.
