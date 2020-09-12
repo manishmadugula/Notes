@@ -44,8 +44,12 @@
 
 - max of 3 numbers is max(max(a,b),c);
 
-- Sieve of Eratosthenes (To find all the prime numbers less than n). In this method, you first set the prime value ofall numbers to be true. Then, for a variable i starting from 2 to the square root of limit(the number given), you set the value of prime of all the multiples of i to be false.
+- Sieve of Eratosthenes (To find all the prime numbers less than n). In this method, you first set the prime value ofall numbers to be true. Then, for a variable i starting from 2 to the square root of limit(the number given), you set the value of prime of all the multiples of i to be false. [Link](https://www.khanacademy.org/computing/computer-science/cryptography/comp-number-theory/v/sieve-of-eratosthenes-prime-adventure-part-4)
 
+- There are 2 optimizations here, 
+  - you only need to traverse from i==2 to sqrt(n), because multiple of numbers more than sqrt(n) are more than n;
+  - You can start from ```j == i*i``` because the multiples of i before i*i have already been marked by loops(```i==2 to i==i-1```).
+  
     ```c++
     int countPrimes(int n) {
         if(n ==0) return 0;
@@ -56,7 +60,7 @@
         v[0] = 1;
         v[1] = 1;
         for(int i=2;i<sqrt(n);i++){
-            for(int j=i+i;j<=n;j=i+j)
+            for(int j=i*i;j<=n;j=i+j)
                 v[j] = 1;
         }
         int count =0;
@@ -89,8 +93,8 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 - c++ strings are mutable.
 
 - vector's iterator are bidirectional
-- list's iterator can't move in ++ or --.
-- umap's iterator can't move in ++ or --.
+- list's iterator can't move in it+2 or it-2, can only do it++,it--. You can use advance(it,4).
+- umap's iterator can't can't move in it+2 or it-2, can only do it++,it--. You can use advance(it,4).
 - pair is very useful when you want a container for 2 data types without writing an additional class for it.
   - First element is stored as "first"
   - second as "second"
@@ -122,7 +126,7 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 
     #### CORRECT WAY
     ```c++
-      //NOT CORRECT WAY
+      //CORRECT WAY
       return da.x()<db.x();
     ```
     - Refer https://stackoverflow.com/questions/2627166/difference-between-const-reference-and-normal-parameter
@@ -194,6 +198,8 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   - Similar Problems
   - Valid Parenthesis String
   - Matrix Multiplication
+  - Burst Balloons 
+
 
 ## Essence of Knapsacks 
   - https://leetcode.com/problems/ones-and-zeroes/
@@ -446,6 +452,8 @@ Multiple element
   **Can also use ```make_tuple()``` is used to assign tuple with values.**
 
   ### tie can also be used to unpack pair<X,Y>;
+
+  ### You can use ```get<n>(tuple_obj)``` to get the nth object in tuple.
 
 ## Priority Queue
   - Need to ```#include<queue>```
@@ -807,6 +815,29 @@ Similarly you can do for any truth table.
 - it returns the k smallest or k largest elements of the array using heap at the backend.
 - Useful for finding kth smallest or kth largest.
 - ``` void partial_sort (RandomAccessIterator first, RandomAccessIterator middle,                    RandomAccessIterator last, Compare comp);```
+
+# Greater or Lesser and Functors vs Functions.
+- Default behavior of priority_queue is max_heap
+  - If you want min heap ```priority_queue<int,vector<int>,greater<int>> pq();```
+  - Here greater<int> is part of the type angular bracket(you thus don't create a functor in this case).
+
+- Default sort behavior is ascending
+  - You can get descending by ```sort(a.begin(),a.end(),greater<int>());```
+  - Here greater<int>() is part of the function argument which expects a function, calling greater<int>() will return a function whose () overloaded method can be used to compare.
+
+- Default comparision is bst
+  - You can do reverse bst by ```set<int, greater<int>> s1```
+  - Here greater<int> is part of the type angular bracket(you thus don't create a functor in this case).
+
+## The thing about using functor vs plain function is calling ```functor()``` returns you a function
+- So you can directly call ```sort(v.begin(),v.end(),func);```
+- But you need to use () for functor ```sort(v.begin(),v.end(),functor())```
+
+- same for accumulate ``` accumulate(v.begin(), v.end(), 1, functor())``` vs ```accumulate(v.begin(), v.end(), 1, func)``` 
+
+## Reference
+- https://stackoverflow.com/questions/356950/what-are-c-functors-and-their-uses
+- https://stackoverflow.com/questions/44240996/difference-between-stdgreaterint-and-stdgreaterint
 
 
 # Important Questions

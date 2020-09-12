@@ -327,3 +327,11 @@ maintaining  state in later case is nightmare and leads to subtle bugs.
 - When should one use abstract class over interface
   - On time critical application prefer abstract class is slightly faster than interface.
   - If there is a genuine common behavior across the inheritance hierarchy which can be coded better at one place than abstract class is preferred choice. Some time interface and abstract class can work together also where defining function in interface and default functionality on abstract class.
+
+
+# Solid
+
+## Open closed principle
+- Not much useful during development.
+- applies mostly to tried and tested code of production.
+- Make sure your code doesn't modify existing code such that it breaks functionality.

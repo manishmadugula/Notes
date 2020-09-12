@@ -90,6 +90,10 @@
 ![Apache vs NGINX](res/apache_nginx.png)
 
 
+
+
+
+
 # Concept of Encryption at motion and encryption at rest
 -   Data can be exposed to risks both in transit and at rest and requires protection in both states. As such, there are multiple different approaches to protecting data in transit and at rest. Encryption plays a major role in data protection and is a popular tool for securing data both in transit and at rest. For protecting data in transit, enterprises often choose to encrypt sensitive data prior to moving and/or use encrypted connections (HTTPS, SSL, TLS, FTPS, etc) to protect the contents of data in transit. For protecting data at rest, enterprises can simply encrypt sensitive files prior to storing them and/or choose to encrypt the storage drive itself.
 
@@ -205,6 +209,9 @@ no-cache indicates that the cache can be maintained but the cached content is to
 
 # Forward and Reverse Proxy
 https://roadmap.sh/guides/proxy-servers
+
+# Using Heterogenous Job Processing Workflow
+- For messages in SQS, a lambda can be written which sees if a demanding task is in queue and increase the resources in consumer.
 
 # Check these algorithms
 - Count Min Sketch

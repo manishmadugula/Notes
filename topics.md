@@ -68,6 +68,7 @@
 - webhooks
 - REST constraints and features
 - Binary stride
+- Erlang/Elixir with Beam VM
 - Jump Search
 
 

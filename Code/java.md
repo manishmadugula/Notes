@@ -26,6 +26,7 @@
       - [Some more points](#some-more-points)
       - [Some examples](#some-examples)
   - [Constructor](#constructor)
+    - [IMPORTANT - Having only Private constructors](#important---having-only-private-constructors)
   - [this and super](#this-and-super)
   - [Inheritance](#inheritance)
   - [Abstraction](#abstraction)
@@ -129,6 +130,9 @@
 - [Java Language Features](#java-language-features)
   - [Weak Reference](#weak-reference)
   - [Soft Reference](#soft-reference)
+  - [Annotations](#annotations)
+    - [Where it can be used](#where-it-can-be-used)
+    - [Built-In Annotations](#built-in-annotations)
   - [User Input](#user-input)
 - [To read](#to-read)
 
@@ -397,6 +401,11 @@
 - RULE_OF_THUMB -> Don't use setters or other methods in constructors. 
 - java compiler puts a default call to super() if we don't add it, and it is always the non-arg super that is inserted by compiler.
 - Abstract class are still a super class and it's constructor are run when someone makes an instance of its subclass.
+
+
+### IMPORTANT - Having only Private constructors
+- Because a class must call its super class constructor always. If the super class constructor can't be accessed, then the sub class can't be initialized. - Thus classes without public/protected constructors cannot be subclassed.(Unless both subclass and superclass are nested inside the same class).
+- Also a package local constructor cannot be used in another package.
 
 ## this and super
 - super is used to access methods and variable of parent class as well as its constructor.
@@ -1151,6 +1160,31 @@ You can configure the gc to use in the flag passed.
 
 ## Soft Reference
 - Like weak reference, but the garbage collection will wait till there is need to perform garbage collection, if heap is getting full.
+
+
+## Annotations
+- Special type of keyword used to embed instructions for JAVA Compiler
+- Embed Instructions for source code processing tools
+- Embed meta data which can be read at runtime by Java Application or third party tools
+  - Spring etc.
+  - Java library will access the annotation at runtime via Java Reflection.
+
+### Where it can be used
+- Above a / Infront of a
+  - class declaration
+  - member variable declaration
+  - constructor
+  - method
+  - parameter
+  - static method
+  - static parameter
+
+- Annotations are usually designed to be used with one of the above places, not all.
+
+### Built-In Annotations
+- @Override
+- @Deprecated //Source code processing.
+- @SuppressWarnings 
 
 ## User Input
 
