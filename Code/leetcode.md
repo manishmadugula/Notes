@@ -38,7 +38,7 @@
 
 - Questions like find the third max number (in 1,2,2,3) max is 3.
   - Use a set(bst) in c++ cause it is sorted and takes care of duplicates. [link](https://leetcode.com/problems/third-maximum-number/)
-  - If duplicates are allowed use a priority queue. [link](https://leetcode.com/problems/kth-largest-element-in-an-array/)
+  - If duplicates are allowed use a priority queue. [link](https://leetcode.com/problems/kth-largest-element-in-an-array/) or refer to quick select below.
 
 - Sometimes bruteforce is the best solution - [link](https://leetcode.com/problems/can-place-flowers/)
 
@@ -545,6 +545,7 @@ Multiple elements
 #### Initialize
 
 - Fill with a value ```vector<int> v(size,val)```
+- Remember the order of size and val, since that is a source of lot of bugs.
 
 ### Unordered Map
 
@@ -554,19 +555,19 @@ Multiple elements
 
 #### Iterator (Useful for looping through elements)
 
-- **Notice that an unordered_map object makes no guarantees on which specific element is considered its first element.**
+- **Notice that an unordered_map object makes no guarantees on which specific element is considered its first element.This is unlike map/set where iterator is ordered by default as the smallest.** 
 - Iterator to the beginning ```v.begin()```
 - Iterator to the past-the-end  ```v.end()```
 
 #### Get
 
 - Value from key - O(1) ```v[key]```
-- Iterator from key - O(1) ```v.find(key)```
+- Iterator from key - O(1) ```v.find(key)``` -> **Returns an iterator.**
 - Value from iterator ```it->second``` or ```(*it).second``` since map contains Pair objects.
 - Key from iterator ```it->first```  or ```(*it).first```
 
 #### Add
-- ```umap.insert(make_pair(1,1))```
+- ```umap.insert(make_pair(1,1))``` or ```umap.insert({1,1})```
 
 #### Erase
 - To clear all the elements ```v.clear()```
@@ -628,7 +629,7 @@ The reason these algo are the part of this class and not stl algorithm is becaus
 - ### ```l1.merge(l2)```
 - ### ```l.reverse()```  -> Important
 - ### ```l.sort()```  -> Important
-- ### ```l.unique()``` -> Important
+- ### ```l.unique()``` -> Important (Removes duplicates).
 ### Priority Queue
 #### **By default min queue. If you want max queue.**
 ```c++
@@ -656,6 +657,7 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 ### Ordered Map
 
 #### Get
+- The order at which the iterator iterate is guaranteed. *begin() gives you the smallest and *rbegin() the largest element, as determined by the comparison operator, and two key values a and b for which the expression !compare(a,b) && !compare(b,a) is true are considered equal. The default comparison function is std::less<K>.
 
 #### Add
 
@@ -676,6 +678,9 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 - forward_list is a singly linked list. where as list is a doubly linked list.
 - 1 and 7 are the only happy numbers.
 
+## Note on find
+- For list, vector and string, find is static function from algo libraty.
+- For unordered_map, map it is a member function.
 
 # Primer on Permutation and Combinations
 ## PERMUTATION :
@@ -887,15 +892,53 @@ Similarly you can do for any truth table.
 
 
 
-# nth_element
-- Quick select algorithm.
-- ### Can find the median of sorted array in O(n) average time.
-``` std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());```
+# Find the kth Largest or Smallest Element.
+##  Quick select algorithm.
+- Order Average $O(n) = O(n+n/2+n/4+...infinity))=O(2n)$. This is valid since on average after the first step, you end up discarding half of the elements. Half on every step gives rise to above complexity.
+- If you are unlucky, you won't be discarding much of the elements and worst case you will be discarding only the pivot and worst case time complexity will be $O(n^2) =O(n+(n-1)+(n-2)+(n-3)+(n-4))$
+- Choosing the pivot is critical for O(n) timecomplexity.
 
-# partial_sort
+
+### C++ : Can find the median of sorted array in O(n) average time.
+
+```c++
+std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
+return *(v.begin() + v.size() / 2);
+```
+
+nth_element doesn't return anything, but places the nth elemnt in the sorted place in the array.
+
+### C++ : Find the Kth largest element in the array, (not kth distinct element).
+```nth_element(nums.begin(),nums.begin() + (n-k) ,nums.end());```
+
+
+## You can also use heap for this problem to get O(nlogk) solution which is pretty fast for small k.
+
+### partial_sort
 - it returns the k smallest or k largest elements of the array using heap at the backend.
 - Useful for finding kth smallest or kth largest.
 - ``` void partial_sort (RandomAccessIterator first, RandomAccessIterator middle,                    RandomAccessIterator last, Compare comp);```
+
+### C++ : Find the Kth largest element in the array, (not kth distinct element). Using partial sort.
+```partial_sort(nums.begin(), nums.begin()+(n-k+1), nums.end());```
+
+
+## Median of Medians
+
+### For Quick Select, If you can guarantee that the number of elements that you are discarding on each step is a ratio of current elements you can guarantee O(n) time complexity
+
+$(n+n/r+n/r^2+n/r^3....infinity) = O(n/1-r) = O(n)$
+
+This is exactly what median of medians algorithm does, essentially to find optimal pivot,
+- you keep dividing your entire array into chunks of size 5(or 7/9) and choose median of these elements,
+- after this considering this median as an array repeat dividing these median arrays again into 5 chunks and choose median of them, till only 1 median is left in array.
+- This will be your pivot element. Use this pivot for your quick select algorithm.
+- It can be proved that choosing this pivot you eliminate n/4 elements on each iteration of quick select.
+- The overhead for finding pivot for all levels will be around o(n).
+- [Link](https://www.youtube.com/watch?v=fcf56RTbkHc&t=161s)
+
+
+
 
 # Greater or Lesser and Functors vs Functions.
 - Default behavior of priority_queue is max_heap
