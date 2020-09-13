@@ -301,6 +301,30 @@ public:
 };
 ```
 
+### Bottom up coin change (Non memoised)
+```c++
+class Solution {
+    
+    int helper(vector<int>&coins, int amount, int idx){
+        if(amount == 0) return 1;
+        int ans = 0;
+        for(int i=idx;i<coins.size();i++)
+        {
+            if(amount-coins[i]>=0){
+                ans+=helper(coins,amount-coins[i],i);
+            }
+        }
+        return ans;
+    }
+public:
+    int change(int amount, vector<int>& coins) {
+        return helper(coins, amount, 0);
+    }
+};
+```
+
+- ## If you notice the difference is in for loop, in case of permutation you try out all the possibilities in each recursion, but in combinations you start from idx, and don't try out previously used values. ```int i=idx;i<coins.size();i++``` vs ```int i=0;i<nums.size();i++```
+
 ## For Questions involving counts
 - Combination Sum IV 
 - Knight Dialer 
@@ -652,6 +676,63 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 - forward_list is a singly linked list. where as list is a doubly linked list.
 - 1 and 7 are the only happy numbers.
 
+
+# Primer on Permutation and Combinations
+## PERMUTATION :
+You have n items and want to find the number of ways k items can be ordered(Without Duplications):
+
+![](res/permutation_1.jpg)
+
+### Permutations with infinite repeatation.
+The number of permutations of n different objects taken r at a time,
+where repetition is allowed, is $n^r$
+
+### Permutations with duplicates i.e Permutations when all the objects are not distinct objects 
+
+Say, we have a list with duplicates [a,a,a,b,b,c], how many possible permutations of this list can we have.
+
+Since a occurs 3 times,(we will have 3! duplicates which are essentially the same coming from a), and (2! duplicates coming from b) so we need to divide them from the total combinations if all were unique i.e (6!)
+
+We get: 
+
+![](res/permutation_2.jpg)
+
+Formally,
+
+The number of permutations of n objects, where $p_1$ objects are of one kind, $p_2$ objects are of second kind and ..... $p_k$ are of kth kind, and rest are of differnet kind but only occur once.
+
+![](res/permutation_4.jpg)
+
+
+## COMBINATION : 
+Find all the ways to pick k people from n :
+
+![](res/combination_1.jpg)
+
+### Total number of subsets/combinations if all are unique is $2^n$
+
+### Find total number of all possible unique subsets from a set with repeats.
+- Imagine you have  a set {A, A, B, C}, how many possible combinations can you have of this set. You can have 9 combinations {{}, {A}, {B}, {A, B}, {A, A}, {B, B}, {A, B, B}, {A, A, B}, {A, A, B, B}}.
+
+- The way to arrive at that 9 is consider their frequencies for A,B,C frequencies are 2,1,1.
+- Now for A you have 3 possibilities for each selection {You can either not choose A, choose A only once, choose A twice}, similary for B{You can not choose B, choose B once}, and same for C.
+- Thus total number of subsets = product of all the (frequencies + 1) giving (1+2)*(1+1)*(1+1) = 9.
+
+### Combination is nothing but all subsets of a set.
+
+## Code
+- Permutations with duplicates : [Link](https://www.youtube.com/watch?v=nYFd7VHKyWQ)
+- Solve coin change 2 and combination sum 4 top down/recursive.
+- Combinations/ total subsets with repeats : [Link](https://www.youtube.com/watch?v=xTNFs5KRV_g)
+
+
+## Important distinction between permutation and combinations in code.
+in case of permutation you try out all the possibilities in each recursion, but in combinations you start from idx, and don't try out previously used values. ```int i=idx;i<coins.size();i++``` vs ```int i=0;i<nums.size();i++```.
+
+In other words, in permutations we start from the left-most available options, but in combination we start from where we left last.
+
+## References
+- https://stackoverflow.com/questions/736494/how-do-you-calculate-the-total-number-of-all-possible-unique-subsets-from-a-set#:~:text=Merely%20count%20up%20the%20total,get%203*3%20%3D%209.
 
 # Upper Bound, Lower Bound and Binary Search
   ## This article superseeds the below discussion [Link](https://leetcode.com/discuss/general-discussion/786126/python-powerful-ultimate-binary-search-template-solved-many-problems)
