@@ -762,7 +762,7 @@ In other words, in permutations we start from the left-most available options, b
   int end = end_of_search_range;
   while(start<end){
     int mid = start + (end-start)/2;
-    if(mid>=target){
+    if(condition()){
       end = mid;
     }
     else{
@@ -781,7 +781,7 @@ In other words, in permutations we start from the left-most available options, b
   // for the return value.
   {
     int mid = start + (end-start)/2;
-    if(mid>=target){
+    if(A[mid]>=target){
       end = mid;//If mid is equal or greater than target, then elements to right of mid are 
       //not the first since, mid is already greater or equal.  But mid can be the lower bound.
     }
@@ -803,7 +803,7 @@ In other words, in permutations we start from the left-most available options, b
   //write condition for the return value.
   {
     int mid = start + (end-start)/2;
-    if(mid > target){
+    if(A[mid] > target){
       end = mid; //If mid is greater than x, then elements to right of mid are not 
       //the first since, mid is already greater than x. But mid can be the upper bound.
     }
@@ -837,7 +837,7 @@ In other words, in permutations we start from the left-most available options, b
   ![The point where tortoise is at start of loop](res/floydcycle1.jpg)
   
   
-  Now at this position, you can infer hare is r ahead of the tortoise, but since it is a loop, tortoise is C-r nodes ahead of hare, Now since the distance between hare and tortoise decrease by 1 in each time step, they will eventually meet, after C-r time steps. In the mean while the tortoise would have travelled C-r steps. Thus they both meet at C-r'th node from the start of loop.  
+  Now at this position, you can infer hare is r ahead of the tortoise, but **since it is a loop, tortoise is C-r nodes ahead of hare, Now since the distance between hare and tortoise decrease by 1 in each time step, they will eventually meet**, after C-r time steps. In the mean while the tortoise would have travelled C-r steps. Thus they both meet at C-r'th node from the start of loop.  
 
   ![Distance between hare and tortoise](res/floydcycle2.jpeg)
 
@@ -1103,6 +1103,10 @@ This is exactly what median of medians algorithm does, essentially to find optim
     - There is a probability attached with each soup serving. So conditional probability rules applies. Say a person serves using 1st operation, no more soup to feed so probability of this operation is .25, now he does 3rd operation and then 1st operation probability of this happening is 0.25(For 3rd Operation)*(0.25)(For the 1st Operation) = .0625. According to your logic both these states of a becoming empty first will have equal probability which is not true.
   - ### Also there is another concept, since it is unfeasible to maintain a dp table that huge, it is important to notice once N>very large answer is the same i.e 1.
 
+- https://leetcode.com/problems/find-the-duplicate-number/
+  - Solve using floyd's cycle detection algorithm
+  - Remember the flow in which to traverse the linked list. It is from index to value to index to value....
+
 # To-Do
 
 
@@ -1117,7 +1121,6 @@ This is exactly what median of medians algorithm does, essentially to find optim
   - Count Square Submatrices with All Ones O(n*m) solution.
   - Dungeon Game
   - Single Number and similar questions discussion.
-  - Find the duplicate number using floyd cycle detection.
   - Subset II
   - Last Stone Weight II
   - Lucky Horse Prefix Sum
@@ -1171,6 +1174,7 @@ This is exactly what median of medians algorithm does, essentially to find optim
  - https://leetcode.com/discuss/general-discussion/458695/Dynamic-Programming-Patterns
  - https://leetcode.com/discuss/general-discussion/655708/graph-problems-for-beginners-practice-problems-and-sample-solutions
  - https://leetcode.com/problems/subsets/discuss/27281/A-general-approach-to-backtracking-questions-in-Java-(Subsets-Permutations-Combination-Sum-Palindrome-Partitioning)
+ - https://leetcode.com/discuss/general-discussion/786126/python-powerful-ultimate-binary-search-template-solved-many-problems
 
 
 # Concepts
