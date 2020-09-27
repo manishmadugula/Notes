@@ -900,3 +900,4 @@ class WrapperCFExample{
 - We need non blocking IO operation.
 ![](res/async_2.jpg)
 - Have a look at [Video](https://www.youtube.com/watch?v=M3jNn3HMeWg) to understand.
+- This article on C# covers the concept pretty well [Link](https://docs.microsoft.com/en-us/dotnet/standard/async-in-depth)

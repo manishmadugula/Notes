@@ -1,7 +1,129 @@
 # Notes
 
 
+# Netflix Talk on Microservices
+## Advantages
+  - Separation of concerns
+  - Horizontal Scaling
+  - Workload Partitioning
+  - Automated operations
+  - On demand provisioning
+  - Context bound and data separation
 
+
+## Challenges - Dependency
+### Intra Service communications
+- Network Latency
+- Network Congestion
+- Network Failure
+- Logical or Scaling Failure
+- Even if a single service has 99.99 availability, all services as a whole will have a lot less. Say 10 services =~ 99.9 Availability.
+- ### Cascading Failures, one service fails and as a result a lot more services are failed.
+  - Use hystrix to give out a fallback response so the client doesn't have to recieve an error but is given some default response.
+    - ![](res/hystrix.jpg)
+  - Testing using fault injection in production(FIT)
+    - Throughout the call path.
+    - Mock live traffic.
+  - Identify critical services and isolate them, make sure the application functions if everything is down.
+
+
+### Persistence
+#### CAP Theorem
+- In the presense of network partition you must choose between consistency and availability.
+#### Consistency vs Availability in Cassandra
+- Using Quorum, you can choose level of consistency and trade of with availability in your system.
+
+### Infrastructure
+- Infrastructure can fail
+- So better to have a multi region architecture
+
+
+### Solutions
+- Circuit breakers, fallbacks, chaos testing
+- Simple clients
+- Eventual Consistency
+- Multi-region failover
+
+## Challenges - Scale
+
+### For Stateless Service
+
+#### Defination of stateless
+- Not a cache/database.
+- Frequently accessed meta data.
+- No instance affinity of client.
+- Loss of a node is a non event.
+
+#### Solution for Scale for stateless service
+- Autoscaling Group helps scaling very easily, nodes get replaced easily
+  - Helps absorb, DDOS Attacks, performance hits etc.
+  - Test using chaos testing.
+
+
+### For Stateful Service
+
+#### Defination of stateful service
+- Databases and cache
+- Avoid storing business logic and state in one application.
+- Loss of a node is a notable event, it may take hours to replace a node.
+
+#### Solution for Scale for stateful service
+
+- Dedicated Shards (Single Point of Failure) ANTI PATTERN
+- Redundancy using EVCache (Wrapper around Memcached, sharded but multiple copies are written to multiple nodes and different AZs).
+  - Reads are local.
+- EXCESSIVE LOAD IN SINGLE CACHE CLUSTER
+  - IF CACHE CLUSTER GOES DOWN, THE ENTIRE load will be on the service and database, which will then fail due to so much requests.
+    - Have different systems for batch processing and realtime processing
+    - Chaos testing
+    - Request level caching??
+
+
+## Challenges - Variance/ Variaty in your architecture
+### Operational drift
+- Unintentional, happens naturally.
+- Overtime throughput changes
+- Untuned timeouts and retries and fallback. 
+#### Solutions
+- #### CONTINUOS LEARNING AND AUTOMATION
+  - Incident review and remediation and analysis of the pattern.
+  - And then automate and drive adoption.
+  - Squeeze testing to make sure throughput is same
+  - Tune the timouts, retries and fallback etc.
+  - Alerts
+  - Proper configuration of apache and tomcat
+  - automated canary analysis
+  - autoscaling
+  - chaos testing
+  - ELB Configs
+  - Healthchecks
+  - Immutable machine images/AMI
+  - Stages, red/black deployments
+  - Staging deployment so you don't deploy bad code to all the places simultaneously.
+
+
+### Polyglot & Containers 
+- Introduce new technologies.
+
+#### Solutions
+- Raise awareness of cost beforehand.
+- Constrain centralized support.
+- Prioritize by impact.
+- Use GRPC type code generation for multiple client libraries.
+
+## How to get velocity in development with confidence
+Use integrated and automated pipelines (spinnaker)
+- Conformity Checks
+- Red/Black Pipeline
+- Automated Canaries
+- Staged Deployment to multiple regions
+- Squeeze tests
+
+
+## CONWAY'S LAW
+- Any piece of software reflects the organizational structure that produced it. If you have 4 teams working on compiler, you will end up with 4 pass compiler.
+- It should be solution's first, team second.
+- Reconfigure teams to best support your architecture.
 
 # Source -> Gaurav-Sen
 
@@ -212,6 +334,9 @@ https://roadmap.sh/guides/proxy-servers
 
 # Using Heterogenous Job Processing Workflow
 - For messages in SQS, a lambda can be written which sees if a demanding task is in queue and increase the resources in consumer.
+
+# micro and macro service decisions
+![](res/micro_macro%20decisions.jpg)
 
 # Check these algorithms
 - Count Min Sketch

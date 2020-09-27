@@ -964,6 +964,23 @@ This is exactly what median of medians algorithm does, essentially to find optim
 - https://stackoverflow.com/questions/44240996/difference-between-stdgreaterint-and-stdgreaterint
 
 
+
+# Trie
+```c++
+class TrieNode{
+    public:
+        TrieNode* children[26];
+        bool endNode = false;
+        TrieNode(){
+            for(int i=0;i<26;i++){
+              children[i] = 0;
+            }
+        }
+};
+```
+- Remember to use public
+
+
 # Important Questions
 
 - LRU Cache
@@ -1106,6 +1123,15 @@ This is exactly what median of medians algorithm does, essentially to find optim
 - https://leetcode.com/problems/find-the-duplicate-number/
   - Solve using floyd's cycle detection algorithm
   - Remember the flow in which to traverse the linked list. It is from index to value to index to value....
+
+- https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/
+  - Good question, took a long time.
+  - Using a good datastructure
+  - Things you learn is when you are using a recursive function, you need to reset the values back to the original values, like in back propagation.
+
+- https://leetcode.com/problems/prefix-and-suffix-search/
+  - Smart trick to solve insert(all_combination_suffix+"#"+prefix) in trie.
+  - Search suffix+"#"+prefix.
 
 # To-Do
 

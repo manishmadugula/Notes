@@ -1,0 +1,4 @@
+- Lifecycle hooks vs constructor
+- For prototype scope, spring doesn't call the destroy-method hook (In contrast to the other scopes, Spring does not manage the complete lifecycle of a prototype bean:), however you can create your own custom bean processor to call destroy even for prototype scopes.
+- Read about BeanPostProcessors
+- 
