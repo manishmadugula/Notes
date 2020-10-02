@@ -134,6 +134,7 @@
     - [Where it can be used](#where-it-can-be-used)
     - [Built-In Annotations](#built-in-annotations)
   - [User Input](#user-input)
+  - [Regex](#regex)
 - [To read](#to-read)
 
 # Datatypes
@@ -1202,6 +1203,9 @@ You can configure the gc to use in the flag passed.
 - you can accommodate a specific character set with Scanner example you can pass a charset to the constructor.
 
 
+
+## Regex
+![](res/regex.jpg)
 
 # To read
 

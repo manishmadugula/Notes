@@ -1,4 +1,14 @@
 - Lifecycle hooks vs constructor
 - For prototype scope, spring doesn't call the destroy-method hook (In contrast to the other scopes, Spring does not manage the complete lifecycle of a prototype bean:), however you can create your own custom bean processor to call destroy even for prototype scopes.
 - Read about BeanPostProcessors
-- 
+- You can use any method for setter injection while using component scanning via annotations.
+- Autowired annotation should only be used on a single constructor, the one which spring will use to create the instance.
+- Autowired annotation can be used with multiple setter methods/ random methods name.
+- Qualifier annotation can be used to tell spring which implementation to inject, in case of multiple injections, it should be applied to individual fields/parameters not as a whole to constructor.
+- **If the annotation's value doesn't indicate a bean name, an appropriate name will be built based on the short name of the class (with the first letter lower-cased). Except for the special case of when BOTH the first and second characters of the class name are upper case, then the name is NOT converted. Example For the case of RESTFortuneService, it is not converted to rESTFortuneService, you need to explicitly name it.**
+- So think of the @Bean annotation was a wrapper / adapter for third-party classes. You want to make the third-party classes available to your Spring framework application context. Unlike the XML Application Context which requires you to specify @Component in your class, using @Beans you don't need to modify the class that you want to include in your IOC container/Application context. You can use @Bean to make an existing third-party class available to your Spring framework application context.
+- In spring the front controller(Created by spring dev team) is called DispatcherServlet and it will delegate the request to the controller.
+- View template common are JSP(Java Server Pages and JSTL)
+- Look at spring config files again for mvc.
+- When performing Spring MVC validation, the location of the BindingResult parameter is very important. In the method signature, the BindingResult parameter must appear immediately after the model attribute. 
+- @Valid performs the validation on the model attribute, and stores it in BindingResult.
