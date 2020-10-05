@@ -1,3 +1,69 @@
+New-To-do
+- DS Algo (Permanent)
+  - ### All topics touch
+    - Most Liked LeetCode
+    - Rachit Jain and Gaurav Sen's Tutorial
+    - Minimum Spanning Trees (Prim and Kruskal)
+    - Dijkstra and Fibonnaci heaps
+    - Cycle Detection
+    - KMP
+    - Union Disjoint Set
+    - DP Other Patterns and common questions
+    - Bipartite Graph and Topological Sorting
+    - Ordered Statistics and Range Queries
+    - Linked List Common Questions
+    - Segment Trees
+    - AVL Trees
+    - Red Black
+    - BellMan ford
+    - Floyd Warshal
+
+  - ### Company Questions
+  - ### Hybrid Datastructures
+  - ### Ardendertat blog
+  - Leet Code Lists
+  - CP 3
+  - Algoexpert question study
+
+- Operating Systems
+  - ### Coursera Course
+
+- Object Oriented Design
+  - ### Design Patterns Basics
+  - Educative IO
+
+- System Design/ Low level Design
+  - ### Gaurav Sen Interview Ready
+  - Grokking System Design
+
+- Java 
+  - ### Collections (3 Days)
+    - ### Custom Operators
+  - ### Iterators (1 Day)
+  - ### Generics
+  - ### Big Integer/Decimal 
+  - Testing
+  - Regex
+  - Some remaining concurrency stuff
+
+- Database (1 Week)
+  - Basics of DB and SQL
+  - Cassandra functionality
+    - Migrations
+    - Leader Election
+    - What happens when a downed node comes up.
+    - Metrics
+
+- Networking (3 Days)
+  - Basics of Networking Course
+
+- Behavorial (3 days)
+  - General Questions
+  - Leadership principles
+  - Story behind each principle.
+  - Algoexpert vids
+  - educative-io lessons
+
 To-Do
 - DS Algo (6 months)
   - Leet Code Lists

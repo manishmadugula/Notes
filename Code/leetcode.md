@@ -963,9 +963,10 @@ This is exactly what median of medians algorithm does, essentially to find optim
 - https://stackoverflow.com/questions/356950/what-are-c-functors-and-their-uses
 - https://stackoverflow.com/questions/44240996/difference-between-stdgreaterint-and-stdgreaterint
 
+# Binary Tree
+- A tree with n vertices will have n-1 edges. (Think every node has only one edge to parent except the root.)
 
-
-# Trie
+# Trie (Prefix Trees)
 ```c++
 class TrieNode{
     public:
@@ -980,8 +981,210 @@ class TrieNode{
 ```
 - Remember to use public
 
+# Suffix Trie
+- Trie made from all the suffixes of a string.
+
+# Suffix Tree (Compressed Suffix Trie)
+- A Suffix Tree is a compressed tree containing all the suffixes of the given text as their keys and positions in the text as their values. Suffix Tree provides a particularly fast implementation for many important string operations.
+- Path Label - concatenation of edge label(s)
+- Edge label - label of edge connecting to leaf node.
+-  Each leaf vertex is a suffix and the integer value written inside the leaf vertex is the suffix number.
+-  Suffix number -> For T = STEVEN, suffix 2 is EVEN (0 based indexing).
+- In order to ensure that every suffix of the input string T ends in a leaf vertex, we enforce that string T ends with a special terminating symbol '$' that is not used in the original string T.
+- In worst case(All characters are same) total number of internal vertex will be n, and in all cases total number of leaf vertex = n = number of possible suffixes = length of String T. So total vertices = 2n-1.
+
+![](res/suffix_tree_worst_case.jpg)
+
+- If all characters are distinct will lead to a much smaller suffix tree n+1;
+
+
+![](res/suffix_tree_best_case.jpg)
+
+## Applications of suffix Tree
+### String Matching
+- (Find all the places where a pattern occurs) (Just like KMP).
+- Time complexity: O(m+occ) where occ is the total number of occurrences. Where m is the length of the pattern and occ is the number of times it occurs.
+
+
+### Longest Repeating SubString
+- (atleast twice repeating)
+-  (Find the deepest path label). Since it is path label, it will be repeating atleast twice.
+-  O(n) with a simple tree traversal.
+### Longest Common Subsequence
+-  (Better than dp solution O(n*n))
+-  (Since this is O(N) solution if build takes O(N))
+-   Make a single suffix tree using 2 strings and Mark the internal nodes containing leaf nodes from both strings something distinct, return path to the deepest marked internal node. 
+- Example, For T1=GATAGACA$, and T2 = CATA# (Notice the appended $ and # for ease of operation). The Yellow internal nodes are the marked node, whihc have children from both strings, and ATA path is the LCS.
+![](res/suffix_tree_lcs.jpg)
+
+#### Algorithm for LCS
+```
+ans = ""
+findLCS(current vertex cur):
+  if (cur is a leaf) return
+  if (cur is not a marked_candidate) return
+  if (cur.label.length >= ans.length) update ans
+  findLCS(cur's children)
+```
+
+# Prefix Sum Array
+Given an array arr[] of size n, its prefix sum array is another array prefixSum[] of same size such that the value of prefixSum[i] is arr[0] + arr[1] + arr[2] … arr[i].
+
+Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35, 50}
+
+## Application of Prefix Sum Array
+- Range queries like: lots of queries to increment items between index L and R and finally print out result.
+- Find if there is a subarray with 0 sum.
+- Equilibrium index of an array 
+- Find the prime numbers which can written as sum of most consecutive primes 
+- Longest Span with same Sum in two Binary arrays 
+- Maximum subarray sum modulo m
+- Maximum subarray size, such that all subarrays of that size have sum less than k
+- Maximum occurred integer in n ranges 
+- Minimum cost for acquiring all coins with k extra coins allowed with every coin 
+- Random number generator in arbitrary probability distribution fashion
+- [Link](https://www.geeksforgeeks.org/prefix-sum-array-implementation-applications-competitive-programming/)
+
+# Index manipulation techniques to solve questions like:
+- See if you can use array indexes to find the missing number.
+- By marking presence of an element x, we change the value at the index x to negative.
+- swapping the number according to their indexes (Bucketing).
+## Applications
+- Find the smallest positive number missing from an unsorted array (Duplicate and non negative numbers exist in the array) [Link](https://leetcode.com/problems/first-missing-positive/)
+
+
 
 # Important Questions
+
+
+- LRU Cache
+  
+- https://leetcode.com/problems/jump-game/solution/
+  - Read this article after solving the jump game question.
+
+- https://leetcode.com/problems/binary-tree-maximum-path-sum/
+  - Solution is elegant few lines.
+
+- https://leetcode.com/problems/unique-email-addresses/submissions/
+  - Solve this to get clarity of strings erase-remove idiom.
+
+- https://leetcode.com/problems/majority-element/
+  - Teaches the Boyer-Moore Voting Algorithm
+  - ### Boyer-Moore Voting Algorithm
+    - Explaination https://leetcode.com/problems/majority-element/solution/
+    - For Diagram
+
+- https://leetcode.com/problems/find-the-town-judge/
+  - Teaches importance of
+
+- https://leetcode.com/problems/cinema-seat-allocation/
+  - Importance of looking at constraints and also bit masking
+
+- https://leetcode.com/problems/cousins-in-binary-tree/
+  - Important in knowing the tips for trees
+  - https://leetcode.com/problems/cousins-in-binary-tree/discuss/238624/C%2B%2B-level-order-traversal
+
+- Boolean Parenthesis DP.
+  - Different way of thinking bottom up.(Diagonal)
+
+- https://leetcode.com/problems/flood-fill/
+  - You don't need visited set.
+
+- #### IMPORTANT https://leetcode.com/problems/maximum-sum-circular-subarray/
+  - Tricky Question (Simple if you know solution).
+
+- https://leetcode.com/problems/valid-parenthesis-string/
+  - 3 Solution approaches
+  
+- https://leetcode.com/problems/remove-k-digits/
+
+- https://leetcode.com/problems/bulb-switcher-iii/
+  - Beautiful solution. Simple straight.
+
+- https://leetcode.com/problems/online-stock-span/
+  - Couldn't solve
+  - Simple solution
+
+- https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
+  - Beautiful Simple solution
+
+- https://leetcode.com/problems/contiguous-array/submissions/
+  - Couldn't Solve.
+
+- https://leetcode.com/problems/counting-bits/
+  - Very beautiful solution.
+
+- https://leetcode.com/problems/k-closest-points-to-origin/
+
+- https://leetcode.com/problems/two-city-scheduling/
+  - Took too much time
+  - easy solution.
+
+- If we have a stream of strings and we need to check if it is a subsequence of a particular string.
+  - Followup of https://leetcode.com/problems/is-subsequence/
+
+- https://leetcode.com/problems/find-the-duplicate-number/
+  - Could not solve
+  - Good concepts.
+  - https://leetcode.com/problems/find-the-duplicate-number/discuss/72844/Two-Solutions-(with-explanation)%3A-O(nlog(n))-and-O(n)-time-O(1)-space-without-changing-the-input-array
+  - Look at his comment -> StefanPochmann
+
+- https://leetcode.com/problems/word-search-ii/
+  - Time Limit Exceeded
+  - Great solution
+  - https://leetcode.com/explore/challenge/card/june-leetcoding-challenge/543/week-5-june-29th-june-30th/3376/discuss/59841/My-AC-very-clean-C++-code
+
+
+- https://leetcode.com/problems/prison-cells-after-n-days/
+  - Was able to solve
+  - But the answer is bit tricky, I was able to solve with a very nice approach to problem.
+  - See personal submission.
+
+- https://leetcode.com/problems/subsets/
+  - Was able to solve using backtracking.
+  - Good concepts.
+
+- https://leetcode.com/problems/maximum-width-of-binary-tree/
+
+- https://leetcode.com/problems/3sum/
+  - Important Question in interviews
+  - Was able to solve with TLE.
+
+- https://leetcode.com/problems/reverse-words-in-a-string/
+  - Couldn't solve the inplace solution
+  - https://leetcode.com/problems/reverse-words-in-a-string/discuss/47840/C%2B%2B-solution-in-place%3A-runtime-O(n)-memory-O(1)
+
+
+- https://leetcode.com/problems/single-number-iii/
+  - Couldn't solve, constant space
+
+- https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/
+  - Solved but too many submissions
+  - corner cases a lot.
+
+- https://leetcode.com/problems/soup-servings/
+  - Couldn't Solve
+  - Very Important Question
+
+- https://leetcode.com/problems/find-the-duplicate-number/
+
+- https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/
+  - Good question, took a long time.
+
+- https://leetcode.com/problems/prefix-and-suffix-search/
+  - Smart trick to solve insert(all_combination_suffix+"#"+prefix) in trie.
+  - Search suffix+"#"+prefix.
+
+- https://leetcode.com/problems/longest-substring-without-repeating-characters/
+  - Was able to solve efficiently, but still a good question so see.
+
+- https://leetcode.com/problems/first-missing-positive/
+  - Was able to solve efficiently, but still a good question.
+
+- https://leetcode.com/problems/maximum-product-subarray/
+  - Was able to solve efficiently, but still a good questions to see.
+
+# Important Questions with hints
 
 - LRU Cache
   -  Use a hash<int,pair<int,list<int>>> and a queue(i.e a list).
@@ -1133,12 +1336,24 @@ class TrieNode{
   - Smart trick to solve insert(all_combination_suffix+"#"+prefix) in trie.
   - Search suffix+"#"+prefix.
 
+- https://leetcode.com/problems/longest-substring-without-repeating-characters/
+  - Was able to solve efficiently, but still a good question so see.
+  - You need to reset the elements(from start to new start) state when updating the start.
+
+- https://leetcode.com/problems/first-missing-positive/
+  - Was able to solve efficiently, but still a good question.
+  - Teaches advanced techniques of array manipulation.
+
+- https://leetcode.com/problems/maximum-product-subarray/
+  - Was able to solve efficiently, but still a good questions to see.
+  - Need to store both max and min product for each index.
+
 # To-Do
 
 
 ## Backlog
 
-  - Prefix Sum Array Concept - Rachit Jain.
+
   - Buy and sell stocks part 2
   - Kth Smallest Element in a BST followup.
   - Largest Divisible Set
@@ -1151,6 +1366,7 @@ class TrieNode{
   - Last Stone Weight II
   - Lucky Horse Prefix Sum
   - To find the time complexity in backtracking problems like Subset.
+
 
 
 
