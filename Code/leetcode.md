@@ -1348,6 +1348,26 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
   - Was able to solve efficiently, but still a good questions to see.
   - Need to store both max and min product for each index.
 
+
+# Similar Questions
+
+## Find a number
+- https://leetcode.com/problems/first-missing-positive/
+- https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/
+- https://leetcode.com/problems/find-the-duplicate-number/
+- https://leetcode.com/problems/single-number-iii/
+- https://leetcode.com/problems/single-number-ii/
+- https://leetcode.com/problems/single-number/
+- https://leetcode.com/problems/single-element-in-a-sorted-array/
+
+## Largest/Longest/Largest Sum Subsequence or Substring
+- https://leetcode.com/problems/maximum-product-subarray/
+- Longest Common Subsequence
+- https://leetcode.com/problems/maximum-subarray/
+- Longest Increasing Subsequence
+- *Longest Duplicate Substring
+
+
 # To-Do
 
 
