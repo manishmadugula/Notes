@@ -553,6 +553,8 @@ Multiple elements
 
 ## **IMP -> YOU CANNOT CREATE A MAP OF A Pair of T (pair<T,T> as key) by ```unordered_map<pair<int,int>,int> umap();```** -> You can get around by using a string representation of the pair. Also holds for unordered_set
 
+## UMAP CAN TAKE POINTER AS KEY AND VALUE.
+
 #### Iterator (Useful for looping through elements)
 
 - **Notice that an unordered_map object makes no guarantees on which specific element is considered its first element.This is unlike map/set where iterator is ordered by default as the smallest.** 
@@ -568,6 +570,7 @@ Multiple elements
 
 #### Add
 - ```umap.insert(make_pair(1,1))``` or ```umap.insert({1,1})```
+- ## IMP DON'T DO ```umap.insert(1,1)``` (Since insert takes a pair as an input).
 
 #### Erase
 - To clear all the elements ```v.clear()```
@@ -1172,8 +1175,7 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
   - Good question, took a long time.
 
 - https://leetcode.com/problems/prefix-and-suffix-search/
-  - Smart trick to solve insert(all_combination_suffix+"#"+prefix) in trie.
-  - Search suffix+"#"+prefix.
+  - Smart trick to solve
 
 - https://leetcode.com/problems/longest-substring-without-repeating-characters/
   - Was able to solve efficiently, but still a good question so see.
@@ -1183,6 +1185,10 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
 
 - https://leetcode.com/problems/maximum-product-subarray/
   - Was able to solve efficiently, but still a good questions to see.
+
+- https://leetcode.com/problems/word-break/
+  - Very nice concepts
+  - Was able to solve
 
 # Important Questions with hints
 
@@ -1348,6 +1354,16 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
   - Was able to solve efficiently, but still a good questions to see.
   - Need to store both max and min product for each index.
 
+- https://leetcode.com/problems/copy-list-with-random-pointer/
+  - Couldn't solve with O(1) space.
+  - Tricky question to do in O(1) space.
+  - You need to have the nodes in the following way A->A'->B->B'->C->C'->D->D'->0.
+  - This way you don't need the hashmap for storing the pointers and random pointer can be filled by just finding random of original node and going next on it.
+
+- https://leetcode.com/problems/word-break/
+  - Very nice concepts
+  - Was able to solve
+  - Use of trie and dp.
 
 # Similar Questions
 
