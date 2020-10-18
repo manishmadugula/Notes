@@ -86,6 +86,7 @@
     - [Just in Time Compiler (JIT)](#just-in-time-compiler-jit)
     - [Hotspot Profiler/VM](#hotspot-profilervm)
     - [Garbage collector](#garbage-collector)
+    - [AOT Compiler](#aot-compiler)
 - [Garbage Collector](#garbage-collector-1)
   - [Types of garbage collections](#types-of-garbage-collections)
   - [Based on hypothesis](#based-on-hypothesis)
@@ -923,6 +924,9 @@ Suppose you are trying to load a dll, and calling a method inside that dll, we u
 - It keeps the eye on bytecode that is running and identifies hotspots for use by the JIT Compiler.
 ### Garbage collector
 - Cleans up unused classes, objects in memory areas.
+
+### AOT Compiler
+- The primary motivator behind using AOT in Java is to bypass the interpreter. It is generally faster for the machine to execute machine code than it is to execute the code via the bytecode interpreter.
 
 
 # Garbage Collector

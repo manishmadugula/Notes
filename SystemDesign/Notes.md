@@ -338,6 +338,16 @@ https://roadmap.sh/guides/proxy-servers
 # micro and macro service decisions
 ![](res/micro_macro%20decisions.jpg)
 
+# Chrome's Multiprocess architecture
+- Chrome identifies three different types of processes: browser, renderers, and plug-ins.
+
+- The browser process is responsible for managing the user interface aswell as disk and network I/O. A new browser process is created when Chrome is started. Only one browser process is created.
+- Renderer processes contain logic for rendering web pages. Thus, they contain the logic for handling HTML, Javascript, images, and so forth. As a general rule, a new renderer process is created for each website opened in a new tab, and so several renderer processes may be active at the same
+time.
+
+- A plug-in process is created for each type of plug-in (such as Flash or QuickTime) in use. Plug-in processes contain the code for the plug-in as well as additional code that enables the plug-in to communicate with associated renderer processes and the browser process.
+- The advantage of the multiprocess approach is that websites run in isolation from one another. If one website crashes, only its renderer process is affected; all other processes remain unharmed.
+
 # Check these algorithms
 - Count Min Sketch
 - Consistent Hashing

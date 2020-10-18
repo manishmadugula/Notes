@@ -71,7 +71,11 @@
 - Erlang/Elixir with Beam VM
 - Jump Search
 
-
+- 12 factor app principles
+- Data oriented vs object oriented design
+- AB Testing
+- Mock, Unit
+- Adapter, state, memento, chain of responisibility, visitor, factory, proxy, observer.
 
 # Articles
 - https://medium.com/@yashgirdhar/11-companies-55-interviews-9-offers-including-google-and-amazon-heres-what-i-have-to-share-293852c1c98f

@@ -113,6 +113,15 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
   - vector.back() (s.top())
   - This trick is useful when dealing with string and you need to process them later. [Example](https://leetcode.com/problems/remove-k-digits/)
 
+- ### Common mistake (If there are multiple conditions you want to satisfy, don't make below mistake)
+  ```
+  if(s!=1 || s!=2|| s!=3){
+    
+  }
+  ```
+  - The above condition is meaningless because say, s==1, then first condition fails but second condition passes, so the if is executed.
+  - Use && in between remember
+
 - ### IMPORTANT -> While sorting objects in c++
   - Remember to use the following constraint/requirement. The  compare requirement requires that If comp(a,b)==true then comp(b,a)==false. But if you write you  it returns true if b==a thus comp(b,a) == comp(a,b) which does not fulfil the requirement. 
     #### NOT CORRECT WAY
@@ -351,6 +360,16 @@ Think simple working recursive solution, which satisfies all constraints of the 
 
 ## Strings
 
+#### Important Functions
+
+- stoi -> Convert a string to integer
+- stol -> Converts a string to long
+- stoll -> Converts a string to long long
+- atoi -> Convert a character to integer
+- stod -> Converts a string to double
+- stold -> Converts a string to long double
+- to_string() -> Converts a datatype to string.
+
 
 #### Iterators (Random Access Iterators)
 - Iterator to the beginning ```s.begin()```
@@ -364,6 +383,12 @@ Think simple working recursive solution, which satisfies all constraints of the 
 - Value from iterator ```(*it)```
 - Size ```s.size()```'
 - ### **Get iterator of a character in string ```std::find(s.begin(), s.end(), 'x')``` Remember it is a char not string.**
+
+- ### String.find -> you can also use  string.find method to find by indices rather than iterators
+  ```
+  s.find(string_to_find, index_to_find_from);
+  s.find(char_to_find, index_to_find_from);
+  ```
 - ### Substring (Important)
   - ### ```s.substr(firstIndex,length)``` returns substring for [pos, pos+len).
   - ### ```s.substr(index)``` returns substring for pos to end.
@@ -1364,6 +1389,15 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
   - Very nice concepts
   - Was able to solve
   - Use of trie and dp.
+
+- https://leetcode.com/problems/search-a-2d-matrix-ii/
+  - Was able to solve
+  - See how to divide the search space, important.
+  - but need to see the time complexity
+
+- https://leetcode.com/problems/divide-two-integers/
+  - Super hard question, seems simple.
+  - Have to use long throughout.
 
 # Similar Questions
 
