@@ -397,6 +397,9 @@ that must be performed serially on a system with N processing cores, the formula
 ## Multithreading Modes
 - Support for threads may be provided either at the user level, for user threads, or by the kernel, for kernel threads.
 - User threads are supported above the kernel and are managed without kernel support, whereas kernel threads are supported and managed directly by the operating system.
+- It is kernel threads that the operating system schedules to run on physical processors.
+- Ifk Kernel Thread Blocks(Waiting for an IO Operation) the underlying user thread also blocks.
+- See The below section for Scheduler Activations for internal workings.
 -  A relationship must exist between user threads and kernel
 threads.
 
@@ -496,4 +499,55 @@ the signal and not to other threads in the process.
       should terminate, allowing it an opportunity to terminate itself in an
       orderly fashion.
 - cancellation occurs only after the target thread has checked a flag to determine whether or not it should be canceled. When a thread reaches a **cancellation point**.
+
+### Thread Local 
+- See Java Multithreading notes
+
+### Scheduler Activations
+- #### Only valid for many to many or many to one model.
+- There is an intermediate datastructure known as LWP (Light Weight Process) between user thread and kernel thread.
+- For User thread library, LWP appears to be a virtual processor on which the application can schedule a user thread to
+run.
+- Each LWP is attached to a kernel thread, and it is kernel threads that the operating system schedules to run on physical processors.
+- There is a one-to-one correspondence between LWPs and kernel threads.
+- If a kernel thread blocks (such as while waiting for an I/O operation to complete), the LWP blocks as well, as a result the user thread blocks.
+#### Number of LWPs
+- For CPU Bound Application, LWP == No of processors
+- IO Bound Application, can require multiple LWP to process. Typically, an LWP is required for each concurrent blocking system call. For example, that five different file-read requests occur simultaneously. Five LWPs are needed, because all could be waiting for I/O completion in the kernel. If a process has only four LWPs, then the fifth request must wait for one of the LWPs to return from the kernel.
+#### Working of LWPs
+- One scheme of communication between user level thread and kernel thread is scheduler activation : 
+- The kernel provides an application with a set of virtual processors (LWPs), and the application can schedule user threads onto an available virtual processor.
+- Furthermore, the kernel must inform an application about certain events. This is known as **upcall**. Upcalls are handled by the thread library with an upcall handler, and upcall handlers must run on a virtual processor.
+- When a User thread is about to block, the kernel makes an upcall to the application thread library, and the thread library, saves the state of the current blocked thread, and schedules another thread to run on LWP.
+- Once the blocking event is fulfilled, the kernel makes another upcall, (which is handled on another LWP) which may allocate a new LWP or may prempt an exisiting user thread. 
+
+### Upcall
+- An upcall is a mechanism that allows the kernel to execute a function. in userspace.
+- Opposite of system call.
+
+## Threads in Windows
+### Components of thread
+- A thread ID uniquely identifying the thread
+- A register set representing the status of the processor
+- A program counter
+- A user stack, employed when the thread is running in user mode, and a kernel stack, employed when the thread is running in kernel mode.
+- A private storage area used by various run-time libraries and dynamic link libraries.
+- The register set, stacks, and private storage area are known as the context of the thread.
+
+![](res/thread_windows.jpg)
+- The ETHREAD and the KTHREAD exist entirely in kernel space; this means
+that only the kernel can access them. 
+
+## Linux Threads
+- ### Linux does not distinguish between processes and threads. Linux uses the term task rather than process or thread when referring to a flow of control within a program.
+- Just like fork is used to create a process in Linux, Linux also provides **clone()** to create a thread.
+- When clone() is invoked, it is passed a set of flags that determine how much sharing is to take place between the parent and child tasks.
+- Based on flags passed to clone, the task can behave as a process/ a thread.
+![](res/linux_clone.jpg)
+- For example, suppose that clone() is passed the flags CLONE FS, CLONE VM, CLONE SIGHAND, and CLONE FILES. This is equivalent to creating a thread. If none are passed, it is equivalent to calling a fork.
+- ### task_struct
+  - The varying level of sharing is possible because of the way a task is represented in the Linux kernel.  A unique kernel data structure (specifically, struct task struct) exists for each task in the system.
+  - This data structure, instead of storing data for the task, contains pointers to other data structures where these data are stored. For example, data structures that represent the list of open files, signal-handling information, and virtual memory.
+  -  The flexibility of the clone() system call can be extended to the concept of **containers** (allows creating multiple Linux systems (containers) under a single Linux kernel).
+
 # Misc
