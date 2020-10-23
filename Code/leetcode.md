@@ -1077,9 +1077,95 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
 - See if you can use array indexes to find the missing number.
 - By marking presence of an element x, we change the value at the index x to negative.
 - swapping the number according to their indexes (Bucketing).
+
 ## Applications
 - Find the smallest positive number missing from an unsorted array (Duplicate and non negative numbers exist in the array) [Link](https://leetcode.com/problems/first-missing-positive/)
 
+# Union-Find Disjoint Sets
+- Used to model disjoint sets 
+  - with the ability to in (near constant time) determine which sets an item belongs to(or if they belong to same set) : **FIND**
+  -  and unite two sets into one larger set. : **UNION**
+- ## Used to find connected components in an undirected graph.
+
+## Working
+- You choose a representative parent item to represent an entire set.
+- Disjoint set creates a tree like structure where the disjoint sets form a forest of trees. Each tree corresponding to a tree in a forest.
+- The representative set identifier for an item can be obtained simply by following the chain of parents to the root of the tree.
+### Thus the basic interface of this data structure consists of only two operations:
+- ```union_sets(a, b)``` - merges the two specified sets (the set in which the element a is located, and the set in which the element b is located)
+- ```find_set(v)``` - returns the representative (also called leader) of the set that contains the element v. This representative is an element of its corresponding set. It is selected in each set by the data structure itself (and can change over time, namely after union_sets calls). This representative can be used to check if two elements are part of the same set of not. a and b are exactly in the same set, if find_set(a) == find_set(b). Otherwise they are in different sets.
+- As described in more detail later, the data structure allows you to do each of these operations in almost O(1) time on average.
+
+### Representation
+- We can use unordered_map to represent each item,  the key in the unordered_map is the node in consideration and the value is the parent of the node( can also store another value to indicate the size if the current node is a parent).
+- If the items are all positive and inside a range, we can also use an array to represent and array value can indicate the parent if positive, if the array value is negative, then this node is that of parent and value then it indicates the rank of the set.
+ 
+
+### Union by size / rank
+The problem if we attach the second tree always to first can lead to long chains of length O(n), to solve this we can use 2 approaches  In the first approach we use the size of the trees as rank, and in the second one we use the depth of the tree. The tree with higher rank becomes the rank. Both optimizations are equivalent in terms of time and space complexity.
+
+### Path compression optimization/ Collapsing find.
+- This optimization is designed for speeding up find_set.
+- Whenever we find a representative item/root of the disjoint set by following chain of parent links from a given item, we can set the parent of all items traversed to the point directly to the root. Any subsequent calls to find_set, only one link will be traversed.
+
+
+## Code
+### Find (Path Compression)
+```
+int find_set(int v) {
+    if (v == parent[v])
+        return v;
+    return parent[v] = find_set(parent[v]);
+}
+```
+
+### Union
+#### Rank as size
+```
+void make_set(int v) {
+    parent[v] = v;
+    size[v] = 1;
+}
+
+void union_sets(int a, int b) {
+    a = find_set(a);
+    b = find_set(b);
+    if (a != b) {
+        if (size[a] < size[b])
+            swap(a, b);
+        parent[b] = a;
+        size[a] += size[b];
+    }
+}
+```
+#### Rank as depth
+```
+void make_set(int v) {
+    parent[v] = v;
+    rank[v] = 0;
+}
+
+void union_sets(int a, int b) {
+    a = find_set(a);
+    b = find_set(b);
+    if (a != b) {
+        if (rank[a] < rank[b])
+            swap(a, b);
+        parent[b] = a;
+        if (rank[a] == rank[b])
+            rank[a]++;
+    }
+}
+```
+
+## Time Complexity
+- If we combine both optimizations - path compression with union by size / rank - we will reach nearly constant time queries. It turns out, that the final amortized time complexity is O(α(n)), where α(n) is the inverse Ackermann function, which grows very slowly. In fact it grows so slowly, that it doesn't exceed 4 for all reasonable n. 
+- Also, it's worth mentioning that DSU with union by size / rank, but without path compression works in O(logn) time per query.
+
+## Application
+- Used to find connected components in an undirected graph.
+- Minimum Spanning Trees and Finding a cycle in a undirected graph : Kruskal Algorithm.
+- https://leetcode.com/problems/longest-consecutive-sequence/submissions/
 
 
 # Important Questions
@@ -1396,8 +1482,15 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
   - but need to see the time complexity
 
 - https://leetcode.com/problems/divide-two-integers/
-  - Super hard question, seems simple.
+  - Super headache question, seems simple.
   - Have to use long throughout.
+
+- https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/
+  - The first item in preorder is the root, find the root in inorder, stuff in left is left of the root and stuff in right is right of root. Use recursion to solve.
+  - Same logic can be used for postorder and inorder
+  - You cannot construct a binary tree using just postorder and preorder (Unless the binary tree is a full binary tree).
+  - If you know the binary tree is a bst then you just need a postorder to construct.
+  
 
 # Similar Questions
 

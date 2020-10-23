@@ -174,12 +174,29 @@ one another, the operating system must ensure they do not overlap one another.
 #### Activation Record
   - Each time a function is called, an activation record containing function parameters, local variables, and the return address is pushed onto the stack. when control is returned from the function, the activation record is popped from the stack.
 
+## Build Process for various languages
+- Machine code is binary (1's and 0's) code that can be executed directly by the CPU. If you were to open a machine code file in a text editor you would see garbage, including unprintable characters (no, not those unprintable characters ;) ). Machine code is pure hexadecimal code: ```5F 3A E3 F1```
+- Object code is a portion of machine code not yet linked into a complete program. It's the machine code for one particular library or module that will make up the completed product. It may also contain placeholders or offsets not found in the machine code of a completed program. The linker will use these placeholders and offsets to connect everything together.
+- Assembly code is plain-text and (somewhat) human read-able source code that mostly has a direct 1:1 analog with machine instructions. This is accomplished using mnemonics for the actual instructions, registers, or other resources. Examples include JMP and MULT for the CPU's jump and multiplication instructions. Unlike machine code, the CPU does not understand assembly code. You convert assembly code to machine code with the use of an assembler or a compiler, though we usually think of compilers in association with high-level programming language that are abstracted further from the CPU instructions. Assembly code : ```mov eax, 77```
+
+### Compiled Languages
+- Building a complete program involves writing source code for the program in either assembly or a higher level language like C++. The source code is assembled (for assembly code) or compiled (for higher level languages) to object code, and individual modules are linked together to become the machine code for the final program. In most cases, a complicated make script or solution file may be used to tell the environment how to build the final application.
+
+### Interpreted Languages
+- Interpreted languages rely on the machine code of a special interpreter program. At the basic level, an interpreter parses the source code and immediately converts the commands to new machine code and executes them. Modern interpreters are now much more complicated: evaluating whole sections of source code at a time, caching and optimizing where possible, and handling complex memory management tasks.
+
+### Virtual machine
+- In this situation, a program is first pre-compiled to a lower-level intermediate language or byte code. The byte code is then loaded by the virtual machine, which interprets/compiles(compilation is a optimization ste p for repeated parts of code) it to native code. The advantage here is the virtual machine can take advantage of optimizations available at the time the program runs. A compiler belongs to the developer, and therefore must produce relatively generic (less-optimized) machine code that could run in many places. The runtime environment or virtual machine, however, is located on the end user's computer, and therefore can take advantage of all the features provided in that environment.
+
 ## Memory Layout for c program
 ![](res/c_memory_layout.jpg)
 
 - GNU ```size``` command can be used to determine the size in bytes of the above section.
 - The global data section is divided into different sections for (a) initialized data and (b) uninitialized data.
 - A separate section is provided for the argc and argv parameters passed to the main() function.
+
+## Build Process for c program
+![](res/c_build_process.jpg)
 
 ## Process state
 It is important to realize that only one process can be running on any processor core at any instant.
@@ -239,6 +256,15 @@ creating too many child processes.
 
 - Now consider what would happen if a parent did not invoke wait() and instead terminated, thereby leaving its child processes as orphans. Traditional UNIX systems addressed this scenario by assigning the init process as the new parent to orphan processes. The init process periodically invokes wait(), thereby allowing the exit status of any orphaned process to be collected and releasing the orphan’s process identifier and process-table entry.
 
+### Fork and Exec
+- Fork is an operation whereby a process creates a copy of itself.
+- When a process calls fork, it is deemed the parent process and the newly created process is its child. After the fork, both processes not only run the same program, but they resume execution as though both had called the system call. They can then inspect the call's return value to determine their status, child or parent, and act accordingly. (return value is pid of child process for parent and zero for child).
+- A child process uses the same pc(program counter), same CPU registers, same open files which use in the parent process.
+- The fork operation creates a separate address space for the child. The child process has an exact copy of all the memory segments of the parent process. In modern UNIX variants that follow the virtual memory model from SunOS-4.0, copy-on-write semantics are implemented and the physical memory need not be actually copied. Instead, virtual memory pages in both processes may refer to the same pages of physical memory until one of them writes to such a page: then it is copied. This optimization is important in the common case where fork is used in conjunction with exec to execute a new program: typically, the child process performs only a small set of actions before it ceases execution of its program in favour of the program to be started, and it requires very few, if any, of its parent's data structures.
+- Then, the copy, called the "child process", calls the exec system call to overlay itself with the other program: it ceases execution of its former program in favor of the other.
+- Some UNIX systems have chosen to have two versions of fork(), one that duplicates all threads and another that duplicates only the thread that invoked the fork() system call.
+- Which of the two versions of fork() to use depends on the application.
+If exec() is called immediately after forking, then duplicating all threads is unnecessary, as the program specified in the parameters to exec() will replace the process. In this instance, duplicating only the calling thread is appropriate. If, however, the separate process does not call exec() after forking, the separate process should duplicate all threads.
 ## IPC
 - There are two fundamental models of interprocess communication: shared memory and message passing.
 - Chrome's multiprocess architecture, . If one website crashes, only its renderer process is affected; all other processes remain unharmed.
@@ -297,6 +323,8 @@ services use ALPC to communicate with client processes.
 
 ### Pipes
 
+- Example : ```ls | less``` 
+
 #### Ordinary Pipes
 - They are unidirectional and
 employ parent–child relationships between the communicating processes.
@@ -318,5 +346,154 @@ pipe ceases to exist.
 - Named pipes are referred to as FIFOs in UNIX systems.
 
 
+## RPC
+- RPC is the service and protocol offered by the operating system to allow code to be triggered for running by a remote application. It has a defined protocol by which procedures or objects can be accessed by another device over a network. An implementation of RPC can be done over basically any network transport (e.g. TCP, UDP).
+
+- Similar to IPC, but because we are dealing with an environment in which the processes are executing on separate systems, we must use a message-based communication scheme to provide remote service. We can't use shared memory communication.
+- In contrast to IPC messages, the messages exchanged in RPC communication are well structured and are thus no longer just packets of data.
+-  Each message is addressed to an RPC daemon listening to a port on the remote system, and each contains an identifier specifying the function to execute and the parameters to pass to that function. 
+- Parameter marshaling addresses the issue concerning differences in data representation(big endian/little) on the client and server machines. . To resolve differences like this, many RPC systems define a machine-independent representation of data. One such representation is known as **external data representation (XDR)**.
+- Request handling should be Atmost once i.e, Idempotent.
+- The client can know the port to communicate beforehand or can ask a rendezvous (also called a **matchmaker**) daemon on a fixed RPC port.
+![](res/rpc.jpg)
+
+## Socket
+- The socket is just a programming abstraction such that the application can send and receive data with another device through a particular network transport. You implement protocols (such as RPC) on top of a transport (such as TCP) with a socket.
+- sockets packetize communication using IPv4 or IPv6
+
+### Sockets vs Pipes
+- pipes only exist within a specific host, and they refer to buffering between virtual files, or connecting the output / input of processes within that host. There are no concepts of packets within pipes.
+- sockets packetize communication using IPv4 or IPv6; that communication can extend beyond localhost. Note that different endpoints of a socket can share the same IP address; however, they must listen on different TCP / UDP ports to do so.
+
+
+# Chapter 4
+
+- It comprises a thread ID, a program counter (PC), a register set, and a stack.
+-  It shares with other threads belonging to the same process its code section, data section, and other operating-system resources, such as open files and signals. Also heap area.
+
+
+## Advantages
+- Responsive UI
+- Resource sharing is easy, don't have to use IPC.
+- Thread creation is easier than process creation.
+- Greatly helps in case of multiprocessor architecture.
+
+## Concurrency vs Parallelism
+- A concurrent system supports more than one task by allowing all the tasks to make progress. By using time multiplexing. This doesn't need multicore architecture.
+
+-  a parallel system can perform more than one task
+simultaneously. In a multicore architecture. 
+
+## Amdahl's Law
+- Amdahl’s Law is a formula that identifies potential performance gains from adding additional computing cores to an application that has both serial (nonparallel) and parallel components. 
+- If S is the portion of the application
+that must be performed serially on a system with N processing cores, the formula appears as follows :
+
+![](res/amdahl_1.jpg)
+![](res/amdahl_2.jpg)
+
+- One interesting fact about Amdahl’s Law is that as N approaches infinity, the speedup converges to 1/S. You can never go beyond 1/S, no matter the number of cores you add.
+
+## Multithreading Modes
+- Support for threads may be provided either at the user level, for user threads, or by the kernel, for kernel threads.
+- User threads are supported above the kernel and are managed without kernel support, whereas kernel threads are supported and managed directly by the operating system.
+-  A relationship must exist between user threads and kernel
+threads.
+
+### Many-to-One Model
+- The many-to-one model maps many user-level threads to one kernel thread.
+- The entire process will block if a thread makes a blocking system call. Since only 1 kernel thread is given to a process and that thread is busy in making the system call.
+- multiple threads are unable to run in parallel on multicore systems.
+- No one uses this nowadays.
+
+### One to One Model
+- maps each user thread to a kernel thread.
+- It provides more concurrency than the many-to-one model by allowing another thread to run when a thread makes a blocking system call.
+- Creating a user thread requires creating the corresponding kernel thread, and a large number of kernel threads may burden the performance of a system.
+- Linux, along with the family of Windows operating systems, implement the one-to-one model.
+
+### Many to Many Model
+-  Multiplexes many user-level threads to a smaller or equal number of kernel threads.
+-  The number of kernel threads may be specific to either a particular application or a particular machine (an application may be allocated more kernel threads on a system with eight
+processing cores than a system with four cores).
+-  Developers can create as many user threads as necessary, and
+the corresponding kernel threads can run in parallel on a multiprocessor. Also, when a thread performs a blocking system call, the kernel can schedule another thread for execution.
+- In practice it is difficult to implement.
+
+### Two Level Model
+-  still multiplexes many userlevel threads to a smaller or equal number of kernel threads but also allows a user-level thread to be bound to a kernel thread.
+![](res/two_level_model.jpg)
+
+
+## Threading Libraries
+- Pthreads, may be provided as either a user-level or a kernel-level library.
+- The Windows thread library is a kernel-level library available on Windows systems. Invoking a function in the API for the library typically results in a system call to the kernel.
+- Java thread API is generally implemented using a thread library available on the host system. This means that on Windows systems, Java threads are typically implemented using the Windows API; UNIX, Linux, and macOS systems typically use Pthreads.
+
+### Two Types of Thread Creation
+- Asynchronous : Once the parent creates a child thread, the parent resumes its execution, example UI app. 
+- Synchronous :  Only after all of the children have joined can the parent resume execution, example  the
+parent thread may combine the results calculated by its various children.
+
+## Implicit Threading
+- These strategies generally require application developers to
+identify tasks—not threads— that can run in parallel.
+- A task is usually written as a function, which the run-time library then maps to a separate thread.
+-  developers only need to identify parallel tasks, and the
+libraries determine the specific details of thread creation and management.
+
+### Thread Pool
+- The general idea behind a thread pool is to create a number of threads at
+start-up and place them into a pool, where they sit and wait for work.
+-  If the pool contains no available thread, the task is queued until
+one becomes free. 
+- Once a thread completes its service, it returns to the pool
+and awaits more work.
+-  Thread pools work well when the tasks submitted to
+the pool can be executed asynchronously.
+
+#### Advantages
+- Servicing a request with an existing thread is often faster than waiting to
+create a thread.
+- Limits threads to a certain limit.
+- Allows for task to be executed after time delay or execute periodically, since we separated the logic of creation and exectution.
+
+### Fork Join
+- look at fork join in java.
+
+## Threading Design Consideration
+
+### Fork and Exec
+- Whether fork copies all threads or not, depends on the application.
+If exec() is called immediately after forking, then duplicating all threads is unnecessary. e. If, however, the separate process does not call exec() after forking, the separate process should duplicate all threads.
+
+### Signals
+- A signal is used in UNIX systems to notify a process that a particular event has occurred.
+- A signal may be received either synchronously or asynchronously.
+- Examples of synchronous signals include illegal memory access and division by 0.  Synchronous signals are delivered to the same process that performed
+the operation that caused the signal.
+- When a signal is generated by an event external to a running process, that
+process receives the signal asynchronously. Examples of such signals include
+terminating a process with specific keystrokes (such as <control><C>), completion of an IO event.
+- Once delivered, the signal must be handled.
+  - A default signal handler
+  - A user-defined signal handler
+- Delivering signals is more complicated in multithreaded programs
+  - synchronous signals need to be delivered to the thread causing
+the signal and not to other threads in the process.
+  - some async signals like terminate, should be sent to all threads.
+
+#### APC (Asynchronous Procedure Calls)
+- The APC facility enables a user thread to specify a function that is to be called when the user thread receives notification of a particular event.
+
+### Thread Cancellation
+- Two Types of cancellation
+#### Async Cancellation
+-  One thread immediately terminates the target thread. No chance to clean itself.
+- canceling a thread asynchronously may not free a necessary system-wide resource.
+#### Deferred Cancellation
+- The target thread periodically checks whether it
+      should terminate, allowing it an opportunity to terminate itself in an
+      orderly fashion.
+- cancellation occurs only after the target thread has checked a flag to determine whether or not it should be canceled. When a thread reaches a **cancellation point**.
 # Misc
-## Local procedure files

@@ -658,7 +658,7 @@ While Thread 2 and 4 are still working on the read lock, if another thread 5 whi
 ### Execution Exception
 
 
-# Fork Join Pool
+# Fork Join Pool (USED FOR RECURSION)
 - ### It implements the Executor Service Interface (just like ThreadPoolExecutor class).
 
 - 2 ways in which it differs from ThreadPoolExecutor:
@@ -698,6 +698,9 @@ Let's consider the following case, we have 2 threads in our thread pool.
 
 ## Code
 - ### We extend the RecursiveTask Interface, which is a thin wrapper of ForkJoinTask. Remember Recursive Task is a abstract class not interface.
+
+![](res/java_fork_join_pool.jpg)
+
 - We overload the compute method.
 ```java
 class FibonacciTask extends RecursiveTask<Integer>{
@@ -828,7 +831,7 @@ On converting the following to code we have
 ## Default Pool
 - If we don't supply the executor service, internally the default pool being used is a ForkJoinPool.
 
-## Exeception Handling
+## Exception Handling
 - If getOrder or enrich or performPayment threw an exception return a failedOrder
 ```java
     ExecutorService cpuBound = Executors.newFixedThreadPool(4);
