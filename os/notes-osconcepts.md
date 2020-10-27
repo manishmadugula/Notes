@@ -506,11 +506,11 @@ the signal and not to other threads in the process.
 ### Scheduler Activations
 - #### Only valid for many to many or many to one model.
 - There is an intermediate datastructure known as LWP (Light Weight Process) between user thread and kernel thread.
-- For User thread library, LWP appears to be a virtual processor on which the application can schedule a user thread to
-run.
+- For User thread library, LWP appears to be a virtual processor on which the application can schedule a user thread to run.
 - Each LWP is attached to a kernel thread, and it is kernel threads that the operating system schedules to run on physical processors.
 - There is a one-to-one correspondence between LWPs and kernel threads.
 - If a kernel thread blocks (such as while waiting for an I/O operation to complete), the LWP blocks as well, as a result the user thread blocks.
+  
 #### Number of LWPs
 - For CPU Bound Application, LWP == No of processors
 - IO Bound Application, can require multiple LWP to process. Typically, an LWP is required for each concurrent blocking system call. For example, that five different file-read requests occur simultaneously. Five LWPs are needed, because all could be waiting for I/O completion in the kernel. If a process has only four LWPs, then the fifth request must wait for one of the LWPs to return from the kernel.
@@ -550,4 +550,263 @@ that only the kernel can access them.
   - This data structure, instead of storing data for the task, contains pointers to other data structures where these data are stored. For example, data structures that represent the list of open files, signal-handling information, and virtual memory.
   -  The flexibility of the clone() system call can be extended to the concept of **containers** (allows creating multiple Linux systems (containers) under a single Linux kernel).
 
+# Chapter - 5
+
+## CPU Burst
+- CPU Bound : few Long CPU Bursts 
+- IO Bound : many short CPU Bursts  
+
+## CPU Scheduler
+-, a ready queue can be implemented as a FIFO queue, a priority queue, a tree, or simply an unordered linked list. 
+- The records in the queues are generally process control blocks (PCBs) of the processes.
+
+## Preemptive vs Non Premptive Schedulers
+- CPU Scheduling Decision can take place in 4 circumstances : 
+  1. When a process switches from the running state to the waiting state. Example : IO Request.
+  2. When a process switches from the running state to the ready state. (Interrupt).
+  3. When a process switches from the waiting state to the ready state (Completion of IO Request).
+  4. When a process terminates
+- Non Premptive : When Scheduling takes place only in case of 1 and 4. Otherwise it is Preemptive.
+- Most modern os are completely premptive.
+
+### Challenges in Preemptive
+- preemptive scheduling can result in race conditions when
+data are shared among several processes.
+- #### Preemption also affects the design of the operating-system kernel. During the processing of a system call, the kernel may be busy with an activity on behalf of a process. Say updating a kernel datastructure. When the process is prempted during this change there can be 2 behavior.
+  - Kernel can be non-premptive i.e will wait for a system call to complete before doing a context switch. This kernel-execution model is a poor one for supporting real-time computing
+  - A preemptive kernel requires mechanisms such as mutex locks to prevent race conditions when accessing shared kernel data structures.
+  - Most mordern os have premptive kernels.
+
+
+## Dispatcher
+- The dispatcher is the module that gives control of the CPU’s core to the process selected by the CPU scheduler. 
+  - Switching context from one process to another, involves reseting CPU registers program counters etc.
+  - Switch from kernel to User mode.
+  - Jumping to the proper location in the user program to resume that location.
+- The time it takes for the dispatcher to stop one process and start another running is known as the dispatch latency
+
+### Useful information for context switches
+- vmstat
+- cat /proc/{{pid}}/status
+  - Can see voluntary context switches to get idea of number of IO performed.
+
+## Scheduling Algorithms
+
+### First Come First Served
+- Non premptive
+- There is a convoy effect as all the other processes wait for the one big process to get off the CPU.
+- This effect results in lower CPU and device utilization than might be possible if the shorter processes were allowed to go first.
+-  The FCFS algorithm is thus particularly troublesome for interactive systems.
+
+### Shortest Job First Scheduling (Better name : shortest-next-CPU-burst)
+- Should be called : Shortest-next-CPU-burst : Scheduling depends on the length of the next CPU burst of
+a process, rather than its total length.
+- Gives minimum average waiting time for a given set of processes.
+- ### Although the SJF algorithm is optimal, it cannot be implemented at the level of CPU scheduling, as there is no way to know the length of the next CPU burst.
+- We can approximate, We expect that the next CPU burst will be similar (exponential average) in length to the previous ones.
+- We use the following formulae, where τ(n) is the prediction of nth process and t(n) is the actual time taken by nth process and alpha controls the weight that τ has.
+![](res/shortest_job_first_eqn.jpg)
+- In above equation P(n) and P(n+1) are grouped as similar process based on maybe size, or type etc.
+- It can be premptive and non premptive.
+- It may cause starvation if shorter processes keep coming. This problem can be solved using the concept of ageing
+- Preemptive SJF scheduling is sometimes called shortest-remainingtime-first scheduling.
+#### Shortest Remaining time algorithm
+- When a new process is added the algorithm only needs to compare the currently executing process with the new process, ignoring all other processes currently waiting to execute. So little overhead.
+-  Short processes are handled very quickly.
+
+### Round Robin Scheduling
+- Basically a premptive version of FCFS.
+- The performance metrics i.e waiting and turn around time depends heavily on the time quantum after which context switch happens.
+- If it is too less more context switch will degrade.
+- If too less then it is same as FCFS.
+
+### Priority Scheduling
+- Example is SJF
+- Priorities can be defined either internally or externally.
+  - Internal : time limits, memory requirements, the number of open files, and the ratio of average I/O burst to average CPU burst have been used in computing priorities.
+  - External : The importance of the process, the type and amount of funds being paid for computer use.
+- A major problem with priority scheduling algorithms is indefinit blocking, or **starvation**.
+  - A priority scheduling algorithm can leave some lowpriority processes waiting indefinitely.
+  - Solution can be **aging** :  gradually increasing the priority of processes that wait in the system for a long time.
+  - Another option is to combine round-robin and priority scheduling in such a way that the system executes the highest-priority process and runs processes with the same priority using round-robin scheduling.
+
+### Multi-Level Scheduling
+- Instead of a single queue, it is
+often easier to have separate queues for each distinct priority, and priority
+scheduling simply schedules the process in the highest-priority queue
+- You don't have to search for higher priority task O(n) time.
+- each queue might have its own scheduling algorithm. The foreground queue might be scheduled by an RR algorithm, for example, while the background queue is scheduled by an FCFS algorithm.
+- A process that arrives for queue 1 will preempt a process in queue 2. A process in queue 1 will in turn be preempted by a process arriving for queue 0.
+![](res/multi_level_scheduling.jpg)
+- Each queue has absolute priority over lower-priority queues.
+  - No process can run unless the above queue is empty.
+  - Or there can be time slicing within queues based on prioirty (80 for foreground, 20 for background).
+- Multilevel queue aren't flexible, a process can't change it's queue. So aging can't be implemented to prevent starvation.
+
+
+
+### Multi-Level Feedback Queue
+- The multilevel feedback queue scheduling algorithm, in contrast, allows a process to move between queues. The idea is to separate processes according to the characteristics of their CPU bursts.
+  - If a process uses too much CPU time,
+it will be moved to a lower-priority queue. 
+  - Aging can be implemented to avoid starvation
+- the most general CPU-scheduling algorithm
+#### Parameters
+- The number of queues
+- The scheduling algorithm for each queue
+- The method used to determine when to upgrade a process to a higherpriority queue
+- The method used to determine when to demote a process to a lowerpriority queue.
+- The method used to determine which queue a process will enter when that process needs service.
+
+
+## Thread Scheduling Schemes
+
+### Process Contention Scope (Scheduling User Thread to LWP)
+- For many to many and many to one models, the thread library is responsible for scheduling user level threads onto available LWPs, this doesn't mean the threads are actually running in the CPU as it is the operating system's responsibility to schedule the LWP(Kernel threads) to the actual CPU. This scheme is known as Process Contention Scope.
+- It is user thread library that is scheduling these thread.
+- It is important to note that PCS will typically preempt the thread currently running in favor of a higher-priority thread.
+- Priority is set by the developer.
+- The thread competes for resources with all other threads in the same process that were also created with the PTHREAD_SCOPE_PROCESS contention scope
+
+### System Contention Scope
+- To decide which LWP/Kernel Thread to run onto CPU, The kernel uses System Contention scope.
+- It is the kernel scheduling these threads.
+- Systems using the one-to-one model, such as Windows and Linux schedule threads using only SCS.
+- The thread competes for resources with all other threads in all processes on the system that are in the same scheduling allocation domain. 
+
+![](res/contention_scope.jpg)
+
+### Pthreads Set Scope
+- The pthread_attr_setscope(pthread_attr_t *attr, int scope) function sets the contention scope attribute of the thread attributes object referred to by attr to the value specified in scope.
+
+
+## Multi-Processor Scheduling
+2 approaches to multi-processor scheduling
+
+- Asymmetric : System activities like scheduling, io processing etc handled by one and the rest handle user tasks
+  - System data structures are not shared by all CPUs.
+  - master server becomes the bottleneck.
+
+
+- Symmetric Multiprocessing (SMP)
+  - Followed the most.
+  - There can be 2 stategies for organizing threads.
+    - Shared Queue
+      - Problems like no datalocality and synchronization issues
+      - Load Balancer not required.
+    - Each processor with separate queue.
+      - Most followed.
+      - Load Balancing is necessary to avoided skewed distribution.
+
+## Chip Multithreading/ Hyper threading/ Simultaneous Multithreading
+
+- when a processor accesses memory, it spends a significant amount of time waiting for the data to become available. This situation, known as a memory stall. Because the mordern processors operate at much faster speeds than the memory clocks. Memory Stall can also occur due to cache miss.
+
+- To optimize this useless time, most chips have capability of utilizing hardware level threading, if one hardware thread stall then other one can execute.
+
+- The resources of the physical core (such as caches and pipelines) must be shared among its hardware threads, and therefore a
+processing core can only execute one hardware thread at a time.
+
+### Two ways to implement hardware threading
+
+#### Coarse Grained
+- Only switches when a long latency event occurs, the core switches to another hardware level thread.
+- Cost of switching is high since the instruction pipeline has to be flushed and filled with other thread.
+
+#### Fine Grained
+- Issues instructions for different threads after every cycle,
+- Fine-grained (or interleaved) multithreading switches between threads at a much finer level of granularity— typically at the boundary of an instruction. Cost of switching is small.
+
+### Scheduling in hyperthreaded cores
+- There are now 2 levels of scheduling, on that is made by the operating system, other at CPU Level(Can be FIFO, or priority based).
+- **It is important to note that for mordern systems os are aware of hyperthreading and therefore can optimize the scheduling by not scheduling the threads on the same hardware core, i.e onto logical processors that do not share resources.**
+
+![](res/hyperthreading_scheduling.jpg)
+
+## Load Balancing
+- Push Migration : A separate task pushes task to the idle processor from a busy processor
+- Pull Migration : An idle processor, pulls the tasks from a busy processor.
+- The balanced load, can be number of threads/ priority of each thread etc.
+
+## Processor Affinity/ Data Locality
+- The cache of a processor contains the information most required by the thread executed by a particular core.
+- If process migration occurs due to load balancing, the cache information is invalidated and has to be moved to another processor, thus incurring an overhead. 
+- Thus most os avoid migrating thread to another processor to take advantage of warm cache, this is processor affinity.
+- Also use of shared thread queue eliminates advantages of data locality similarly, with private queue, threads are always assigned to same queue so can benifit from warm cache.
+-  Load balancing often counteracts the benefits of processor affinity.
+
+### Two types of processor affinity
+- Soft affinity : os will attempt to keep thread in same core, but may migrate during load balancing.
+- Hard affinity : allow a processor to be only limited to specific CPUs on which they can run.
+- Linux is soft by default, but also allows hard using a system call. 
+
+### NUMA
+- Non uniform memory access
+- harness large numbers of processors in a single system
+- Although CPU in NUMA share common address space, the cost to access memory attached to same CPU is less than to different CPU, there also processor affinity kick in.
+
+
+## Heterogenous Multiprocessing /big.LITTLE architecture.
+- Not same as asymmetric multiprocessing, since user task can run on all processor.
+- This is particularly useful in mobile systems where battery has to be conserved.
+- Use variety of CPU based on their performance.
+- For long running, background type task use a slower power efficienct processor.
+- For demand and interactive apps use faster power hungry processor.
+- In battery saving mode, disable power hungry processor.
+
+## Real Time CPU Scheduling
+
+### Soft real time
+- Soft real-time systems provide no guarantee as to when a critical real-time process will be scheduled. They guarantee only that the process will be given preference over noncritical processes.
+
+### Hard real time
+- A task must be serviced by its deadline; service after the deadline has expired is the same as no service at all.
+
+### Event Latency
+The amount of time that elapses from when an event occurs to when it is serviced.
+
+#### Interrupt Latency
+- Period of time from the arrival of an interrupt at the CPU to the start of the routine that services the interrupt.
+
+#### Dispatch Latency
+??
+
+
+### Priority Based Scheduling
+
+#### Admission Control
+- For real time systems, the scheduler does one of two
+things. It either admits the process, guaranteeing that the process will complete on time, or rejects the request as impossible if it cannot guarantee that the task will be serviced by its deadline.
+
+### Rate Monotonic Scheduling (IMPORTANT)
+- The rate-monotonic scheduling algorithm schedules periodic tasks using a static priority policy with preemption.
+- each periodic task is assigned a priority inversely based on its period, i.e to assign a higher priority to tasks that require the CPU more often. 
+- priorities are fixed.
+- ### Rate-monotonic scheduling is considered optimal in that if a set of processes cannot be scheduled by this algorithm, it cannot be scheduled by any other algorithm that assigns static priorities.
+- Rate-monotonic scheduling has a limitation:
+CPU utilization is bounded, and it is not always possible to maximize CPU resources fully. The worst-case CPU utilization for scheduling N processes is
+
+![](res/rate_ms_worst_case.jpg)
+
+- For more information, see 2 examples on page 232.
+
+### Earliest DeadLine First (IMPORTANT)
+- assigns priorities dynamically according to deadline. 
+- when a process becomes runnable, it must announce its deadline requirements to the system.
+- Priorities may have to be adjusted to reflect the deadline of the newly runnable process, unlike rate monotonic scheduling, where it was fixed.
+- Unlike the rate-monotonic algorithm, EDF scheduling does not require that processes be periodic
+- Look at the example where EDF was better than RMS, by utilizing dynamic priorities.
+- For 2 process P1 & P2, period1=50, timetaken1=25, period2=80,timetaken=35. Using RMS fails but EDF succeeds. since in RMS priority is always P1>P2, but in EDF, priority changes at one point P2>P1.
+
+### Proportional Share Scheduling (IMPORTANT)
+- Used in linux
+- Proportional share schedulers operate by allocating T shares among all applications. An application can receive N shares of time, thus ensuring that the
+application will have N∕T of the total processor time.
+- Proportional share schedulers must work in conjunction with an admission-control policy to guarantee that an application receives its allocated
+shares of time.
+
+## Linux Scheduler
+  
+
 # Misc
+- Interrupt Service Routine
