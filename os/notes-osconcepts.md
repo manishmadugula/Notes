@@ -370,7 +370,7 @@ pipe ceases to exist.
 
 - It comprises a thread ID, a program counter (PC), a register set, and a stack.
 -  It shares with other threads belonging to the same process its code section, data section, and other operating-system resources, such as open files and signals. Also heap area.
-
+- Context switching a process is slower than context switching a thread belong to same process. Thus threads are called Light Weight Processes.
 
 ## Advantages
 - Responsive UI
@@ -740,7 +740,7 @@ processing core can only execute one hardware thread at a time.
 - Hard affinity : allow a processor to be only limited to specific CPUs on which they can run.
 - Linux is soft by default, but also allows hard using a system call. 
 
-### NUMA
+## NUMA
 - Non uniform memory access
 - harness large numbers of processors in a single system
 - Although CPU in NUMA share common address space, the cost to access memory attached to same CPU is less than to different CPU, there also processor affinity kick in.
@@ -806,7 +806,187 @@ application will have N∕T of the total processor time.
 shares of time.
 
 ## Linux Scheduler
-  
+- Uses Completely Fair Scheduler and Real Time Scheduler.
+- Based on scheduling classes, each class is assigned a priority.
+- To decide the next task to run, the scheduler selects the highest-priority task belonging to the highest-priority scheduling class.
+- Standard Linux kernels implement
+two scheduling classes
+  - Default CFS
+  - Real Time Scheduling
+
+### CFS Scheduler
+- The CFS scheduler assigns a proportion of CPU processing time to each task.
+- This proportion is based on the task's nice value.(numerically lower nice value indicates a higher relative priority).
+- nice value is between -20 to +19.
+
+#### Load balancing
+- Supports Load Balancing
+- Load is determined as a combination of priority of thread and average rate of CPU Usage.
+
+#### NUMA Aware
+- To minimize thread migration, Linux identifies a hierarchical system of scheduling domains.
+- ### A scheduling domain is a set of CPU cores that can be balanced against one another.
+- In most multicore processors, There is a heirarchy of cache, L1, L2, L3. 
+- The cores in each scheduling
+domain are grouped according to how they share these caches.
+- ### Cores sharing L2 cache are organized into separate domains and the cores sharing L3 cache are organized into processor level domain (also known as NUMA NODE).
+- CFS balances loads within domains, beginning at the lowest level of the hierarchy.
+![](res/scheduling_domain.jpg) 
+
+#### Target Latency 
+- CFS doesn’t use discrete values of time slices and instead identifies a targeted latency, which is an interval of time during which every runnable task should run at least once.
+- Proportions of CPU time are allocated
+from the value of targeted latency. Targeted latency can increase if the number of active tasks in the system grows beyond a certain threshold.
+
+#### Virtual Run Time
+- Insteading of using a numerical priority, the CFS maintains a vruntime(virtual runtime) per each task. lower vruntime higher priority. 
+- The virtual run time is associated with a decay factor based on the priority of a task, the vruntime is a combination of cpu burst and nice value. So IO bound operation have low vruntime thus higher priority.
+- For tasks at normal priority (nice values
+of 0), virtual run time is identical to actual physical run time. 
+- To decide which task to run next, the scheduler simply selects the task that has
+the smallest vruntime value.
+
+#### Red Black Trees in CFS
+- Balanced binary tree (Red Black Tree) is used to keep track of which task to run next.
+- key is based on the value of vruntime.
+- A task in ready queue is added to this tree.
+- O(logn) to determine which is next job to run.
+- Leftmost i.e next job is cached for efficiency purpose.
+
+
+### Real Time Scheduling
+- Any task scheduled using either the SCHED FIFO or the SCHED RR real-time policy runs at a higher priority than normal 
+
+### Global Priority.
+
+- Linux uses 2 different priority values/nice value ranges, one for real time and one for normal task(CFS)
+- Global priority values range from 0 to 139, Realtime task are assigned (0 to 99)
+- CSF Task/ normal tasks are assigned 100-139. 100 mapping to nice value of -20 and 139 to 19.
+
+## Windows
+- Uses a 32 level priority scheme
+- 
+
+# Chapter 6 (Synchronization Tools)
+
+## Non Atomic Operation
+- Instructions like count++ and count--, may seem like a single operation, but are infact a combination of operation
+- count++, (reg=count,reg=reg+1,count=reg)
+- In these cases if another thread is also modifying count's values, inconsistent count values can result due to race conditions.
+- Thus these operations require synchronization protection tools like mutexes.
+
+## Atomic Operation
+- Indivisible process
+- Typically Won't require mutex, but may require if multiple atomic operation are required to be atomic as a whole(like in pub sub).
+
+## Critical Section
+- The critical section is a code segment where the shared variables can be accessed
+- Any process can context switch any other process, regardless of it being in critical section.
+
+## Critical Section Problem Criteria (IMPORTANT)
+- MUTUAL EXCLUSION : If process Pi is executing in its critical section, then no other processes can be executing in their critical sections.
+- PROGRESS : If a process is not using the critical section, then it should not stop any other process from accessing it. Only those processes are competing to go to critical section who wants to. 
+- BOUNDED WAITING : There exists a bound, or limit, on the number of times that other processes are allowed to enter their critical sections after a process has made a request to enter its critical section and before that request is granted, so the process has to wait a bounded amount of time.
+
+## Peterson Solution
+- Useful for 2 process.
+- There are 2 shared variables, flag (bool array) and turn (boolean) 
+For Process 0
+```c++
+  flag[0] = T
+  turn = 1;
+  //Trap
+  while(turn!=0 && flag[1]==T);
+  //Critical Section
+  flag[0] = F
+  //Remaining Sectin
+```
+
+and 
+
+```c++
+  flag[1] = T
+  turn = 0;
+  //Trap
+  while(turn!=1 && flag[0]==T);
+  //Critical Section
+  flag[1] = F
+  //Remaining Sectin
+```
+- The variable turn indicates whose turn it is to enter its critical section. See it is imporant to notice that once flag is set to T for 0, turn is given to 1.
+- This is done to ensure both process won't be trapped at the same time (deadlock), If both processes try to enter at the same
+time, turn will be set to both i and j at roughly the same time.
+- [See this to be clear](https://www.youtube.com/watch?v=XAsAAJSotA4&list=PLmXKhU9FNesSFvj6gASuWmQd23Ul5omtD&index=74)
+
+### Peterson Solution won't work in modern machines
+- Because of instruction reordering optimizations, (If turn is set to 1 before flag[0] is set to True), there is a chance when both the process enter critical section at the same time.
+![](res/peterson_solution_issue.jpg)
+
+## Hardware Support for Synchronization
+- We saw we can't simply use software based solution because of instruction reordering.
+
+### Memory Barriers/ Memory Fences
+- How a computer architecture determines what memory guarantees it will provide to an application program is known as its
+memory model. Computer architectures
+provide instructions that can force any changes in memory to be propagated to
+all other processors, thereby ensuring that memory modifications are visible to threads running on other processors. Such instructions are known as memory
+barriers.
+- ### Similar to volatile/Synchronized visibility guarantee in JAVA
+
+#### Solving Instruction Reordering Issue in case of peterson Solution
+- If we introduce a memory barrier between setting of flag and turn value assignment, we can guarantee value of flag is stored before the value of turn, thus preventing instruction reordering.
+
+### Hardware Instructions
+- These Instructions are atomic and form building blocks of concepts like atomic variables mutex etc.
+
+#### Test and Set
+- If target is true, it returns true and waits, if target is false(lock is unlocked), then test_and_set returns false and exits the trap.
+```c++
+bool test_and_set(bool *target){
+  bool temp = *target;
+  *target = true;
+  return temp
+}
+
+//trap
+while(test_and_set(&lock));
+//critical_section
+lock=false;
+//remaining code
+``` 
+
+#### Compare And Swap
+- Similar to test_and _set
+```c++
+  int compare_and_swap(int *value, int expected, int new_value){
+    int temp = *value;
+    if(*value==expected)
+      *value = new_value;
+    return temp;
+  }
+
+  //trap or wait
+  while(compare_and_swap(&lock,0,1)!=0);
+  //critical_section
+  lock=0;
+  //remainder section
+```
+
+### Atomic Variables
+- Formed using test_and_set or compare_and_swap hardware instructions.
+- They don't entire solve race conditions in all cases.
+- Consider a situation in which
+the buffer is currently empty and two consumers are looping while waiting for
+count > 0. If a producer entered one item in the buffer, both consumers could
+exit their while loops (as count would no longer be equal to 0) and proceed to
+consume, even though the value of count was only set to 1.
+
 
 # Misc
 - Interrupt Service Routine
+- Applications of Semaphones
+  - resource management
+  - critical section solution
+  - Process ordering
+
+- See the while parts in that video.
