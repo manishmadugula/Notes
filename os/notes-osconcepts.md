@@ -939,24 +939,30 @@ barriers.
 ### Hardware Instructions
 - These Instructions are atomic and form building blocks of concepts like atomic variables mutex etc.
 
-#### Test and Set
+#### Test and Set (PESSIMESTIC LOCKING)
 - If target is true, it returns true and waits, if target is false(lock is unlocked), then test_and_set returns false and exits the trap.
 ```c++
+//Similar function implemented at hardware level.
 bool test_and_set(bool *target){
   bool temp = *target;
   *target = true;
   return temp
 }
 
-//trap
-while(test_and_set(&lock));
-//critical_section
-lock=false;
-//remaining code
-``` 
+//Function showing use harware level atomic test_and_set.
+void func(){
+  while(test_and_set(&lock));
+  //critical_section
+  lock=false;
+}
+  ``` 
 
-#### Compare And Swap
-- Similar to test_and _set
+#### Compare And Swap (OPTIMISTIC LOCKING)
+- ### a variable is only updated if it still has the same value as at the time we had fetched the value of the variable from the main memory.
+- This operation is used to implement synchronization primitives like semaphores and mutexes.
+- This is atomic operation supported by hardware.
+- **sets to a new_value if current value is same as expected**.
+- Does one more compare operation than test_and_set.
 ```c++
   int compare_and_swap(int *value, int expected, int new_value){
     int temp = *value;
@@ -972,21 +978,308 @@ lock=false;
   //remainder section
 ```
 
+#### Compare and swap in Java
+- Instead of using synchronised keyword, we can leverage CPU instruction compareAndSwap to write multithreaded code.
+- Write this,
+  ```java
+  public static class MyLock {
+      private AtomicBoolean locked = new AtomicBoolean(false);
+      public boolean lock() {
+          return locked.compareAndSet(false, true);
+      }
+  }
+  ```
+  Instead of
+  ```java
+    class MyLock {
+      private boolean locked = false;
+      public synchronized boolean lock() {
+          if(!locked) {
+              locked = true;
+              return true;
+          }
+          return false;
+      }
+  }
+  ```
+
+
 ### Atomic Variables
-- Formed using test_and_set or compare_and_swap hardware instructions.
+- Formed using or compare_and_swap hardware instructions.
 - They don't entire solve race conditions in all cases.
 - Consider a situation in which
-the buffer is currently empty and two consumers are looping while waiting for
-count > 0. If a producer entered one item in the buffer, both consumers could
-exit their while loops (as count would no longer be equal to 0) and proceed to
+the buffer is currently empty and two consumers are looping while waiting for count > 0. 
+- If a producer entered one item in the buffer, both consumers could exit their while loops (as count would no longer be equal to 0) and proceed to
 consume, even though the value of count was only set to 1.
+- atomic integers are much lighter weight than traditional locks, and are generally more appropriate than mutex locks or semaphores for single updates to shared variables such as counters.
+- For simple cases, Don't require overhead of locking, since they use mordern cpu instructions.
 
+
+## Mutexes (Typically refers to locks which puts to suspended state)
+- higher level apis to implement synchronization by application developer.
+- Calls to either acquire() or release() must be performed atomically. Thus, mutex locks can be implemented using the compare and swap operation.
+- alternative to spin lock.
+- no busy waiting.
+
+##  Spin locks/using busy waiting
+- Type of locks where there is a while trap to see if mutex is unlocked yet.
+- Called **SPIN LOCK** since, Process spins while having to wait for the lock, thus consuming useful CPU time. It requires **busy waiting**.
+- Useful for systems where locks are held for short time, since there is no context switch(heavy operation) required when a process must wait on a lock.
+- Useful for low contention scenarios
+-  use a spinlock if the lock will be
+held for a duration of less than two context switches.
+  ```c++
+  //lock
+  void acquire(){
+    while(!available);
+    available = false;
+  }
+
+  //unlock
+  void release(){
+    available = true;
+  }
+  ```
+- alternative to spin lock is suspending the process and waking it up once the lock is available.
+
+
+
+## Lock Contention
+- A lock is considered contended
+if a thread blocks while trying to acquire the lock.
+- If a lock is available when
+a thread attempts to acquire it, the lock is considered uncontended.
+- highly contended locks(a relatively large number of threads attempting to acquire the lock) tend to decrease overall performance of concurrent applications.
+
+## Semaphores (IMPORTANT)
+- Nothing but integer values
+- 2 Types
+  - Binary Semaphores 
+    - Can only take 0 or 1, similar to mutexes/spin locks, but not the same.
+  - Counting Semaphores
+    - Unbounded
+
+### Defination (default busy waiting)
+- wait and signal have to be atomic operation.
+#### wait / ENTRY SECTION
+- Also known as P, Down.
+- S is semaphore
+```
+void wait(S){
+  //trap
+  while(S<=0);
+  S--;
+}
+```
+
+#### Signal / EXIT SECTION 
+- Also known as V, Up, Post, Release.
+```
+void signal(S){
+  S++;
+}
+```
+
+### Defination (suspended sleep)
+- Since the busy waiting takes cpu cycles in wait trap. We try to define a semaphore where threads/processes are put into sleep state and are woken up by the threads exiting from the critical section. The process is then placed in the ready queue.
+- To implement semaphores under this definition, we define a semaphore as follows:
+  ```c++
+    typedef struct {
+      int value;
+      struct process *list;
+    } semaphore;
+  ```
+- It is a combination of integer value and a list(of process waiting for this semaphore).
+- Here value of S can be negative.
+- Negative value of S signifies the number of Processes in suspended state.
+- SMP systems must provide techniques—such as compare and swap() or spinlocks — to ensure that wait() and signal() are performed atomically.
+#### wait/ Entry Section 
+- If block says:
+  - You go inside if block if critical section is full, and can't have any more process go inside them.
+  - Notice there is no equal to here.
+
+```c++
+wait(semaphore* S){
+  S->value--;
+  if(S->value<0){
+    S->list->push(P1);
+    sleep();
+  }
+}
+```
+
+
+#### signal/Exit section 
+
+- If block says:
+  - If processes are in suspended list, wake them up. 
+  - There will only be processes in suspended list if S<=0 . 
+  - (notice equal to) Equal to one because you are incrementing S by 1 (so before increment operation, the value of S was negative i.e processes in suspended list).
+
+```c++
+signal(S){
+  S->value++;
+  if(S->value<=0){
+    P = S->list->pop();
+    wakeup(P);
+  }
+}
+```
+- When process wakes up they go to critical section.  They don't again ```wait()```.
+### Applications
+#### Solve critical Section problem
+- Using binary semaphores i.e S=1.
+
+#### As a Conditional Variable.
+- Say if you want S1 statement to only execute after S2 statement.
+- You can use sempahores, by making semaphore = 0.
+```
+\\\process 1
+S2
+signal(semaphore)
+
+\\\process 2
+wait(semaphore)
+S1
+```
+- For ordering multiple processes, you can use multiple semaphores.
+
+#### Resource Management
+- Say if your browser(chrome), should only have max 6 tcp connections in a single tab. You can set semaphore = 6, such that each request to tcp will call signal(semaphore), which decrements its value after checking for trap. This way only 6 connections are possible.
+
+## Condition Variables
+- a way to wait for another thread to do something (e.g., wait for a item to be added to the queue for processing).
+- ## Each condition variable is tied to a lock. The thread calling signal/wait must be in the possession of the lock. look at the defination of wait and signal below, it is tied to lock.
+- Just like semaphores, each condition variable has an associated queue.
+- Condition Variables have 3 methods, wait, signal and signalAll/broadcast.
+
+### wait
+- ### wait(condition, lock): release lock. .
+- thread is put in a wait set/queue for the condition.
+- put thread to sleep until condition is signaled; 
+- ### when thread wakes up again, re-acquire lock before returning.
+
+### signal
+- signal(condition, lock): if any threads are waiting on condition, wake up one of them.
+- ### Caller must hold the lock, which must be the same that was used in the wait call.
+- ### after signal, signaling thread keeps lock, waking thread goes on the queue waiting for the lock.
+- In java there are 2 queues, wait queue and entry queue(calling signal/notify remove the thread from wait queue and puts it in entry queue(queue waiting to acquire lock)).
+
+### Broadcast
+-  same as signal but, wakes up all waiting threads.
+
+### Important Point
+- ## when a thread wakes up after cond_wait there is no guarantee that the desired condition still exists: another thread might have snuck in. 
+- ## Since on signal, the waiting thread is put into ready queue of scheduler(not in CPU directly), and another process may be ahead in ready queue, which can change the condition. So you must do a while on the condition.
+```c++
+
+// Example : Infinite Queue Pub Sub
+Lock lock;
+Condition cv;
+Queue q;
+
+void producer(){
+  lock.acquire();
+  q.push(item);
+  cv.signal(&lock);
+  //after signal, lock is still with producer, so relase is necessary.
+  lock.release();
+}
+
+void consumer(){
+  lock.acquire();
+  //Notice the while.
+  while(q.isEmpty()){
+    //it releases the lock on wait.
+    cv.wait(&lock)
+    //acquires it after wait.
+  }
+  item. = q.pop();
+  lock.release();
+}
+
+
+```
+
+
+## Mutex vs Binary semaphores
+- They are not the same. a mutex is a locking mechanism, Semaphore is signaling mechanism.
+- mutex locks are simpler and require less overhead than semaphores .
+- A mutex can be released only by the thread that had acquired it. That is mutex has a principle of ownership.
+- A binary semaphore can be signaled by any thread (or process).
+- so semaphores are more suitable for some synchronization problems like producer-consumer. You can also use mutex with condition variable for this purpose.
+
+## Mutex vs Spinlocks
+- spinlocks -> busy waiting. (Useful if mutex is locked for very short time).
+- mutex -> puts in wait queue. (Useful if time mutex is locked is very long compared to overhead of context switch, in that case spinlocks will waste cpu cycles).
+
+## Hybrid mutex/critical section object (Windows)
+- A hybrid mutex behaves like a spinlock at first on a multi-core system. If a thread cannot lock the mutex, it won't be put to sleep immediately, since the mutex might get unlocked pretty soon, so instead the mutex will first behave exactly like a spinlock. Only if the lock has still not been obtained after a certain amount of time (or retries or any other measuring factor), the thread is really put to sleep. If the same code runs on a system with only a single core, the mutex will not spinlock, though
+
+## Monitors
+- Just like synchronised block in java.
+- The monitor construct ensures that only one process at a time is active within the monitor. Just like calling sychronised on the class's methods means no other thread can access other methods of the same instance of this class.
+- In most implementations monitors along with mutex functionality, also have functionality to signal or wait on a condition variable.
+- In the Java virtual machine, every object and class is logically associated with a monitor.
+
+
+## Liveliness
+- Liveness refers to a set of properties that a system must satisfy to ensure that processes make progress during their execution life cycle.
+
+### Challenges to Liveliness
+
+#### Deadlock
+- Discussed Later
+
+#### Priority Inversion
+- Say if 3 processes have priority L<M<H.
+- Say H requires a lock currently held by L. Ideally H will wait till L releases lock, but say M having higher priority process than L is currently executing. As a result, a lower priority process(M) is indirectly able to stop higher priority thread(H) from executing.
+- **This can be avoided by priority inheritance, say if L is hold resource needed by H, L's priority is increased to H, till the resource is released.**
+
+## Evaluation
+
+### CAS Based (OPTIMISTIC LOCKING vs Traditional Pessimestic Locking)
+- There has been a recent focus
+on using the CAS instruction to construct lock-free algorithms that provide protection from race conditions without requiring the overhead of locking.
+- CAS(Compare and swap) based approaches are considered an optimistic approach—you  optimistically first update a variable and then use collision detection to see if another thread is updating the variable concurrently.
+- Mutual exclusion locking(MUTEX and Semaphores), in contrast, is considered a pessimistic strategy; you assume another thread is concurrently updating the variable, so you pessimistically
+acquire the lock before making any updates.
+- CAS based are good for low and moderate contention loads, while mutex are good for heavy contention loads.
+
+# Chapter 7
+
+## Classical Problems
+
+### The bounded buffer problem
+
+### The reader writer problem
+
+### The dining philosopher's problem
+
+## Synchronization in Kernel
+
+
+## Java Synchronization
+- Refer Java Multithreading notes
+
+## Latest Research in Synchronization
+
+### Transactional Memory
+- Similar to database transaction, either a set of instructions (read and write) go throw or it doesn't, i.e the set of instructions are atomic.
+- transactional memory system—not the developer—is responsible for guaranteeing atomicity
+- Can be implemented using hardware support.
+- Software transactional memory is also possible but require the same low level locks.
+
+### Functional Languages
+- They don't act on state like imperative languages, i.e they deal with immutable values, so they don't need to be concerned with race conditions and dead locks.
+
+
+
+
+# To read
+- https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-1-semaphores/
+- https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-2-the-mutex/
+- https://blog.feabhas.com/2009/10/ mutex-vs-semaphores-%E2%80%93-part-3-final-part-mutual-exclusion-problems/
 
 # Misc
 - Interrupt Service Routine
-- Applications of Semaphones
-  - resource management
-  - critical section solution
-  - Process ordering
-
-- See the while parts in that video.

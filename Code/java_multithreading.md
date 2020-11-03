@@ -126,6 +126,12 @@ Since the instance variables(frame) has not been declared volatile or the method
   ```
 - There is no guarantee about the sequence in which threads get access to synchronised lock, not fair. This can lead to starvation of threads.
 
+
+- every object in java can be a monitor object, each monitor object has a entry set(all threads waiting to acquire a lock on the object) and a wait set(all threads waiting to get notify called on the object).
+  ![](res/entry_set.jpg)
+
+- Calling notify doesn't give the lock automatically to the notified thread, the owner thread has to release the lock i.e go out of synchronized scope.
+
 ## For static methods
 - Only one thread can access this per class.
 - monitor object is the class.
@@ -177,12 +183,24 @@ public class MixedSychExample{
         staticObj = o;
     }
 
-    public static synchronised setInstanceObject(Object o){
+    public synchronised setInstanceObject(Object o){
         instanceObj = o;
     }
 }
 ```
 ### Both the setStaticObject and setInstanceObject can be called by 2 threads parallely, since they have different monitor object. 
+
+### It is useful to use block level scope of synchronized and not do synchrhonised on the entire methods to prevent overhead, in case scope is too large.
+```java
+public void someMethod() {
+    /* non-critical section */
+    synchronized(this) {
+    /* critical section */
+    }
+    /* remainder section */
+}
+```
+
 
 # Volatile 
 
@@ -290,9 +308,16 @@ We can use any object as a lock in synchronised block and use wait and notify in
     }
 ```
 
-We can also use specialized locks known as rentrant locks and Conditions class to do the exact same thing. Instead of calling wait and notify on the Object (Lock) itself, we call await and signal on Condition Object while using reentrant locks.
+We can also use specialized locks known as rentrant locks and Conditions class to do the exact same thing. Instead of calling wait and notify on the Object (Lock) itself, we call await and signal on Condition Object while using reentrant locks. These specialized locks enable us to place fairness policies and also have other features like tryLock etc.
 
 ## While using rentrant locks remember to unlock in the finally block.
+## Also remember to lock outside the try block
+If we place lock() within the try clause and an unchecked
+exception occurs when lock() is invoked (such as OutofMemoryError): The
+finally clause triggers the call to unlock(), which then throws the unchecked
+IllegalMonitorStateException, as the lock was never acquired
+
+Example
 ```java
 public class ReentrantLockExample {
 
@@ -342,8 +367,11 @@ public class ReentrantLockExample {
 - Rentrant Locks(explicit lock) also allow locking and unlocking in any scopes in any order. Unlike using synchronised keyword(implicit lock)
 
 ## Conditions
-
+- conditional variables are always linked to a lock.
 - You can have multiple conditions for a single lock for multiple use-cases.
+- ### Each Java monitor is associated with just one unnamed condition variable, and the wait() and notify() apply only to this single condition variable. When a Java thread is awakened via notify(), it receives no information as to why it was awakened.  Condition variables remedy this by allowing a specific thread to be notified.
+- You can call ```lock.newCondition();``` multiple times on reentrant lock to get multiple condition variables.
+- uses cv1.await() and cv2.signal() instead of wait and notify.
   ```java
   private Lock lock = new RentrantLock();
   private Condition cv1 = lock.newCondition();
@@ -542,6 +570,25 @@ While Thread 2 and 4 are still working on the read lock, if another thread 5 whi
   -  Thread 5 can acquire the read lock skipping thread 3 but if a lot of read threads comes, thread 3 can go into starvation.
   -  Thread 3 will acquire the lock, rentrant readwrite lock implements does this case, the thread 5 will wait for thread 3 to complete. 
 
+
+# Semaphores
+- Java api provides a counting semaphore.
+- negative values are allowed as initial value of semaphore.
+- For more details on semaphore, look at os section.
+```java
+Semaphore sem = new Semaphore(1);
+
+try {
+    sem.acquire();
+    /* critical section */
+}
+catch (InterruptedException ie) { 
+
+}
+finally {
+    sem.release();
+}
+```
 
 # Executor Service
 
