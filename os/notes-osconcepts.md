@@ -25,10 +25,14 @@ that are sent to a printer are typically printed in the order in which they were
 - The linux kernel splits that up 3/1 into user space (high memory) and kernel space (low memory) respectively.
 - User processes are generally untrusted and therefore are forbidden to access the kernel space. Further, they are considered non-urgent, as a general rule, the kernel tries to defer the allocation of memory to those processes.
 - Processes spawned in kernel space are trusted, urgent and assumed error-free, the memory request gets processed instantaneously.
-- High memory access : Every kernel process can also access the user space range if it wishes to. And to achieve this, the kernel maps an address from the user space (the high memory) to its kernel space (the low memory)
+- Every kernel process can also access the user space range if it wishes to. And to achieve this, the kernel maps an address from the user space to its kernel space.
+- However, many operating systems (including Linux and Windows) place the operating system in high memory
 
 ## Linkers and Loaders
 - Have a look at this section
+### Symbol Resolution
+Symbol resolution, the process of searching files and libraries to replace symbolic references or names of libraries with actual usable addresses in memory before running a program
+
 ## Relocation
 - Relocation is the process of assigning load addresses for position-dependent code and data of a program and adjusting the code and data to reflect the assigned addresses.
 - Relocation is typically done by the linker at link time, but it can also be done at load time by a relocating loader, or at run time by the running program itself. 
@@ -584,6 +588,10 @@ data are shared among several processes.
   - Switch from kernel to User mode.
   - Jumping to the proper location in the user program to resume that location.
 - The time it takes for the dispatcher to stop one process and start another running is known as the dispatch latency
+
+### Scheduler vs dispatcher
+- Procedure of selecting a process among various processes is done by the scheduler.
+- Once the scheduler has selected a process from the queue, the dispatcher comes into the picture, and it is the dispatcher who takes that process from the ready queue and moves it into the running state. 
 
 ### Useful information for context switches
 - vmstat
@@ -1242,8 +1250,7 @@ void consumer(){
 - There has been a recent focus
 on using the CAS instruction to construct lock-free algorithms that provide protection from race conditions without requiring the overhead of locking.
 - CAS(Compare and swap) based approaches are considered an optimistic approach—you  optimistically first update a variable and then use collision detection to see if another thread is updating the variable concurrently.
-- Mutual exclusion locking(MUTEX and Semaphores), in contrast, is considered a pessimistic strategy; you assume another thread is concurrently updating the variable, so you pessimistically
-acquire the lock before making any updates.
+- Mutual exclusion locking(MUTEX and Semaphores), in contrast, is considered a pessimistic strategy; you assume another thread is concurrently updating the variable, so you pessimistically acquire the lock before making any updates.
 - CAS based are good for low and moderate contention loads, while mutex are good for heavy contention loads.
 
 # Chapter 7
@@ -1274,12 +1281,299 @@ acquire the lock before making any updates.
 - They don't act on state like imperative languages, i.e they deal with immutable values, so they don't need to be concerned with race conditions and dead locks.
 
 
+# Chapter 8
+
+## Deadlock
+- Sometimes, a waiting thread can never again change state, because the resources it has requested are held by other waiting threads. This situation is called a deadlock.
+
+## Livelock
+- Livelock is another form of liveness failure.
+- Whereas deadlock occurs when every thread in a set is blocked waiting for an event that can be caused only by another thread in the set, livelock occurs when a thread continuously attempts an action that fails. 
+- Like a try-lock example where a process tries to acquire a set resource and if can't acquire all locks it will release all acquired locks, but if both the process tries to acquire locks together at the same time, they will stuck in infinite loop acquiring and releasing locks, this example livelock can be avoided by waiting a random amount of time before trying to acquire the next set of locks.
+- This is precisely the approach taken by Ethernet networks when a network collision occurs. Rather than trying to retransmit a packet immediately after a collision occurs, a host involved in a collision will backoff a random period of time before attempting to transmit again.
+
+## Conditions for deadlock (all are necessary)
+### Mutual exclusion.
+At least one resource must be held in a nonsharable mode; that is, only one thread at a time can use the resource. 
+### Hold and wait
+A thread must be holding at least one resource and waiting to acquire additional resources that are currently being held by other threads.
+
+### No preemption.
+Resources cannot be preempted; that is, a resource can be released only voluntarily by the thread holding it, after that thread has completed its task.
+
+### Circular wait
+T0 waiting for T1 waiting for T2....Tn waiting for T0.
+
+## Resource allocation graph (Find if deadlock exists)
+- if a resource-allocation graph does not have a cycle, then the system is not in a deadlocked state. 
+- If there is a cycle, then the system may or may not be in a deadlocked state. If each resource type has exactly one instance, then a cycle implies that a deadlock has occurred. If each resource type has several instances, then a cycle does not necessarily imply that a deadlock has occurred. 
+
+![](res/resource_allocation_graph.jpg)
+
+## Handle Deadlock
+
+- Ignore the deadlock: Linux and Windows Kernel (More performant)
+- Avoid the deadlock : developers have to ensure
+- Detect and recover : Databases
+
+## Deadlock Prevention
+- Make sure atleast one of the condition for deadlock doesn't hold.  By ensuring that at least one of these conditions
+cannot hold, we can prevent the occurrence of a deadlock.
+
+### Mutual Exclution
+Remove the dependency of any non sharable data(sharable data : readonly files which don't require mutex).
+
+### Hold and wait
+- To ensure that the hold-and-wait condition never occurs in the system, we must guarantee that, whenever a thread requests a resource, it does not hold any other resources.
+- This would either require thread to get all resources at once before execution, or before acquiring a new resource release all the ones it has.
+- Both these have disadvantage 
+  - Can lead to starvation because popular resources are always in use.
+  - Can lead to resource underutilization
+
+### No premption
+- Kind of like using trylock for deadlock handling
+- If a thread is not able to get the resource it is requesting, it should prempt the resource it is already holding if some other thread is asking for it and wait till all the resources are available including the new resource.
+
+### Circular Condiiton
+- Practical unlike the rest.
+- Requires all the threads to acquire the resources in the same order.
+-  Java developers have adopted the strategy of using the method ```System.identityHashCode(Object)``` for 
+ ordering lock acquisition. It returns an integer. Here unlike hashCode identity of the object matters, not just the value.
+
+
+## Deadlock Avoidance Algorithms
+- OS needs to have additional information about the resources a thread may need and use this information to decide for each request if a thread should wait or not. 
+- Each request requires that in making this decision the system consider the resources currently available, the resources currently allocated to each thread, and the future requests and releases of each thread.
+
+### Safe State
+- A state is safe if the system can allocate resources to each thread (up to its maximum) in some order and still avoid a deadlock.
+- Not all unsafe states are deadlocks 
+
+### Resource-Allocation-Graph Algorithm
+- If we have a resource-allocation system with only one instance of each resource type, we can use a variant of the resource-allocation graph.
+- Basically a O(n^2) cycle detection algorithm.
+- The resource-allocation-graph algorithm is not applicable to a resource allocation system with multiple instances of each resource type.
+-  we introduce a new type of edge, called a claim edge. A claim edge Ti → Rj indicates that thread Ti may request resource Rj at some time in the future.
+- When thread Ti requests resource Rj , the claim edge Ti → Rj is converted to a request edge. 
+-  The request can be granted only if converting the request edge Ti → Rj to an assignment edge Rj → Ti does not result in the formation of a cycle in the resource-allocation graph.
+![](res/resource_allocation_graph_DEADLOCK.jpg)
+
+### Banker's Algorithm
+- The resource-allocation-graph algorithm is not applicable to a resourceallocation system with multiple instances of each resource type. But Banker's algorithm is applicable to such systems, it is less efficient though O(m*n^2) m is total threads, and n is total type of resources.
+- There are 2 algorithms here, one to determine if a system is in safe state(based on the currently allocated resources, the max number of resources a thread might need in future and currently available resources).
+- Second to determine, if a request to set of resources can be granted, for this we try to check if it is even possible to allocate based on number of number of available resources and check if after allocating resources the system might be in safe state or not. If it is going to be in safe state, resources are allocated, else they are not.
+
+## Detecting Deadlocks
+
+### Wait Graph
+- Mostly used in Java(In DUMPs) and databases like MySQL
+- Useful only in situations, where only a single instance of each resource kind exist.
+- Similar to resource allocation graph, edges signifies whether a Thread i is waiting for Thread j to release a resources.
+- If there is a cycle in the resource allocation graph, then there exists a deadlock.
+![](res/wait_graph.jpg)
+
+## Variant of Banker's Algoritm
+- Useful in case of multiple instances of each resource type.
+- Similar to the safe state detection.
+
+## Deadlock Recovery
+
+### Kill the process/ thread causing deadlock (to break the circular wait)
+
+#### Abort all deadlocked processs/threads
+- partial computations would be discarded.
+
+#### Abort process one at a time, till deadlock is eliminated
+- High overhead, since we need to check if deadlock is there or not after each kill
+
+### Resource Premption
+- we successively preempt some resources from processes and give these resources to other processes until the deadlock cycle is broken.
+- This has challenges like which victim to prempt resources from, and since the process can't continue normal execution how can we roll back etc.
+
+
+# Chapter 9
+
+## Relocatable Code
+- Relocatable code is software whose execution address can be changed. A relocatable program might run at address 0 in one instance, and at 10000 in another. It has to be binded into physically address before execution.
+
+## Address Binding
+
+- Classically, the binding of instructions and data to memory addresses can
+be done at any step along the way:
+### Compile Time Binding
+- Useful in Embedded Systems
+- If you know at compile time where the process will reside in memory, then absolute code can be generated.
+- If, at some later time, the starting location changes, then it will be necessary to recompile this code.
+
+### Load Time Binding
+- If it is not known at compile time where the process will reside in memory, then the compiler must generate relocatable code.
+- In this case, final binding is delayed until load time.
+- If starting address changes, you only need to load the program again.(No need to compile)
+
+### Execution Time Binding
+- In this binding the logical and physical address differs.
+- In this binding, the CPU will only see the logical address i.e the relocatable code. It will be the responsibility of the MMU to resolve it to physical address at run-time.
+- Most modern os follow this binding.
+- Mapping can be done using simple logic in which base/relocation register's value is added to all logical address to get physical address
+  - This requires the physical memory to be allocated in contiguos fashion
+  - Also causes fragmentation
+- Another more popular way to map is Paging.
+
+## Dynamic Loading
+- A routine is not loaded by an executable unless it is called, all routines are stored in disk in relocatable load format.
+- When a routine is called, the relocatable linker loader is called to load the desired routine in memory and update the program's address table.
+- Dynamic loading does not require special support from the operating system. 
+- it's the program's job to open that library.
+
+## Dynamic Linking and Shared Libraries (.so and .dll)
+- Dynamic linking, in contrast, is similar to dynamic loading. Here, though, linking, rather than loading, is postponed until execution time.
+- Unlike dynamic loading, dynamic linking and shared libraries generally require help from the operating system.
+- When your program starts it's the system's job to open these libraries, which can be listed using the ldd command.
+### Advantages
+- Helps to reduce the size of the executable and also in turn the main memory.
+- These can be shared by various processes, so if it is already in memory, it doesn't need to be loaded again.
+- Any change in dll, doesn't require the executable to be compiled again.
+
+## Contiguous Memory Allocation
+-  In contiguous memory allocation, each process is contained in a single section of memory
+
+### Protect Processes from each other in case of Contiguous Memory Allocation
+- We first need to make sure that each process has a separate memory space.
+- To separate memory spaces, we need the ability to determine the
+range of legal addresses that the process may access and to ensure that the process can access only these legal addresses.
+
+#### Base(Relocation) and Limit Registers
+- We can provide this protection by using two registers, usually a base and a limit.
+- The base register holds the smallest legal physical memory address.
+- the limit register specifies the size of the range.
+- Any attempt by a program executing in user mode to access memory address that doesn't fall in this limit causes a fatal error.
+- only the operating system can load the base and limit registers, it operates on kernel mode.
+- On a context switch the os stores the register contents of the currently executing process in memory and loads the register contents of the new process from the memory.
+
+### Memory Allocation in Contiguous Memory
+- first-fit 
+  - Allocate the first hole that is big enough.
+- best-fit 
+  - Allocate the smallest hole that is big enough.
+  - Need to search the entire list of free holes
+- worst-fit 
+  - Allocate the largest hole
+  - Need to search the entire list of free holes
+
+Both first fit and best fit are better than worst fit in terms of decreasing time and storage utilization.
+### Wait queue for memory allocation
+- When there isn't enough memory, processes can be put into wait queue.
+- When memory is later released, the operating system checks the wait queue to determine if it will satisfy the memory demands of a waiting process.
+
+### Fragmentation in Contiguous Memory Allocations
+#### Internal Fragmentation
+- unused memory that is internal to a partition.
+- Say, a hole is 1002Bytes, and your process is 1001 Bytes, so the overhead of tracking this one byte is way more than one byte, in this case the entire 1002 is allocated thus leading to fragmentation of 1Byte.
+- Paging also suffers from this.
+
+#### External Fragmentation
+- External fragmentation exists when there is enough total memory space to satisfy a request but the available spaces are not contiguous.
+- Solution to solve this is Paging or run compaction on regular intervals.
+- It is a general problem that occurs when we have to manage blocks of data, be it in RAM or Harddisk or SSD.
+
+## Paging (Non Contiguous Memory Allocation)
+- Permits a process’s physical address space to be noncontiguous.
+
+### Working
+- breaking physical memory into fixed-sized blocks called **frames**, and breaking logical memory into blocks of the **same size** called **pages**.
+- ### It is important to note Pages are the same size as frames
+- The page number is used as an index into a per-process page table.
+- The page table contains the mapping of base address of each frame in physical memory to the corresponding page in logical memory.
+- Logical address has 2 parts the Virtual Page Number and the offset. Similarly physical address has Physical Frame Number and the same offset.
+- the offset is the location in the frame/page being referenced, i.e amount of bytes after the frame.
+- #### offset does not change on translation since the size of frame == size of pages.
+- Thus, the base address of the frame is combined with the page offset to define the physical memory address.
+![](res/paging_hardware.jpg)
+
+
+### Page Size
+- Typically power of 2, varying between 4 KB to 1 GB
+- The selection of a power of 2 as a page size makes the translation of a logical address into a page number and page offset particularly easy.
+- If the size of the logical address space is 2^m, and a
+page size is 2^n bytes.
+  - Total number of pages are (2^(m-n)) so total bits to represent frame number or page number is m-n.
+  - And n bits are required to represent the offset (since offset can go from 0 to size_of_page -1).
+
+![](res/example_translation_paging.jpg)
+- Small pages reduces internal fragmentation, but have overhead in the number of entries in page table.
+- Large pages have high internal fragmentation, but the page table overhead is low, also disk I/O is efficient when amount of data being transferred is large. Good for Databases.
+- Some CPUs and OS support multiple page sizes.
+
+- ```getconf PAGESIZE``` to get the page table size in linux.
+
+
+
+### Frame table
+- The operating system is managing physical memory, it must be aware of the allocation details of physical memory—which frames are allocated, which frames are available, how many total frames there are, and so on. This information is generally kept in a single, system-wide data structure called a frame table.
+- The frame table has one entry for each physical page frame
+
+### Advantages of Paging
+- Paging avoids external fragmentation and the associated need for compaction. (we may have some internal fragmentation. Notice that frames are allocated as units.)
+- a process can have a logical 64-bit address space even though the system has less than 2^64 bytes of physical memory.
+- Allows to share pages.
+
+### Paging and Context Switch
+- The operating system maintains a copy of the page table for each process, just as it maintains a copy of the instruction counter and register contents.
+-  It is also used by the CPU dispatcher to define the hardware page table when a process is to be allocated the CPU. Paging therefore increases the context-switch time.
+
+
+### Protection in Paging
+- Page table has bits for memory protection.
+- These bits define if the given page is a read only/read-write.
+- In case page table has entire physical address space, an additional bit(valid bit) is kept to see if the current page is infact a part of process's logical address page and is legal to access. 
+- Some systems provide hardware, in the form of a page-table length register (PTLR), to indicate the size of the page table. This value is checked against every logical address to verify that the address is in the valid range for the process. This concept is similar to base and limit register.
+
+### Shared Pages
+- Pages containing the same information and is reentrant(non self modifying) can be shared across multiple process, like there can only be one libc copy in memory and the same copy can be shared across multiple processes by having different page table mappings for each processes.
+- compilers, window systems, database systems, and so on can also be shared.
+- Some operating systems implement shared memory using shared pages.
+
+
+## Hardware Support for Paging
+
+### Hardware support for page tables
+
+#### dedicated hardware registers
+- It is useful when the size of page table is small. Since access time is really fast
+- But this approach increases context switch times.
+
+#### PAGE TABLE BASE REGISTER : In memory page tables
+- most cpus support large page tables, which is not possible using hardware registers
+- Instead, the page table is kept in memory and a pointer to page table, i.e a page table base register points to the page table location in memory.
+- this pointer is stored in the process control block of each process.
+- Context switch times are considerably high, and also TLB reduces the time for address resolution.
+
+### Translation Look Aside Buffer
+- #### By keeping page table in memory, we increase the time required to access the memory 2 times, (one to fetch the page table entry and then final physical address).
+- To reduce this time we can use a hardware cache TLB. (Can be LRU Cache).
+- a TLB lookup in modern hardware is part of the instruction pipeline, essentially adding no performance penalty.
+-  Some CPUs implement separate instruction and data address TLBs. And also multi-layer TLB (just like multi-layer cache).
+-  Some kernel entries can be **wired down** in TLB, meaning they can't be removed.
+
+#### ASIDs : Protection in TLB (IMPORTANT)
+- Apart from just containing mapping between logical and physical address, TLB has additional data (address-space identifier) regarding what the current entry's process is. 
+- When the TLB attempts to resolve virtual page numbers, it ensures that the ASID for the currently running process matches the ASID associated with the virtual page. 
+- If TLB doesn't support ASID, then the entire TLB would have to be flushed on context switch.
+
+## Types of Page Tables
+
+
+
+
+## Swapping
 
 
 # To read
 - https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-1-semaphores/
 - https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-2-the-mutex/
-- https://blog.feabhas.com/2009/10/ mutex-vs-semaphores-%E2%80%93-part-3-final-part-mutual-exclusion-problems/
+- https://blog.feabhas.com/2009/10/mutex-vs-semaphores-%E2%80%93-part-3-final-part-mutual-exclusion-problems/
+
 
 # Misc
 - Interrupt Service Routine
+- Process Control Block
