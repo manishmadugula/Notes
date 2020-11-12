@@ -1562,11 +1562,179 @@ page size is 2^n bytes.
 
 ## Types of Page Tables
 
+### Hierarchical Page Tables
+- A simple page table would be too large for address space in range (2^32 to 2^64)
+- For 32 bit architecture, page size : 4KB(2^12), total page size entries are (2^(32-12) = 2^20). Assuming each page table entry is 4 bytes, This means we need 4MB of physical memory just to store page table for each process.
+- One solution is to use 2 level paging table, in which page table is also paged in itself. 
+- A logical address is divided into a virtual page number (20 Bits) and an offset, by paging the page table we end up with two 10 Bit page number(one for outer page table, one for inner) and an offset.
+- Because address translation works from the outer page table inward, this scheme is also known as a forward-mapped page table.
+![](res/two_level_page_table.jpg)
+
+- For a system with a 64-bit logical address space, a two-level paging scheme is no longer appropriate. In such cases 7 level page table might be required which increases memory access time(Thus heirarchical page tables are not very suitable for 64Bit Architecture).
+
+### Hashed Page Tables
+- For address spaces larger than 32 bit, we can use hashed page tables.
+- The logical address is hashed to a key in the hash table, where every key corresponds to a linkedlist of values(to handle collision).
+- Each element in linked list has the following values, the virtual page number(p), the page frame number(r) and the pointer to the next element in linkedlist.
+- If there is no match, subsequent entries in the linked list are searched for a matching virtual page number
+
+![](res/hashed_page_table.jpg)
+
+#### Clustered Page Tables
+- Similar to hashed page tables, but each entry in linked list refers to several page frames.
+- Useful in sparse address spaces
 
 
+### Inverted Page Tables
+- An inverted page table has one entry for each real page (or frame) of memory.
+- only one page table is in the system, and it has only one entry for each page of physical memory.
+- Each entry in the singleton page table has page frame number, virtual page number and also process identifier (which acts as a Address space identifier for security, since there is one page table for system, not one for process).
+- This method decreases the amount of memory required to store page table, but increases the time to search for an entry, worst case entire page table might have to be searched before we find an entry(linear).
+- We can use hashtable to limit the search to one or few(collision handling). However this approach requires 2 memory access, one for hash-table entry and one for page table.
+- Also we can utilize features like shared memory, because one physical page cannot have 2 virtual address.
+
+![](res/inverted_page_table.jpg)
 
 ## Swapping
+- Swapping makes it possible for the total physical address space of all processes to exceed the real physical memory of the system, thus increasing the degree of multiprogramming in a system.
 
+### Standard Swapping
+- Moving entire process between main memory and a backing store(swap space).
+- All per-thread data structures must be swapped as well and heap too.
+- If a process is idle for long, it can be swapped.
+
+### Swapping with Paging (Demand Paging?)
+- It takes a lot of time to perform standard swapping.
+- Most modern systems swap individual pages in and out of memory rather than entire processes.
+- A page out operation moves a page from memory to the backing store; the reverse process is known as a page in.
+
+### Swapping in mobile systems
+- Mobile systems don't support swapping, because of space constraint and limited number of writes in flash memory.
+- If memory becomes too low, the os will ask process to voluntarily free up read-only data(such as code, since it can be read back from flash memory). Modified data like stack aren't removed. 
+- If any app fails to free up memory, it may be terminated.
+
+
+## Segmentation and Paging in Intel Architecture
+- In Intel memory management unit is divided into 2 components segmentation and paging.
+- Logical address from CPU is fed to segmentation unit, which generated linear address, which inturn is fed to paging unit to be converted into physical address.
+
+![](res/segm_paging_interl.jpg)
+
+### Segmentation in IA-32
+- Segmentation is a memory management technique in which each job is divided into several segments of different sizes, one for each module.
+- The logical address has 2 parts (each of 8K segments).
+- Information about First part is stored in  Local Descriptor Table and second in Global Descriptor Table.
+- Each entry in descriptor table has information about particular segment and base location of that segments which is used to generate the linear address and check for validation using limit location.
+
+![](res/segmentation_table.jpg)
+
+### Paging in Intel
+- Using page tables (2 layer in 32 bit) and 4 layer in 64 bit.
+- The x86-64 architecture currently provides a 48-bit virtual address with support for page sizes of 4 KB, 2 MB, or 1 GB using four levels of paging hierarchy.
+![](res/pagin_in_intel.jpg)
+
+- ARM also uses 4 layer of page tables.
+
+# Chapter 10
+
+## Advantages of virtual memory
+- Virtual memory is a technique that allows the execution of processes that are not completely in memory.
+  - Not all parts of code is necessary, like error condition handling etc.
+  - Even if needed, they may not be needed at same time.
+-  Users would be able to write programs for an extremely large virtual address space, simplifying the programming task.
+- Virtual memory also allows processes to share files and libraries, and to implement shared memory.
+  ![](res/shared_library.jpg)
+- Because each program could take less physical memory, more programs could be run at the same time.
+
+## Virtual Address Space of a process
+- Logical view of how process is stored in memory.
+- It is contiguous memory.
+- we allow the heap to grow upward in memory as it is used for dynamic memory allocation. Similarly, we allow for the stack to grow downward in memory through successive function calls. 
+- The large blank space (or hole) between the heap and the stack is part of the virtual address space but will require actual physical pages only if the heap or stack grows.
+
+![](res/virtual_address_space.jpg)
+- A detailed view is in notes for Chapter - 2 
+
+## Demand Paging
+- Pages are loaded only when they are demanded during program execution.
+- Pages that are never accessed are thus never loaded into physical memory.
+
+### Valid-Invalid Bit in Page Table
+- This bit is used to identify if the requested page is in memory or in disk.
+- #### The valid-invalid bit serves 2 purposes, it is used to denote if a page is legal or not i.e not in the address space of process, and also it is used if the page is not currently in memory.
+- Access to a page marked invalid causes a page fault, a trap is raised which then has to be handled by os.
+- It is the duty of os to check if the access was legal or not using an internal table (usually kept with the process control block). If not legal terminate the application.
+- If legal fetch the page from disk.
+
+### Free Frame List
+- To resolve page faults, most operating systems maintain a free-frame list, a pool of free frames for satisfying allocation request for the page in disk.
+- Free frames must also be allocated when the stack or heap segments from a process expand.
+- When a system starts up, all available memory is placed on the free-frame list and the list shrinks as memory is allocated through say, demand paging.
+- Once the list becomes empty or reaches a threshold, it has to be repopulated by analysing free frames in memory and zeroing them out.
+
+#### Zero-Fill-On-Demand 
+- Zero-fillon-demand frames are “zeroed-out” before being allocated, thus erasing their
+previous contents.
+- This is necessary for security reasons.
+
+### Steps in handling page fault.
+
+- Page fault causes trap to the operating system.
+- Save the register and process state(PCB). 
+- Determine the interrupt was a page fault.
+- Check if the reference was legal (using an internal table usually kept with the process control block) or not, if illegal terminate the process.
+- If legal, determine the location of the frame in secondary storage.
+- Issue a read operation from the disk for the free frame
+  - Wait in wait-queue until read IO is complete.
+  - This includes device seeks and latency time between memory and secondary storage.
+  - Begin transfer of page to a free physical frame.
+- Scheduler might allocate CPU core to some other process while waiting for above IO.
+- Once IO is complete and the free frame is assigned and filled, an interrupt is raised, which os handles by updating the page table and other tables to show the requested frame is not in memory.
+- Move the original process(where page fault occured) from wait queue to ready queue and wait till CPU core is assigned to the original process again.
+- Restore the registers, process state, and new page table, and then resume the interrupted instruction.
+ 
+
+![](res/page_fault_steps.jpg)
+
+### Pure Demand Paging
+- pure demand paging: never bring a page into memory until it is required.
+- we can start executing a process with no pages in memory.
+
+### Hardware support for Demand Paging
+- Page Table
+- Secondary Memory 
+  - It is known as the swap device, and the section of storage used for this purpose is known as swap space. It is not in file system and is usually faster to read and write than file system.
+
+### Restart after Page Fault.
+- A crucial requirement for demand paging is the ability to restart any instruction after a page fault.
+- This is achieved by saving the state (registers, condition code, instruction counter) of the interrupted process.
+- If page fault occurs in instruction fetch(from memory), we can restart by fetching the instrution again from memory (this time it will be there i.e after page fault interrupt resumes).
+- If page fault occurs while fetching operand, we have to fetch and decode the instruction again from memory and then fetch the operand. This case isn't a big concern though.
+#### Idempotency in restart.
+- Major difficulty arises when an instruction modifies several different location, like a move instruction from source to destination. If source or destination straddles in page boundary, page fault will occur. And if source and destination overlaps, the instruction can't be simply restarted since source might have been partially modified.
+-  In one solution, the microcode computes and attempts to access both ends of both blocks. If a page fault is going to occur, it will happen at this step, before anything is modified.
+- The other solution uses temporary registers to hold the values of overwritten locations. If there is a page fault, all the old values are written back into memory before the trap occurs.
+
+### Performance of Demand Paging
+```effective access time = (1 − p) × ma + p × page fault time.```
+
+- Major portion of servicing a page fault is latency in hard disk (3 ms) and average seek of (5 ms). Thus time for page fault is 8ms.
+- Time for memory access time is in order of 200 nano seconds.
+- To make sure the performance impact of demand paging is less than 10 percent, probability of page fault should be one out of 4,00,000 memory accesses.
+
+### Demand from file System vs Swap Space (also known as swapping).
+
+- I/O to swap space is generally faster than that to the file system. It is faster because swap space is allocated in much larger blocks, and file lookups and indirect allocation methods are not used.
+
+#### Approaches to demand Paging
+- One approach is to copy the entire process into swap space before starting every process (since demand paging from swap space is faster), but the disadvantage is the copy to swap space can significantly slow down startup of a process.
+- More popular approach is to demand page from file system at the start, but on page replacement we write to the swap space. This approach will ensure that only needed pages are read from the file system but that all subsequent paging is done from swap space.
+- If access to swap space is limited, the read-only part say the code is discarded on page replacement and if their access is required in future they are read directly from file system since they are not modified i.e the file system itself serves as backing store. However here the anonymous memory (modified memory) i.e heap and stack must still use swap space as they are not associated with a file.
+- In mobile system, since swapping is disabled (no swap space), so the mobile system demand-page from the file system itself. This implies the anonymous memory is never reclaimed, while the process is running (since there is no swap space).
+
+#### Confusion regarding Demand Paging vs Swapping
+- Demand Paging can be achieved by either moving memory to and from swap space (referred as swapping) or directly from file system(swapping is not used to refer to this). 
+- It is the above term swapping i.e existence of swap space that is not supported by mobile systems.
 
 # To read
 - https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-1-semaphores/
@@ -1577,3 +1745,5 @@ page size is 2^n bytes.
 # Misc
 - Interrupt Service Routine
 - Process Control Block
+- spurious wake up
+- multithreading vs multiprocessing
