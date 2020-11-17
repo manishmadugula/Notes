@@ -63,6 +63,7 @@ New-To-do
   - Story behind each principle.
   - Algoexpert vids
   - educative-io lessons
+  - Salary Negotitations
 
 To-Do
 - DS Algo (6 months)

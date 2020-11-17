@@ -109,3 +109,101 @@ Head of Line blocking (in HTTP/1.1 terms) is often referring to the fact that ea
 # We want retries but the request that is retried should be idempotent.
 POST requests are the most dangerous in this regard. If I may suggest something, clients should not dictate the primary key such as OrderId. That should be left to the server implementation on how to generate the primary keys for a given entity (it may use sequence, uuids or something else). What clients can do is pass a unique identifier to identify the request, which the server can then use to identify duplicate requests/retries. Stripe uses something called as Idempotency-Key in the request header..
 PUT requests benefit from the checksum of the request to avoid the extra network call of update (since, you generally do a GET before a PUT to verify that the row wit the given key exists) and you can verify the checksum after the GET. Flow.io CTO has a very nice presentation of some of these elements - https://www.youtube.com/watch?v=j6ow-UemzBc
+
+# Introduction to Database Engineering.
+
+## Consistency in reads vs Consistency in data
+
+### Consistency in data
+- Weather, the state of the data is consistent, all the schema and relationship hold before and after a transaction, say number of likes should be equal to number of users who liked the data.
+- Say if you delete a user, all the posts by those users should be deleted in the same transaction. That is the consistency of data.
+- Relational/Traditional Databases/ACID Databases with their ACID Transaction and referrential integrity and cascading deletes achieve this consistency.
+- This consistency deals with corrupted data(by say blue screen of death) and the ability to rollback on failure.
+- View will always be inconsistent if data is inconsistent.
+
+### Consistency of read ( C in the CAP Theorem)
+- On a multi-database architecture, if say we updated a row, the very next read should have the updated value.
+- If ACID has to be met, it becomes very expensive to perform write, since all the multiple nodes in the databases and caches needs to have their data synchronized to the updates and inserts(One reason why ACID databases scale badly).
+- This is a form of inconsistency that is existing in both relational and non-relational databases. If you can give up ACID (and take up BASE) you can improve writes by having eventual consistency.
+- Eventually the follower will take up the updated write.
+
+
+## Indexing
+- Database and index are in 2 different places, database is in separate space(Heap fetches).
+- Once fetched we cache the result of the query.
+- If there is no index, a database like postgres might spin multiple threads to scan.
+
+
+
+### Order of Speed (Higher in list is faster)
+- Select Query only has indexed colums/non-key-column enabled indexing + search by indexing (INDEX ONLY SCAN)
+- Select Query has attributes other than just index + search by indexing (INDEX SCAN) (Scattered Index Scan)
+- No indexing (TABLE SCAN) (Sequential Scan)
+- Fuzzy search using like keyword since fuzzy search doesn't use indexing
+
+
+Sometimes a sequential scan is better than scattered index scan. See Non Key Column below.
+
+### Clustered Indexes and Non Clustered Index
+- https://www.youtube.com/watch?v=EZ3jBam2IEA
+
+
+#### Non Clustered Indexes
+- Just points to the data, has the references to the data.
+- Can be multiple non clustered indexes in a table.
+- PostgreSQL supports only non-clustered index.
+- also called secondary indexes
+
+#### Clustered Indexes
+- Organizes the data, the data is with the index.
+- Can only be one.
+- If the attribute used to index is primary key, it is also called primary indexing.
+
+### Non-Key-Column
+ 
+- #### Adding Indexing doesn't always work.
+- It might not actually slow down, like in case of INDEX scan, since it might have to scan indexes and then go to fetch from the table since not all the columns in select are in the index. So there are 2 operations.
+- To solve this we can include the additional attribute in the index itself.
+- https://stackoverflow.com/questions/7362299/how-can-an-index-slow-down-a-select-statement
+
+
+### Indexing in MySQL vs PostgreSQL
+- https://www.youtube.com/watch?v=T9n_-_oLrbM
+- MySQL better with updates (Primary key updates are slower)
+- PostgresSQL better with reads
+
+
+## Partitioning
+- Breaking the table into multiple tables for easy search via indexes
+- Same machine
+- Based on a partition keys, or range, or list or hash tables.
+- Usually the client which queries the table, are agnostic of these partitions.
+### Horizontal Partitioning
+- Based on rows
+#### Types
+- By range (Dates, Ids etc)
+- By list (Discrete values all cities with name Gurgaon goes to one partition)
+- By hash (Consistent Hashing (Cassandra))
+
+### Vertical Partitioning
+- Based on columns
+- Almost like normalization
+- Say there is a column blob field, which is rarely searched, so there is not point in keeping the blob in expensive ssd, so we can slice the table vertically and keep blob in HDD.
+
+### Pros for Partitioning
+- #### Improves query performance when accessing a single partition.
+- Easy bulk Loading
+- Faster Table Scan
+- #### Archive old data that is barely accessed into the cheap HDD Storage.
+
+### Cons for Partitioning
+- Updating rows that move from one partitions to another partition is slow.
+- Inefficient queries might access all the partitions resulting in slow performance than having a single table.
+
+
+
+
+## Partitioning vs Sharding
+- Horizontal Partitioning splits database into multiple tables in the same database, client is agnostic.
+- Sharding splits database into multiple tables across **multiple database servers - different ip address**. Client is aware mostly . Useful for distributed processing and latency issues. California customer are gonna put customer data in a database server in california.
+- 
