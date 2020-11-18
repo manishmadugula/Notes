@@ -2044,6 +2044,150 @@ no longer contains complete information about the logical address space of a pro
 
 - Using a lock bit can be dangerous: the lock bit may get turned on but never turned off.
 
+
+# IO
+
+## Communication between CPU and IO
+
+### Memory Mapped IO
+- the device can support memory-mapped I/O. In this case, the device-control registers are mapped into the address space of the processor. The CPU executes I/O requests using the standard datatransfer instructions to read and write the device-control registers at their mapped locations in physical memory.
+- writing millions of bytes to the graphics memory is faster than issuing millions of I/O instructions.
+### Dedicated CPU Instruction for IO load and store
+- slower than memory mapped IO
+
+## For Transfer Notification
+
+- Polling
+- Interrupts
+-  Interrupt-driven I/O is now much more common than polling, with polling being used for high-throughput I/O. Sometimes the two are used together. 
+
+## Interrupts
+- The CPU hardware has a wire called the interrupt-request line that the CPU senses after executing every instruction.
+- a signal on the interrupt-request line, the CPU performs a state save and jumps to the interrupt-handler routine at a fixed address in memory. The interrupt handler determines the cause of the interrupt, performs the necessary processing, performs a state restore, and executes a return from interrupt instruction to return the CPU to the execution state prior to the interrupt.
+- the device controller raises an interrupt by asserting a signal on the interrupt request line, the CPU catches the interrupt and dispatches it to the interrupt handler, and the handler clears the interrupt by servicing the device. 
+![](res/interrupt_handle_io.jpg)
+
+### Application of interrupts
+- During I/O, the various device controllers raise interrupts when they are ready for service. These interrupts signify that output has completed, or that input data are available, or that a failure has been detected.
+- The interrupt mechanism is also used to handle a wide variety of exceptions, such as dividing by zero, accessing a protected or nonexistent memory address.
+- A page fault is an exception that raises an interrupt.
+- the implementation of system calls via traps
+
+### Interrupt Handlers
+- The events that trigger interrupts have a common property: they are occurrences that induce the operating system to execute an urgent, selfcontained routine, called interrupt Handlers/Interrupt Service Routine
+#### 2 Level Interrupt Handler
+- A first-leve interrupt handler performs the context switch, state storage,
+and queuing of a handling operation.
+-  the separately scheduled SLIH performs the handling of the requested operation.
+
+### Trap
+-  A trap is a software-generated interrupt. 
+- The trap is given a relatively low interrupt priority compared with those assigned to device interrupts.
+- Used to implement system calls.
+  -  When a process executes the trap instruction, the interrupt hardware saves the state of the user code, switches to kernel mode, and dispatches to the kernel routine or thread that implements the requested service
+
+### interrupt-controller hardware functions
+- the ability to defer interrupt handling during critical processing.
+- an efficient way to dispatch to the proper interrupt handler for
+a device without first polling all the devices to see which one raised the
+interrupt
+-  multilevel interrupts, so that the operating system can distinguish between high- and low-priority interrupts and can respond withthe appropriate degree of urgency when there are multiple concurrent interrupts.
+- a way for an instruction to get the operating system’s attention directly (separately from I/O requests), for activities such as page
+faults and errors such as division by zero. As we shall see, this task is
+accomplished by “traps.”
+
+### maskable vs non maskable
+- nonmaskable interrupt, which is reserved for events such as unrecoverable memory errors.
+- The second interrupt line is maskable: it can be turned off by the CPU before the execution of critical instruction sequences that must not be interrupted.
+
+### Interrupt Vector
+- To avoid a single interrupt handler for all interrupts, each interrupt is associated with an address, which is an offset in a table called interrupt vector.
+- This vector contains the memory addresses of specialized interrupt handlers. The purpose of a vectored interrupt mechanism is to reduce the need for a single interrupt handler to search all possible sources of interrupts to determine which one needs service.
+- At boot time, the operating system probes the hardware buses to
+determine what devices are present and installs the corresponding interrupt handlers into the interrupt vector.
+- To reduce the number of items in interrupt vector we can use chaining, in which each item in vector table is a pointer to a linked list of all the interrupt handlers belonging to that class and then poll all related to that class. ( compromise between the overhead of a huge interrupt table and the inefficiency of dispatching to a single interrupt handler.)
+![](res/vector_table.jpg)
+
+## Transfer Mechanism
+- Programmed IO
+- Direct Memory Access
+
+### Programmed IO (PIO)
+- use an general-purpose processor to watch status bits and to feed data into a controller register one byte at a time
+
+### Direct Memory Access
+- Computers avoid burdening the main CPU with PIO by offloading some of this work to a special-purpose processor called a directmemory-access (DMA) controller. 
+
+- To initiate a DMA transfer, the host writes a DMA command block into memory. This block contains a pointer to the source of a transfer, a pointer to the destination of the transfer, and a count of the number of bytes to be transferred. The source and destination pointer can be a list, for non contiguous transfer.
+- The CPU writes the address of this command block to the DMA controller, then goes on with other work.
+- The DMA controller proceeds to operate the memory bus directly, placing addresses on the bus to perform transfers without the help of the main CPU.
+- the target address is usually in kernel address space. If it were in user space, the user could, for example, modify the contents of that space during the transfer, losing some set of data.
+- When the entire transfer is finished, the DMA controller interrupts the CPU.
+![](res/dma_steps.jpg)
+
+## Non Blocking and Asynchronous IO
+-  When an application issues a blocking system call, the execution of the calling thread is suspended. The thread is moved from the operating system’s run queue to a wait queue.
+- A nonblocking call does not halt the execution of the thread for
+an extended time. Instead, it returns quickly, with a return value that indicates how many bytes were transferred.
+- An alternative to a nonblocking system call is an asynchronous system
+call. An asynchronous call returns immediately, without waiting for the I/O to
+complete. The thread continues to execute its code. The completion of the I/O
+at some future time is communicated to the thread,  through the triggering
+of a signal or software interrupt or a call-back routine that is executed outside the linear control flow of the thread.
+- The difference between nonblocking and asynchronous system calls is that a nonblocking read() returns immediately with whatever data are available— the full number of bytes requested, fewer, or none at all. An asynchronous read() call requests a transfer that will be performed in its entirety but will complete at some future time. 
+![](res/async_non_blocking_io.jpg)
+
+## Kernel IO Structure
+![](res/Kernel-io-structure.jpg)
+
+## Life Cycle of a blocking IO Read Request.
+1. A process issues a blocking read() system call to a file descriptor of a file that has been opened previously.
+2. The system-call code in the kernel checks the parameters for correctness. In the case of input, if the data are already available in the buffer cache, the data are returned to the process, and the I/O request is completed.
+3. Otherwise, a physical I/O must be performed. The process is removed from the run queue and is placed on the wait queue for the device, and the I/O request is scheduled. Eventually, the I/O subsystem sends the request to the device driver. Depending on the operating system, the request is
+sent via a subroutine call or an in-kernel message.
+1. The device driver allocates kernel buffer space to receive the data and schedules the I/O. Eventually, the driver sends commands to the device controller by writing into the device-control registers (Using concept of memory mapped IO).
+2. The device controller operates the device hardware to perform the data transfer.
+3. The driver may poll for status and data, or it may have set up a DMA transfer into kernel memory. We assume that the transfer is managed by a DMA controller, which generates an interrupt when the transfer completes.
+4. The correct interrupt handler receives the interrupt via the interrupt vector table, stores any necessary data, signals the device driver, and returns from the interrupt.
+5. The device driver receives the signal, determines which I/O request has completed, determines the request’s status, and signals the kernel I/O subsystem that the request has been completed.
+6. The kernel transfers data or return codes to the address space of the requesting process and moves the process from the wait queue back to the ready queue.
+7.  Moving the process to the ready queue unblocks the process. When the scheduler assigns the process to the CPU, the process resumes execution at the completion of the system call.
+
+![](res/lifecycle_of_blocking_read.jpg)
+
+# Chapter 19
+
+## UDP
+The transport protocol UDP is unreliable in that it is a bare-bones extension to IP with the addition of a port number. In fact, the UDP header is very simple and contains only four fields: source port number, destination port number, length, and checksum. Packets may be sent quickly to a destination using UDP. However, since there are no guarantees of delivery in the lower layers of the network stack, packets may become lost. Packets can also arrive at the receiver out of order. It is up to the application to figure out these error cases and to adjust (or not adjust).
+
+Figure, illustrates a common scenario involving loss of a packet between a client and a server using the UDP protocol. Note that this protocol is known as a connectionless protocol because there is no connection setup at the beginning of the transmission to set up state— the client just starts sending data. Similarly, there is no connection teardown.
+
+The client begins by sending some sort of request for information to the server. The server then responds by sending four datagrams, or packets, to the client. Unfortunately, one of the packets is dropped by an overwhelmed router. The client must either make do with only three packets or use logic programmed into the application to request the missing packet. Thus, we need to use a different transport protocol if we want any additional reliability guarantees to be handled by the network.
+
+![](res/UDP.jpg)
+
+## TCP
+
+TCP is a transport protocol that is both reliable and connection-oriented. In addition to specifying port numbers to identify sending and receiving processes on different hosts, TCP provides an abstraction that allows a sending process on one host to send an in-order, uninterrupted byte stream across the network to a receiving process on another host. It accomplishes these things through the
+following mechanisms:
+  
+  - Whenever a host sends a packet, the receiver must send an acknowledgment packet, or ACK, to notify the sender that the packet was received. If the ACK is not received before a timer expires, the sender will send that packet again.
+  - TCP introduces sequence numbers into the TCP header of every packet. These numbers allow the receiver to (1) put packets in order before sending data up to the requesting process and (2) be aware of packets missing from the byte stream.
+  - TCP connections are initiated with a series of control packets between the sender and the receiver (often called a three-way handshake) and closed gracefully with control packets responsible for tearing down the connection. These control packets allow both the sender and the receiver to set up and remove state. 
+
+Figure, demonstrates a possible exchange using TCP (with connection setup and tear-down omitted). After the connection has been established, the client sends a request packet to the server with the sequence number 904. Unlike the server in the UDP example, the server must then send an ACK packet back to the client. Next, the server starts sending its own stream of data packets starting with a different sequence number. The client sends an ACK packet for each data packet it receives. Unfortunately, the data packet with the sequence number 127 is lost, and no ACK packet is sent by the client. The sender times out waiting for the ACK packet, so it must resend data packet 127. Later in the connection, the server sends the data packet with the sequence number 128, but the ACK is lost. Since the server does not receive the ACK it must resend data packet 128. The client then receives a duplicate packet. Because the client knows that it previously received a packet with that sequence number, it throws the duplicate away. However, it must send another ACK back to the server to allow the server to continue.
+
+![](res/tcp.jpg)
+
+### Optimization
+In the actual TCP specification, an ACK isn’t required for each and every packet. Instead, the receiver can send a cumulative ACK to ACK a series of packets. The server can also send numerous data packets sequentially before waiting for ACKs, to take advantage of network throughput. 
+
+### Flow Control/ Congestion Control
+TCP also helps regulate the flow of packets through mechanisms called flow control and congestion control. Flow control involves preventing the sender from overrunning the capacity of the receiver. For example, the receiver may have a slower connection or may have slower hardware components (like a
+slower network card or processor). Flow-control state can be returned in the ACK packets of the receiver to alert the sender to slow down or speed up. Congestion control attempts to approximate the state of the networks (and generally the routers) between the sender and the receiver. If a router becomes overwhelmed with packets, it will tend to drop them. Dropping packets results in ACK timeouts, which results in more packets saturating the network. To prevent this condition, the sender monitors the connection for dropped packets by noticing how many packets are not acknowledged. If there are too many dropped packets, the sender will slow down the rate at which it sends them. This helps ensure that the TCP connection is being fair to other connections happening at the same time.
+
+By utilizing a reliable transport protocol like TCP, a distributed system does not need extra logic to deal with lost or out-of-order packets. However, TCP is slower than UDP.
+
 # To read
 - https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-1-semaphores/
 - https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%E2%80%93-part-2-the-mutex/
@@ -2051,9 +2195,9 @@ no longer contains complete information about the logical address space of a pro
 https://stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-faster-than-processing-an-unsorted-array
 
 # To write
-- Interrupt Service Routine
-- Process Control Block
-- spurious wake up
+- //Interrupt Service Routine
+- Process Control Block ![](res/pcb.jpg)
+- spurious wake up : a thread is woken up only to have the while condition fail and it sleeps again.
 - multithreading vs multiprocessing
 - Branch Prediction
 
