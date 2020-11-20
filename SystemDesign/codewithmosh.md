@@ -225,7 +225,6 @@ WHERE A.Key IS NULL;
 
 ## FULL OUTER JOIN
 - This Join can also be referred to as a FULL OUTER JOIN or a FULL JOIN. This query will return all of the records from both tables, joining records from the left table (table A) that match records from the right table (table B). 
-- The below query doesn't work in mysql you need to use UNION to achieve it.
 ![](res/FULL_OUTER_JOIN.png)
 ```sql
 SELECT <select_list>
@@ -233,6 +232,18 @@ FROM Table_A A
 FULL OUTER JOIN Table_B B
 ON A.Key = B.Key;
 ```
+- The above query doesn't work in mysql you need to use UNION to achieve it.
+```sql
+SELECT * FROM t1
+LEFT JOIN t2 ON t1.id = t2.id
+UNION ALL
+SELECT * FROM t1
+RIGHT JOIN t2 ON t1.id = t2.id
+WHERE t1.id IS NULL
+```
+- See above we UNION a LEFT JOIN with a right excluding join. Also we use UNION ALL instead of UNION since the UNION might remove some duplicates which already exist in the first or second table.
+- REFERENCE : https://stackoverflow.com/questions/4796872/how-to-do-a-full-outer-join-in-mysql
+
 
 ### OUTER Excluding JOIN
 This query will return all of the records in the left table (table A) and all of the records in the right table (table B) that do not match.
@@ -333,6 +344,24 @@ FROM customers, orders;
 ```
 
 ## UNION
+- The UNION operator is used to combine the result-set of two or more SELECT statements.
+  - Each SELECT statement within UNION must have the same number of columns
+  - The columns must also have similar data types
+  - The columns in each SELECT statement must also be in the same order
+- Name of the column depends on the first query.
+- Can be used to implement FULL OUTER JOIN in mysql
+
+```sql
+SELECT 'Customer' AS Type, ContactName, City, Country
+FROM Customers
+UNION
+SELECT 'Supplier', ContactName, City, Country
+FROM Suppliers;
+```
+
+### UNION ALL
+- The UNION operator selects only distinct values by default. To allow duplicate values, use UNION ALL.
+
 
 ## MISC 
 - One confusion about JOIN is what happens when there are 2 rows corresponding to one column in LEFT Set, in that case the final result will have 2 rows(where the information related to SET A will be the same)
