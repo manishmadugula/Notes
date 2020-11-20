@@ -376,6 +376,47 @@ Personal note: one final point I'd like to make is that most cases where NoSQL i
 
 The landscape of databases has evolved since posting this answer. While there is still the dichotomy between the RDBMS ACID world and the NoSQL BASE world, the line has become fuzzier. The NoSQL databases have been adding features from the RDBMS world like SQL API's and transaction support. There are now even databases which promise SQL, ACID and write scaling, like Google Cloud Spanner, YugabyteDB or CockroachDB. Typically the devil is in the details, but for most purposes these are "ACID enough". For a deeper dive into database technology and how it has evolved you can take a look at this slide deck (the slide notes have the accompanying explanation).
 
+# Stream Processing and Event Sourcing
+
+## Stream Processing
+Two options for storing data: (a) raw events, or (b) aggregated summaries.
+
+### Raw Events
+- the raw events are the form in which it’s ideal to write the data: all the information in the database write is contained in a single blob. You don’t need to go and update five different tables if you’re storing raw events — you only need to append the event to the end of a log. That’s the simplest and fastest possible way of writing to a database.
+
+### Aggregated Summaries
+the aggregated data is the form in which it’s ideal to read data from the database. If a customer is looking at the contents of their shopping cart, they are not interested in the entire history of modifications that led to the current state — they only want to know what’s in the cart right now. So when you’re reading, you can get the best performance if the history of changes has already been squashed together into a single object representing the current state.
+#### OLAP Cube : 
+imagine a multi-dimensional cube, where one dimension is the URL, another dimension is the time of the event, another dimension is the browser, and so on. For each event, you just need to increment the counters for that particular URL, that particular time, etc.
+
+With an OLAP cube, when you want to find the number of page views for a particular URL on a particular day, you just need to read the counter for that combination of URL and date. You don’t have to scan over a long list of events; it’s just a matter of reading a single value.
+
+
+## Event Sourcing
+And this is really the essence of event sourcing: rather than performing destructive state mutation on a database when writing to it, we should record every write as a “command”, as an immutable event.
+
+- This is what storing raw events in stream processing example tells, gives history of what happened, unlike storing the aggregated data, which store only the end state.
+
+### Advantages
+- Event sourcing enables building a forward-compatible application architecture — the ability to add more applications in the future that need to process the same event but create a different materialized view.
+- t provides a complete log of every state change ever made to an object; so troubleshooting is easier. By expressing the user intent as an ordered log of immutable events, event sourcing gives the business an audit and compliance log which also has the added benefit of providing data provenance. It enables resilient applications; rolling back applications amounts to rewinding the event log and reprocessing data. It has better performance characteristics; writes and reads can be scaled independently. It enables a loosely coupled application architecture; one that makes it easier to move towards a microservices-based architecture.
+
+## Command Query Responsibility Segregation (CQRS)
+- the event sourcing and CQRS application architecture patterns are also related. Command Query Responsibility Segregation (CQRS) is an application architecture pattern most commonly used with event sourcing. CQRS involves splitting an application into two parts internally — the command side ordering the system to update state and the query side that gets information without changing state. CQRS provides separation of concerns – The command or write side is all about the business; it does not care about the queries, different materialized views over the data, optimal storage of the materialized views for performance and so on. On the other hand, the query or read side is all about the read access; its main purpose is making queries fast and efficient.
+
+![](res/cqrs.jpg)
+
+The way event sourcing works with CQRS is to have part of the application that models updates as writes to an event log or Kafka topic. This is paired with an event handler that subscribes to the Kafka topic, transforms the event (as required) and writes the materialized view to a read store. Finally, the read part of the application issues queries against the read store.
+
+### Advantages
+- It decouples the load from writes and reads allowing each to be scaled independently; the various read paths themselves can be scaled independently.
+- the read store can be optimized for the query pattern of the application; a graph application can use Neo4j as its read store, a search application can use Lucene indexes and a simple content serving webapp can use an embedded cache.
+- , you can decouple the teams responsible for the business logic of the write and read paths.
+
+## References
+- https://www.confluent.io/blog/making-sense-of-stream-processing/
+- https://www.confluent.io/blog/event-sourcing-cqrs-stream-processing-apache-kafka-whats-connection/#:~:text=Event%20sourcing%20involves%20modeling%20the,or%20%E2%80%9Clog%E2%80%9D%20of%20events.&text=Event%20sourcing%20involves%20changing%20the,log%2C%20like%20a%20Kafka%20topic.
+
 # Check these algorithms
 - Count Min Sketch
 - Consistent Hashing
