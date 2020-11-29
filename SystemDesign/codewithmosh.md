@@ -1,3 +1,76 @@
+# Datatypes
+
+## Numeric
+
+### BOOL/BOOLEAN :
+- Zero is considered as false, nonzero values are considered as true.
+### SMALLINT :
+- A small integer. Signed range is from -32768 to 32767. Unsigned range is from 0 to 65535
+### MEDIUMINT
+- A medium integer. Signed range is from -8388608 to 8388607. Unsigned range is from 0 to 16777215.
+
+### INT(size)/INTEGER(size)
+- A medium integer. Signed range is from -2147483648 to 2147483647. Unsigned range is from 0 to 4294967295. 
+- The size parameter specifies the maximum display width (which is 255)
+
+### BIGINT
+- A large integer. Signed range is from -9223372036854775808 to 9223372036854775807. Unsigned range is from 0 to 18446744073709551615.  
+
+- The size parameter specifies the maximum display width (which is 255)
+
+### DOUBLE (size,d)
+- A normal-size floating point number. The total number of digits is specified in size. The number of digits after the decimal point is specified in the d parameter
+
+### DECIMAL(size, d)
+- Similar to DOUBLE, but it is an exact fixed-point number. 
+
+## String
+
+### CHAR(Size)
+- A FIXED length string.
+- Waste of space.
+
+### VARCHAR(Size)
+- A VARIABLE length string (can contain letters, numbers, and special characters). The size parameter specifies the maximum column length in characters - can be from 0 to 65535
+- can be part of an index
+
+### Text(Size)
+- cannot be part of an index
+- fixed max size of 65535 characters (you cannot limit the max size)
+
+### BLOB(size)
+- For BLOBs (Binary Large OBjects). Holds up to 65,535 bytes of data
+
+## Date
+
+### DATE
+- A date. Format: YYYY-MM-DD. The supported range is from '1000-01-01' to '9999-12-31'
+
+## Column Attributes
+
+### Primary Key
+- Values of a key uniquely defines the row.
+
+### Auto Increment Key
+- Often used with primary keys.
+- Every time we insert a new item, we get a new id based on the last id.
+- While inserting a new row, if you use DEFAULT keyword, mysql will generate the id by incrementing.
+```sql
+INSERT INTO customers
+VALUES (DEFAULT,  -- Auto increment field.
+		'Manish', 
+        'Smith', 
+        NULL,
+        NULL, -- Can also use DEFAULT HERE
+        'Greenwood',
+        'Gurgaon',
+        "HA",
+        DEFAULT);
+```
+
+### Non NULL Key
+- Cannot be null
+
 # SELECT Statement
 - Order of the sql statements matter, say, SELECT then FROM then WHERE then ORDER BY then LIMIT else you may exceptions.
 
@@ -52,7 +125,12 @@ Filters the data using the comparator operator
 
 # BETWEEN Operator
 - Alternative to () AND ().
-
+```sql
+SELECT *
+FROM invoices 
+WHERE invoice_date 
+BETWEEN '2019-01-01' AND '2019-07-01'
+```
 
 # Like Operator
 - Rows, which match a specific pattern
@@ -77,6 +155,7 @@ SELECT * FROM customers WHERE last_name REGEXP '[a-h]e';
 ```sql
 SELECT * FROM customers WHERE phone IS NULL;
 ```
+- You cannot do ```phone = NULL```
 
 # ORDER BY
 - Used to sort the data.
@@ -377,6 +456,259 @@ The above is a result of joining the order_items with the order_item notes from 
   ```
 
   The one row in order_items had 2 notes related to it, thus resulted in 2 rows.
+
+# INSERT INTO
+```sql
+INSERT INTO customers
+VALUES (DEFAULT,  -- Auto increment field.
+		'Manish', 
+        'Smith', 
+        NULL,
+        NULL, -- Can also use DEFAULT HERE
+        'Greenwood',
+        'Gurgaon',
+        "HA",
+        DEFAULT);
+```
+Can also explicitly define the columns we are inserting.
+```sql
+INSERT INTO customers 
+(first_name, 
+last_name, 
+address, 
+city, 
+state)
+VALUES 
+('Manish', 
+'Smith', 
+'Greenwood',
+'Gurgaon',
+"HA");
+```
+
+## Insert Multiple Rows
+```sql
+INSERT INTO shippers (name)
+VALUES 
+('Shipper1'),
+('Shipper2'),
+('Shipper3');
+```
+
+## Insert Heirarchical rows (spanning multiple rows)
+- Say 1 row in orders table will have multiple rows in order_items table (one for each type of product ordered)
+
+```sql
+INSERT INTO orders (customer_id, order_date, status)
+VALUES 
+('11',
+'2019-01-02', 
+1);
+
+INSERT INTO order_items
+VALUES (LAST_INSERT_ID(),4,1,2.95),
+	   (LAST_INSERT_ID(),2,2,24.95);
+```
+- Not sure how good approach is this since concurrency might affect this.
+
+## INSERT using Subqueries
+```sql
+INSERT INTO orders_archived
+SELECT * FROM orders
+WHERE order_data <'2018-01-01';
+```
+
+## Copy A Table using AS Clause
+```sql
+CREATE TABLE orders_archived AS
+SELECT * FROM orders;
+```
+- This technique doesn't set the column attributes like primary key and auto increment etc.
+
+### Create new table from a query
+- We can combine the above technique and use subqueries to create custom table using queries like
+```sql
+SELECT invoice_id,
+ number,name,
+ payment_total,
+ invoice_date, 
+ due_date,
+ payment_date  
+FROM invoices i 
+JOIN clients c 
+ON i.client_id = c.client_id 
+WHERE payment_date IS NOT NULL;
+```
+
+# UPDATE
+- You can use UPDATE, SET keywords to update a single row, 
+- You can also have expressions in SET statement as shown below.
+```sql
+UPDATE invoices
+SET 
+  payment_total = invoice_total*.5,
+  payment_date = '2019-01-03'
+WHERE invoice_id = 1;
+```
+## Update multiple rows using IN
+- You can use where clause with IN operator 
+
+```sql
+UPDATE customers
+SET points = points + 50
+WHERE customer_id IN (1,4,5);
+```
+
+## Update using subqueries
+```sql
+UPDATE orders
+SET comments = "Gold Customer"
+WHERE customer_id IN
+(
+SELECT 
+customer_id
+FROM customers
+WHERE state IN ('CA','NY')
+);
+```
+- In MySQL, you can't modify the same table which you use in the SELECT part.
+
+
+# DELETE FROM
+
+```sql
+DELETE FROM order_item_notes
+WHERE order_Id IN (
+	SELECT order_id FROM orders
+    WHERE customer_id = 7
+);
+```
+
+- IMPORTANT : you cannot delete a row, if that row is referenced by some other table's foreign key. I.e cannot delete customer if there is an order_id related to that customer.
+
+# Aggregate Functions
+- We can also write expression inside aggregate functions.
+## COUNT
+- Return count of non-null values
+```sql
+SELECT COUNT(payment_date) FROM invoices
+```
+The above query might not return all the rows in invoices, since some rows might not have payment date in them.COUNT(*) returns count of all the rows.
+
+- If you want count of distinct rows then use 
+```sql
+SELECT COUNT(DISTINCT client_id) FROM invoices;
+```
+
+## MAX
+
+## MIN
+
+## AVG
+
+## SUM
+```sql
+SELECT MAX(invoice_total) AS highest,
+SUM(invoice_total) AS total
+FROM invoices
+WHERE invoice_date >'2019-01-01';
+```
+
+# GROUP BY
+- Always after FROM and WHERE clause and before Orderby Clause.
+```sql
+SELECT client_id, SUM(invoice_total) FROM invoices 
+GROUP BY client_id;
+```
+## GROUP BY multiple columns
+- One record for each combination
+```sql
+SELECT date, name AS payment_method, SUM(amount)  FROM payments p
+JOIN payment_methods pm
+ON p.payment_method= pm.payment_method_id
+GROUP BY date, name;
+```
+
+# HAVING
+- Filter the data after we Group our rows.
+- WHERE clause filters the data before the rows are grouped.
+- HAVING Clause needs to filter the data based on columns which are part of SELECT Clause, in contrast WHERE can filter according to any column.
+```sql
+SELECT c.customer_id, first_name, order_id,state, SUM(unit_price*quantity) AS total_price FROM orders o
+JOIN customers c USING (customer_id)
+JOIN order_items oi USING (order_id)
+WHERE state = 'VA'
+GROUP BY customer_id
+HAVING total_price>100 ;
+```
+
+# WITH ROLLUP
+- Shows another row for the total of the GROUP BY
+```sql
+SELECT pm.name AS payment_method, SUM(amount) as total FROM payments p
+JOIN payment_methods pm
+ON p.payment_method = pm.payment_method_id
+GROUP BY pm.name WITH ROLLUP;
+```
+
+generates one more column for total of both Cash and Credit Card.
+
+![](res/with_roll_up.jpg)
+
+- If you use roll up, you cannot use column alias, but need actual name of column.
+
+## WITH ROLLUP for GROUP BY multiple columns
+- it will generate an additional row for each group.
+- It generates row for all cities inside CA, NY, OR, WV individually and combined.
+![](res/with_roll_up_multiple_column.jpg)
+
+# Subqueries
+- Inside the parenthesis
+- Example of Subquery returnining a single value.
+  ```sql
+  SELECT * 
+  FROM  products
+  WHERE unit_price > (
+    SELECT unit_price 
+    FROM products
+    WHERE name LIKE 'LETTUCE%'
+  );
+  ```
+
+## Subquery using IN Operator
+- Example of subquery returning a sequence of values
+```sql
+SELECT * 
+FROM clients
+WHERE client_id 
+NOT IN (
+  SELECT DISTINCT client_id
+   FROM invoices
+);
+```
+
+## Subquery using ALL Operator
+- Example of subquery returining a sequence of values (just like IN Operator, but instead of equal to we are checking for greater or less)
+```sql
+SELECT *
+FROM invoices
+WHERE invoice_total > ALL (
+  SELECT invoice_total FROM invoices
+  WHERE client_id = 3;
+)
+```
+- The above query can also be implemented using ```MAX``` or ```MIN``` clause. They are interchangable.
+
+## Subquery vs JOINs
+- JOINS can also be used in place of subqueries, like in above case
+```sql
+SELECT * FROM clients c
+LEFT JOIN invoices i
+USING (client_id)
+WHERE i.client_id IS NULL;
+```
+
+- If performance is similar, you should choose the approach which is more readable.
 
 # Normalization improves write speed, but decreases read speed due to joins.
 # To see

@@ -255,7 +255,7 @@ In software engineering, a connection pool is a cache of database connections ma
 - It is used in wiki pedia, one person can read the data, meanwhile others are also allowed to read and write back before the first person wrote it back, this ensures other users are not blocked till the first user updated the article. 
 - Also used in git version control, if someone else already updated before original person wrote back, we get merge conflicts and need to resolve.
 - More performant since, optimistic lock won't hold on to resource.
-- Useful when few conflicts are the
+- Useful when few conflicts are there.
 
 ## Optimistic Lock Vs MVCC
 - I think they are sometimes used interchangeably, and if the transaction only involves one object then they are essentially the same, but MVCC is an extension of optimistic concurrency (or a version of it) that provides guarantees when more than one object is involved. Say that you have two objects, A and B, which must maintain some invariant between them, e.g. they are two numbers whose sum is constant. Now, a transaction T1 subtracts 10 from A and adds it to B, while, concurrently, another transaction T2 is reading the two numbers. Even if you optimistically update A and B independently (CAS them), T2 could get an inconsistent view of the two numbers (say, if it reads A before it's modified but reads B after it's been modified). MVCC would ensure T2 reads a consistent view of A and B by possibly returning their old values, i.e., it must save the old versions.
@@ -416,6 +416,112 @@ The way event sourcing works with CQRS is to have part of the application that m
 ## References
 - https://www.confluent.io/blog/making-sense-of-stream-processing/
 - https://www.confluent.io/blog/event-sourcing-cqrs-stream-processing-apache-kafka-whats-connection/#:~:text=Event%20sourcing%20involves%20modeling%20the,or%20%E2%80%9Clog%E2%80%9D%20of%20events.&text=Event%20sourcing%20involves%20changing%20the,log%2C%20like%20a%20Kafka%20topic.
+
+# Things I wish Developer's Knew About Databases - Jaana Dogan
+## Network Issues can be a problem
+
+## ACID has different meanings for different databases
+- Databases might advertise themselves as ACID but might still have different interpretation in edge cases or how they handle “unlikely” events.
+
+## Each database has different consistency and isolation capabilities.
+- See isolation Levels in Hussain's Notes
+### Refer
+- https://jepsen.io/consistency
+- https://github.com/ept/hermitage
+
+## Optimistic Locking for low contention systems
+- Optimistic locking is a method when you read a row, you take note of a version number, last modified timestamps or its checksum. Then you can check the version hasn’t changed atomically before you mutate the record.
+
+## There are anomalies other than dirty reads and data loss.
+### Write Skews
+- Generally causes data integrity issues as the logical constraints is compromised.
+- Caused when 2 different transaction perform disjoint writes and are sucessful.
+- Serializable isolation, schema design or database constraints can be helpful to eliminate write skews. 
+
+## My database and I don’t always agree on ordering.
+```
+result1 = T1() // results are actually promises
+result2 = T2()
+```
+Since promises are non blocking, A DB may recieve T1 and T2 at the same time or worse recieve T2 before T1, If atomicity is required (to either fully commit or abort all operations) and the sequence matter, the operations in T1 and T2 should run in a single database transaction.
+
+## Application-level sharding can live outside the application.
+- Some database may not support sharding, so it is possible to move the sharding/partition logic outside of database, something known as application level sharding.
+- But the application level sharding can be offered outside of your application, infront of the database to decouple application and shard server. 
+- Depending on data growth and schema iterations, sharding requirements might get complicated. Being able to iterate on some strategies without having to redeploy application servers may be useful.
+### Vitess
+- One such example of an application-level sharding system is **Vitess**. Vitess provides horizontal sharding for MySQL and allows clients to connect to it via the MySQL protocol and it shards the data on various MySQL nodes that don’t know about each other.
+
+## AUTOINCREMENT’ing can be harmful.
+- Way to generate primary keys. Databases are used as ID generators
+- In distributed database systems, A global lock would be needed to be able to generate an ID. If you can generate a UUID instead, it would not require any collaboration between database nodes. Autoincrementing can thus lead to degraded performance.
+- Some databases have partitioning algorithms based on primary keys. Sequential IDs may cause unpredictable hotspots and may overwhelm some partitions while others stay idle.
+- The fastest way to access to a row in a database is by its primary key. If you have better ways to identify records, sequential IDs may make the most significant column in tables a meaningless value. Please pick a globally unique natural primary key (e.g. a username) where possible.
+
+## Stale data can be useful and lock-free.
+- MVCC to allow each transaction to see a snapshot, an older version of the database. Transactions against snapshots still can be serializable for consistency. When reading from an old snapshot, you read stale data.
+- would allow read-only transactions to to be lock-free.
+
+### Vacuuming
+- Databases sweep the old versions automatically and in some cases, they allow you to do that on demand. For example, Postgres allows users to VACUUM on demand as well as automatically vacuuming once a while
+
+## Clock skews happen between any clock sources.
+- all time APIs lie.
+
+### Google's True Time
+- TrueTime uses two different sources: GPS and atomic clocks. These clocks have different fail modes, hence using both of them is increasing the reliability.
+
+## Latency has many meanings.
+client_latency = database_latency + network_latency
+
+## Evaluate performance requirements per transaction/Query.
+- Instead of a general view of latency or throughput of a database, determine what is the latency/throughtput of the particular usecase Say,:
+- Latency when querying the friends of friends of a user when average number of friends is 500.
+- Latency of retrieving the top 100 records for the user timeline when user is subscribed to 500 accounts which has X entries per hour.
+
+### Distributed Tracing
+- Distributed tracing, sometimes called distributed request tracing, is a method to monitor applications built on a microservices architecture. This allows them to pinpoint bottlenecks, bugs, and other issues that impact the application’s performance.
+- AWS X-Ray
+
+### How to debug for latency
+- https://rakyll.medium.com/want-to-debug-latency-7aa48ecbe8f7
+
+## Transactions shouldn’t maintain application state.
+- In other words, transactions should be idempotent, to not be affected by retries.
+
+## Query planners can tell about databases.
+
+- Query planner’s role is to determine which strategy is the best option. Say Full table scan/ Index Scan.
+
+## Online migrations are complex but possible.
+- Online, realtime or live migrations mean migrating from one database to another without downtime and compromising data correctness.
+
+### 4 step dual writing pattern
+- Before beginning, it is important to note the performance impact, it will be to copy to 2 database models.
+- What this 4 phase model will allow you to do, is that you can revert back to the old schema, if you find any inconsistency.
+
+#### Dual writing to the existing and new tables to keep them in sync.
+- At this stage, all reads are directed to old table.
+- We begin by creating newly created data in both tables, while the older data is only in the older table. writing data to the old store and then copying them to the new store:
+- Then, We’ll start copying over existing subscriptions in a lazy fashion: whenever objects are updated, they will automatically be copied over to the new table. 
+- Finally, we’ll backfill any remaining tables.
+
+#### Changing all read paths in our codebase to read from the new table.
+- At this point both old and new database are in sync.
+- Use, GitHub’s Scientist lets us run experiments that read from both tables and compare the results.
+- After we verified that everything matched up, we started reading from the new table.
+
+#### Changing all write paths in our codebase to only write to the new table.
+- Up until now, we’ve been writing data to the old store and then copying them to the new store.
+- We now want to reverse the order: write data to the new store and then archive it in the old store. 
+
+####  Removing old data that relies on the outdated data model.
+
+### Reference
+- https://stripe.com/blog/online-migrations
+
+## Significant database growth introduces unpredictability.
+
 
 # Check these algorithms
 - Count Min Sketch

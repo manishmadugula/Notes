@@ -112,6 +112,45 @@ PUT requests benefit from the checksum of the request to avoid the extra network
 
 # Introduction to Database Engineering.
 
+## Isolation
+### Read Phenomena
+#### Dirty Read
+- One transaction reads a value, which is not yet commited by another transaction.
+![](res/dirty_read.jpg)
+#### Non Repeatable Reads
+- You read a value from a row during the transaction, after some time you read it again, you get a different value (even if you only read a committed value). 
+![](res/non_repeatable_read.jpg)
+#### Phantom Reads
+- Usually observed in range queries, may happen when a new row is inserted or deleted from the table during a transaction is happening
+![](res/phantom_read.jpg)
+
+#### Lost Update
+- (Not a read phenomena) during a transaction, your update got overwritten by another transaction.
+
+### Isolation Levels to fix Read Phenomena
+#### Read uncommited
+- No isolation, any changes to databases can be seen by any transaction, leads to dirty reads, non repeatable reads, phantom reads, lost updates.
+
+#### Read commited
+- Each query only sees commited stuff, most dbs implement this.
+- If another transaction inserts and commits new rows, the current transaction can see them when querying.
+- leads to non repeatable reads and phantom reads.
+
+#### Repeatable Read
+Uncommitted reads in the current transaction are visible to the current transaction but changes made by other transactions (such as newly inserted rows) won’t be visible.
+
+"Repeatable read" guarantees only that if multiple queries within the transaction read the same rows, then they will see the same data each time. (So, different rows might get snapshotted at different times, depending on when the transaction first retrieves them. And if new rows are inserted, a later query might detect them.)
+
+
+#### Snapshot Isolation
+"Snapshot" guarantees that all queries within the transaction will see the data as it was at the start of the transaction.
+- Suffers from phantom read
+
+#### Serializable Reads
+- Easiest and slowest level, highest isolation level, no transaction can be run parallel.
+
+
+
 ## Consistency in reads vs Consistency in data
 
 ### Consistency in data
