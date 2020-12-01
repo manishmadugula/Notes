@@ -710,7 +710,164 @@ WHERE i.client_id IS NULL;
 
 - If performance is similar, you should choose the approach which is more readable.
 
-# Normalization improves write speed, but decreases read speed due to joins.
+# Transaction
+
+- An SQL Transaction is ACID Compliant
+- If server crashes before all the data is commited, all the changes get's rollbacked, thus ensuring atomicity and consistency.
+- For Mysql it is START TRANSACTION not BEGIN TRANSACTION.
+
+```sql
+USE sql_store;
+
+START TRANSACTION;
+
+	INSERT INTO orders (customer_id, order_date, status) 
+	VALUES (1, '2019-01-01',1);
+
+	INSERT INTO order_items 
+	VALUES (LAST_INSERT_ID(), 1, 1, 1);
+
+COMMIT;
+```
+- You can also manually rollback on response to some logic
+```sql
+USE sql_store;
+
+START TRANSACTION;
+
+INSERT INTO orders (customer_id, order_date, status)
+VALUES (2, '2020-12-1',1);
+
+INSERT INTO order_items 
+VALUES (LAST_INSERT_ID(), 1, 1, 1);
+
+ROLLBACK;
+```
+- Every single statement (INSERT, UPDATE, DELETE) that mysql runs, is run inside a transaction itself.
+(autocommit = ON)
+
+# CONCURRENCY AND ISOLATION
+- By default, mySQL holds lock on row which is being modified by some other transaction.
+- See hussain's notes for isolation level.
+
+# SHOW VARIABLES
+- Used to show the settings of the database.
+
+```sql
+SHOW VARIABLES LIKE 'autocommit';
+```
+# Views
+- They are like virtual tables.
+- Help to abstract away non used columns and also makes changes to database easier process, queries changes will only involve changing the view's sql.
+
+
+# Stored Procedures
+- Useful to have query logic to move outside of application code.
+- No need to recompile all the application code, in case of changes to sql query.
+# Functions
+
+## Default Functions
+
+### Numeric
+- ROUND()
+- TRUNCATE(n, numofdigits_to_truncate)
+- CIELING()
+- FLOOR()
+- ABS()
+- **RAND()**
+
+### String
+- LENGTH()
+- UPPER()
+- LOWER()
+- TRIM()
+- SUBSTRING(string, start, length)
+- LOCATE(substring, string)
+- REPLACE(string, string_to_replace, string_replace_with)
+- CONCAT(first,last)
+
+### IFNULL
+- Will return Not assigned, if shipper_id is null.
+```sql
+IFNULL(shipper_id, 'Not Assigned')
+```
+
+### COALESE
+- Will return first non null value
+
+```sql
+COALESE(shipper_id, comment, 'Not Assigned');
+```
+
+### IF (IMPORTANT)
+- TEST a condition and return a value based on the condition is true or not.
+- ```IF(condition, true_value, false_value)```
+```sql
+SELECT 
+	order_id,
+    order_date,
+    IF(YEAR(order_date) = YEAR(NOW()), 'Active', 'Archive') as state
+FROM orders;
+```
+
+### CASE 
+- Similar to IF
+
+## Custom Functions
+
+# Triggers
+- SQL that runs when another SQL UPDATE/DELETE/INSERT occurs in some table.
+- Can be useful for Journalling/Auditing purposes.
+- And also keep data consistent across table.
+
+# Events
+- A task/ block of sql code, that get's executed on specified intervals.
+- Kind of CRON Jobs
+- Need to turn on event_scheduler.
+
+# Database Design
+- Primary keys shouldn't be updated. 
+- Don't try to model the universe, think mostly about the use case.
+- Reverse Engineer Option is useful to convert a database to a ER Diagram to better understand the design, change those designs and create the script to make the changes.
+
+## Conceptual Model
+- First step is to identify the entities, say we are implementing a online course site like udemy. Our Entities can be student and course with a many to many relationship between them.
+## Logical Model
+- Sometimes it is also necessary to have the relationship itself as an entity, i.e enrollment entity with fields like date of enrollment, price paid(since that can change in future) etc. These tables are sometimes called link tables.
+
+## Physical Model
+- It is useful to use the already existing ERR diagram in databases like mysql to design the database schema and constraints.
+
+## Foreign Key
+- The relationship is always parent child relationship. the one with foreign key is the child.
+- Foreign Key can also be the primary key or combination of foreign key can be primary key.
+
+## Composite Key
+- Benifits of having composite key approach is that you ensure your data can be consistent.
+- But everywhere where the table is related to some other table, more than a single column needs to be the foreign key.
+
+## Foreign Key Constraints
+- What to do if the parent table i.e the students table's id is updated or student is deleted, do we restrict this action or do we casade and delete the child too. This is what can be controlled in the foreign key constraints.
+
+## Normalization
+- Prevents data duplication, so that data is consistent
+- Normalization improves write speed, but decreases read speed due to joins.
+- ### Take these normal forms with a grain of salt, In real worlds just try to minimize duplication of data as per your usecase.
+### First Normal Form
+- Each cell should have single value and we should not have repeated columns.
+- Relational DBs doesn't have many to many relationship, we need to have an intermediate table and have one to many relationship between the original tables and this intermediate table. These intermediate tables are called link tables.
+
+### Second Normal Form
+- First Normal Form
+- All non-prime attributes (attributes not part of candidate key) should be fully dependent on the candidate key, not part of the candidate key. In simple words, every table should represent one entity and all column in that table should represent that entity only.
+
+### Third Normal Form
+- Non prime attributes shouldn't derive non prime attributes.
+
+
+
+
+
 # To see
 - COLLATE
 - FULL JOIN
