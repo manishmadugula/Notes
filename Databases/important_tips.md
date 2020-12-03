@@ -1,2 +1,2 @@
 - Address row can be more than one for customers.
-- Price may not be constant for the item and thus you want to include unit price in the invoice along with unit price in the product table which is the most recent.
+- Price may not be constant for the item and thus you want to include unit price in the invoice along with unit price in the product table which is the most recent.    

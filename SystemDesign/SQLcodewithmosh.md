@@ -864,10 +864,239 @@ FROM orders;
 ### Third Normal Form
 - Non prime attributes shouldn't derive non prime attributes.
 
+# CREATE TABLE with Foreign Key constraints
+
+```sql
+CREATE TABLE orders
+(
+  order_id INT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  FOREIGN KEY fk_orders_customers (customer_id)
+    REFERENCES customers (customer_id)
+    ON UPDATE CASCADE
+    ON DELETE NO ACTION
+);
+```
 
 
+# ALTER TABLE
+```sql
+ALTER TABLE customers
+  ADD last_name VARCHAR(50) NOT NULL
+  ADD city VARCHAR(50) NOT NULL
+  MODIFY COLUMN first_name VARCHAR(55) DEFAULT ''
+  DROP points;
+```
+
+# CHARACTER SET
+- all various characters (utf32 etc.... chinese etc).
+- Default character set is utf8
+- ### Character set defines, how much space per character is allocated by mysql/db. By choosing utf8 we allocate 3 bytes per character, which is wasteful if you only want latin i.e english character which only needs 1 byte.
+- Character set can be changed at a table level too.
+## COLLATION
+- A MySQL collation is a set of rules used to compare characters in a particular character set.
+
+# Storage Engines
+- How database is stored and what all features are available.
+```sql
+-- To see all the available engines
+SHOW ENGINES
+```
+- INNO DB is the default storage engines and supports transactions, foreign key constriants, row level locking.
+- To change the storage engine, will incur downtime.
+```sql
+ALTER TABLE `sql_store`.`order_statuses` 
+ENGINE = MyISAM ;
+```
+
+# Indexes
+- Datastructures that help to search the rows related to the query for fast retrieval.
+- Implemented using BTree or HashMap
+- Indexes are small enough to fit into RAM and thus faster to access.
+- Indexes should be added based on query not during table design.
+- MySQL by default creates index on the PRIMARY KEY. This is the clustered Index, i.e index based on what the data is ordered in the table.
+- There can be only one clustered index.
+- Internally MySQL stores the primary index value in the secondary index to make the write faster, PostgreSQL doesn't do this.
+- All foreign keys also have indexes related to them. 
+- MySQL only uses one index at a time, you can combine multiple columns into one index for search where you need to search by 2 or more values.
+
+- You can tell MySQL to force use an index, even if it is not optimal
+
+  ```sql
+  SELECT *
+  FROM customers
+  USE INDEX (idx_last_name_state)
+  WHERE state='NY' AND last_name 'A%';
+  ```
+
+- Dupicate and redundant indexes are going to slow down your writes. Redundant indexes are say you already have composite index on (A,B) and create another composite index (A).
+## Cost of Indexes
+- Increase in size of database
+- Write/Update/Delete of records will be slower (especially in postgres because every index has to be updated, unlike mysql only the primary key index has to be updated).
+
+## Analyse the query
+- Using 
+```sql
+EXPLAIN SELECT customer_id FROM customers WHERE state = 'CA';
+```
+
+Will give out 
+![](res/explain_query.jpg)
+- The type ALL means a full Table Scan
+- ROWS denote the total rows scanned.
+
+```sql
+-- add index
+CREATE INDEX idx_state ON customers (state);
+```
+After adding index
+![](res/explain_query_index.jpg)
+
+- To find the cost of the last query in MySQL use 
+```sql
+SHOW STATUS LIKE 'last_query_cost';
+```
+
+## Prefix-Indexes/Indexing string Column (IMPORTANT)
+- Indexes of columns that are char, varchar, text or blob are not good, since index may take a lot of space and make the search slow.
+- Thus indexing on string columns can be made faster by only indexing a part of the string.
+- The above is optional for CHAR or VARCHAR but is compulsory for TEXT AND Blob.
+  ```sql
+  CREATE INDEX idx_lastname ON customers (last_name(20));
+  ```
+- To find the optimal prefix length, find the number of distinct values in your index, find a balance that maximizes the total count with minimum no of characters.
+  ```sql
+  SELECT COUNT( DISTINCT LEFT(last_name,5 )) FROM customers;
+  ```
+    If you increase and see diminishing returns lower the value from 5 to 4 say.
 
 
-# To see
-- COLLATE
-- FULL JOIN
+## Composite Indexes
+- When dealing with complexes statements like 
+  ```sql
+  select * from customers where state='CA' and points <1000
+  ```
+  and say we have indexes on state and points, mysql only chooses one of the 2 indexes, it will find all items with state='CA' by index scan and then perform table scan for the points<1000.
+- As can be seen from the explain statement on above query, out of the 2 possible keys idx_state and idx_points, mysql only choose idx_state for query.
+![](res/composite_indexes.jpg)
+
+- So for this usecase we can create a composite index.
+
+```sql
+CREATE INDEX idx_state_points ON customers(state,points);
+```
+![](res/composite_indexes_2.jpg)
+
+- ### For optimal performance, you might need composite indexes, so having indexes for all columns, might not be enough.
+
+### Ordering of columns in composite indexes.
+- Put the most frequently accesed columns first.
+- Next, put the columns with higher cardinality first. Cardinality : number of unique value in the index. 
+  - Putting gender as the index on a table with million rows, will only remove half of the rows from the search space.
+
+- Use EXPLAIN keyword and optimise for the order and usecase.
+
+
+##  FULL TEXT INDEXES IMPORTANT :
+- Useful to implement search engines.
+- With this indexes we can implement fast and powerful search engines.
+- They store list of words and for each word they store list of rows/ documents these words appear in.
+
+```sql
+CREATE FULLTEXT INDEX idx_title_body ON posts (title,body);
+```
+
+To search in the db
+```sql
+SELECT * FROM posts WHERE MATCH (title, body) AGAINST('react redux');
+```
+
+### Relevancy Score
+- You can run the following query to find the relevancy score for each match
+
+```sql
+SELECT *,
+MATCH (title, body) AGAINST('react redux') AS relevancy_score
+FROM posts WHERE MATCH (title, body) AGAINST('react redux');
+```
+
+### BOOLEAN MODE
+- In this mode we can limit the results to say :
+  - Not contain a particular word, by prefixing the word by minus.
+  - To atleast contain one instance of a particular word by prefixing the plus.
+  - To perform an exact search (not fuzzy), by enclosing within double quotes.
+
+  ```sql
+  -- will atleast have one instance of form and won't have the redux
+  SELECT *,
+  MATCH (title, body) AGAINST('react -redux +form') AS relevancy_score
+  FROM posts WHERE MATCH (title, body) AGAINST('react -redux' IN BOOLEAN MODE);
+  ```
+
+  ```sql
+  -- will contain exactly the string "handling the form".
+  SELECT *,
+  MATCH (title, body) AGAINST('"handling a form"') AS relevancy_score
+  FROM posts WHERE MATCH (title, body) AGAINST('react -redux' IN BOOLEAN MODE);
+  ```
+
+## WHEN INDEXES ARE IGNORED
+- If you want to use indexes to maximum extent you need to isolate the columns related to the index.
+- Example :
+  ```sql
+  SELECT * FROM customers
+  WHERE points -10<990;
+  ``` 
+  will result in full table scan, even though we have indexed points column.
+  Just modifying the above query as
+  ```sql
+  SELECT * FROM customers
+  WHERE points <1000;
+  ```
+  fixes the issue.
+
+## INDEXING for sorting data.
+
+- INDEXES not only can be used for filtering, but also for sorting.
+  ```sql
+  SELECT * FROM customers ORDER BY state;
+  ```
+    Would be fast if we have index on state.
+
+## Say, if you have index on 2 columns (a,b) a followed by b. 
+  - Following operations will be optimal:
+    - order by a
+    - order by a, b
+    - order by a DESC, b DESC
+    - filter a, order b
+    - filter a, filter b
+    - filter a
+  - Following will still be slow
+    - order by b
+    - order by b, a
+    - order by a , b DESC
+    - order by a DESC, b
+    - order by a, c, b
+    - filter b, order a
+    - filter b
+    - filter b, filter a
+
+## Covering Indexes
+- If the attributes we are interested in query, only has the columns which are present in index, we can easily satisfy the query by just using the index (in memory), but if it has other attributes stored only on disk, we might need to go to table scan i.e go to disk (slow).
+
+- For all secondary indexes, MySQL includes the primary_key in the index so even if we use idx_state, we can still get customer_id information from this index, since customer_id is the primary_key.
+- Also look at hussein's notes on key columns.
+- The following query will result in full table scan i.e fetch from disk
+
+  ```sql
+  SELECT *
+  FROM customers
+  ORDER BY state; 
+  ```
+  Where as 
+  ```sql
+  SELECT customer_id, state
+  FROM customers
+  ORDER BY state; 
+  ```
+  is satisfied using only index scan (memory)
