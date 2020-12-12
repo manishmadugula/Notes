@@ -245,4 +245,70 @@ Sometimes a sequential scan is better than scattered index scan. See Non Key Col
 ## Partitioning vs Sharding
 - Horizontal Partitioning splits database into multiple tables in the same database, client is agnostic.
 - Sharding splits database into multiple tables across **multiple database servers - different ip address**. Client is aware mostly . Useful for distributed processing and latency issues. California customer are gonna put customer data in a database server in california.
-- 
+
+## Table Scan Optimzation
+- Using multiprocessing/ multithreading.
+
+## Database Engines
+- MySQL is one of the few DBs which can change their DB Engines.
+- PostgreSQL can't.
+
+
+## Row Based Vs Column Based Databases (VIMP)
+
+### Storage in DISK
+#### ROW Based
+- Tables are stored as rows first in disk.
+- A single block io read fetches multiple rows with all it's columns.
+- Table Scan would require a lot of IO accesses but once the desired row is found, all the columns for the row is found.
+- ![](res/row_oriented.jpg)
+- Very good for OLTP (Online Transaction Processing)
+
+### COLUMN BASED
+- Tables are stored as columns first in disk.
+- A single block io read fetches multiple columns with all matching rows.
+- Working with multiple columns would require lots of IO Operations.
+- Great for OLAP. (Online Analytical Processing)
+- ![](res/column_oriented.jpg)
+- As can be seen above, row-id (invisible to user mostly), is duplicated across all the columns/blocks.
+- Editing(deletes) and writes are very slow.
+
+
+
+### Performance in selecting a single column
+#### ROW BASED
+- Assuming no indexes and a full table scan
+- Would require multiple IO accesses till desired block is found.
+![](res/row_oriented_1.jpg)
+
+#### COLUMN BASED
+- Very fast.
+- DB has some idea which block has the required column for which row id.
+![](res/column_oriented_1.jpg) 
+- The above required just 2 IO ops.
+
+### Performance in selecting all the columns/multiple columns
+#### ROW BASED
+- Same as the one with single column, same latency since all the desired columns are contiguos.
+#### COLUMN BASED
+- Very bad, since we have to scan multiple blocks to get all information.
+- causes too much thrashing (too much time spent on pagination)
+![](res/column_oriented_2.jpg)
+
+
+
+### Performance in Aggregation like SUM(column)
+#### ROW Based
+- would require, scanning the entire blocks related to tables.
+- Very bad for analytics and OLAP (Online Analytical Processing).
+
+#### COLUMN Based
+- Very Optimized for this use-case
+![](res/column_oriented_3.jpg)
+
+
+### COMPRESSION
+- If multiple people have same salary, we can just append the row_id of the person at the end of the same salary integer like appending to list, this saves up a lot of space, this can't be done in row based since each block has non related data (in terms of types).
+
+### PROS and CONS
+- ![](res/row_column.jpg)

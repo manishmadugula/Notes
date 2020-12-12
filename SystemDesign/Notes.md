@@ -30,6 +30,7 @@
 ### Persistence
 #### CAP Theorem
 - In the presense of network partition you must choose between consistency and availability.
+- Good Explaination : [Link](https://stackoverflow.com/questions/12346326/cap-theorem-availability-and-partition-tolerance)
 #### Consistency vs Availability in Cassandra
 - Using Quorum, you can choose level of consistency and trade of with availability in your system.
 
@@ -521,6 +522,110 @@ client_latency = database_latency + network_latency
 - https://stripe.com/blog/online-migrations
 
 ## Significant database growth introduces unpredictability.
+
+# Donnemartin
+
+## Weak vs Eventual Consistency
+- After a write reads may not see it. Video chat, multiplayer gaming, VoIP.
+- After a write, read will eventually see it.
+
+## CAP Theorem
+- https://stackoverflow.com/questions/12346326/cap-theorem-availability-and-partition-tolerance
+
+## Availability Patterns
+
+### Failover
+#### Active Passive Failover
+- heart beats sent between active and passive server, if active server doesn't respond then passive server takes over active's IP and resumes service.
+- There is potential for dataloss if there is time lag between passive's takeover. It should be hot standby not cold standby.
+
+#### Active Active
+- Both servers are managing traffic.
+- DNS/application logic needs to know the IP of both servers.
+
+### Replication
+- Master Slave replication
+- Master Master replication
+
+### Availability in Sequence vs Parallel
+- Service's overall ability depends on whether the components are in sequence or in parallel
+#### Sequence
+- ```Total Availability = Availability(Foo)*Availability(Bar)```
+#### Parallel
+- ```1- Total Availability = (1-Availability(Foo))*(1-Availability(Bar))```
+
+## DNS Records
+- NS record (name server) - Specifies the DNS servers for your domain/subdomain.
+- A record (address) - Points a name to an IP address.
+- CNAME (canonical) - Points a name to another name or CNAME (example.com to www.example.com) or to an A record.
+
+## Benifits of load balancing
+- SSL Termination : Decrypt incoming requests and encrypt server responses so backend servers do not have to perform these potentially expensive operations.
+- Session persistence : Issue cookies and route a specific client's requests to same instance if the web apps do not keep track of sessions
+
+
+## Federation
+- Federation (or functional partitioning) splits up databases by function. For example, instead of a single, monolithic database, you could have three databases: forums, users, and products, resulting in less read and write traffic to each database and therefore less replication lag.
+- Similar to sharding
+
+## Ways to speed up database
+- Indexing
+- SQL Tuning/Optimzation (See Mosh Notes)
+- Caching
+- Denormalization
+  - Denormalization attempts to improve read performance at the expense of some write performance. Redundant copies of the data are written in multiple tables to avoid expensive joins.
+  - Denormalization might circumvent the need for such complex joins in sharded dbs.
+  - Useful in most cases since reads dominate writes.
+- Logical Partitioning
+- Federation
+- Physical Sharding
+
+
+## Caching
+- Client caching (OS/Browser level)
+- CDN (For static content)
+- Reverse Proxy Caching
+- DB Caching (Caching in DB Server Itself)
+- Application Caching (Redis /Memcached)
+### What is cached?
+- Row level
+- Query level
+  - Hard to delete a cached result with complex queries
+  - If one piece of data changes such as a table cell, you need to delete all cached queries that might include the changed cell
+- Fully formed serialized objects
+- Static content like HTML
+
+### Suggestions on what to cache
+- User Sessions
+- Fully rendered web pages
+- Activity streams
+
+### When to update
+#### Cache Aside
+  - Look for entry in cache, resulting in a cache miss
+  - Load entry from the database
+  - Add entry to cache
+  - Return entry
+  - Each cache miss results in three trips, which can cause a noticeable delay.
+  - Data can be stale, need a good TTL.
+
+#### Write-through
+  - Application adds/updates entry in cache
+  - Cache **synchronously** writes entry to data store
+  - Return
+  - Slow writes.
+  - Most data written might never be read, which can be minimized with a TTL.
+
+#### Write-behind (write-back)
+  - Add/update entry in cache
+  - Asynchronously write entry to the data store, improving write performance.
+  - There could be data loss if the cache goes down prior to its contents hitting the data store.
+
+## Asynchronous Processing
+
+### Back Pressure
+- If queues start to grow significantly, the queue size can become larger than memory, resulting in cache misses, disk reads, and even slower performance. Back pressure can help by limiting the queue size, thereby maintaining a high throughput rate and good response times for jobs already in the queue. Once the queue fills up, clients get a server busy or HTTP 503 status code to try again later. Clients can retry the request at a later time, perhaps with exponential backoff.
+
 
 
 # Check these algorithms

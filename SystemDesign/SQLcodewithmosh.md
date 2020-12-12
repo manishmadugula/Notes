@@ -1122,4 +1122,12 @@ there is a new post.
 - Isolate your columns in your queries so MySQL can use your indexes. 
 - 7. Avoid SELECT *. Most of the time, selecting all columns ignores your indexes and returns unnecessary columns you may not need. This puts an extra load on your database server. 
 - Avoid LIKE expressions with a leading wildcard (eg LIKE ‘%name’). 
-- 
+- Use CHAR instead of VARCHAR for fixed-length fields.
+CHAR effectively allows for fast, random access, whereas with VARCHAR, you must find the end of a string before moving onto the next one.
+- Use TEXT for large blocks of text such as blog posts. TEXT also allows for boolean searches. Using a TEXT field results in storing a pointer on disk that is used to locate the text block.
+- Use DECIMAL for currency to avoid floating point representation errors.
+- Avoid storing large BLOBS, store the location of where to get the object instead.
+- VARCHAR(255) is the largest number of characters that can be counted in an 8 bit number, often maximizing the use of a byte in some RDBMS.
+- **Set the NOT NULL constraint where applicable to improve search performance.**
+- **When loading large amounts of data, it might be faster to disable indices, load the data, then rebuild the indices.**
+- Denormalize where performance demands it.
