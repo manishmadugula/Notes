@@ -576,6 +576,7 @@ client_latency = database_latency + network_latency
   - Denormalization attempts to improve read performance at the expense of some write performance. Redundant copies of the data are written in multiple tables to avoid expensive joins.
   - Denormalization might circumvent the need for such complex joins in sharded dbs.
   - Useful in most cases since reads dominate writes.
+- Using materialized views (When latest data isn't required. See Below)
 - Logical Partitioning
 - Federation
 - Physical Sharding
@@ -627,7 +628,107 @@ client_latency = database_latency + network_latency
 - If queues start to grow significantly, the queue size can become larger than memory, resulting in cache misses, disk reads, and even slower performance. Back pressure can help by limiting the queue size, thereby maintaining a high throughput rate and good response times for jobs already in the queue. Once the queue fills up, clients get a server busy or HTTP 503 status code to try again later. Clients can retry the request at a later time, perhaps with exponential backoff.
 
 
+# Views vs Materialized Views
+## Views
+- They evaluate the data in the tables underlying the view definition at the time the view is queried. It is a logical view of your tables, with no data stored anywhere else.
+- Views are virtual only and run the query definition each time they are accessed.
+- The upside of a view is that it will always return the latest data to you. The downside of a view is that its performance depends on how good a select statement the view is based on. If the select statement used by the view joins many tables, or uses joins based on non-indexed columns, the view could perform poorly.
 
+## Materialized Views
+- Materialized views are disk based and are updated periodically based upon the query definition.
+- When you need performance on data that don't need to be up to date to the very second, materialized views are better, but your data will be older than in a standard view. 
+- They are similar to regular views, in that they are a logical view of your data (based on a select statement), however, the underlying query result set has been saved to a table. The upside of this is that when you query a materialized view, you are querying a table, which may also be indexed.
+- In addition, because all the joins have been resolved at materialized view refresh time, you pay the price of the join once (or as often as you refresh your materialized view), rather than each time you select from the materialized view. 
+- Materialized views can be set to refresh manually, on a set schedule, or based on the database detecting a change in data from one of the underlying tables. 
+- Materialized views are primarily used to increase application performance when it isn't feasible or desirable to use a standard view with indexes applied to it. Materialized views can be updated on a regular basis either through triggers or by using the ON COMMIT REFRESH option.
+
+
+# Cassandra
+- Fast because data on write is written in memory and a commit log(very fast even on disk, since it is append only write important for durability in case the cassandra node fails before the data is written to the disk).
+- Also periodically the data from mem-table is written to ss-table which is also fast because of sequential IO and not random IO.
+- The write to SS-Table is immutable, unlike in MySQL where due to random IO thrashing(more time spent on pagining than useful work) occurs.
+- ### LWW :Cassandra looks for newer time stamp, that is the last write wins, and periodically it performs compaction.
+- Compaction : Looks at SS Table, performs a merge sort, pick the one with latest time stamp and then writes out to another SS Table. (One big Sequential Read to Memory, and then one big sequential write).
+- Unlike in MySQL which frontloads the IO, Cassandra defers random IO to later time, and making it efficient sequential bulk IO.
+- Cassandra is peer to peer, there is no leader election, there is no master slave, everything  is active-active.
+- Uses Consistent Hashing and virtual nodes to deal with skewed nodes.
+- Each nodes also has a replication factor say, 3 (we have a primary node which is responsible for a range, we also have 2 replicas which is chosen among the other fellow nodes, based on load).
+  ![](res/v_nodes.jpg)
+- We can decommision the nodes and add nodes without skewed distribution and scale linearly.
+## Reads
+- Client can ask any node, what is my data, it is the responisibility of the node(coordinator) to figure out who has the data and if data is not same how to solve for what is the correct data? Client is aware of the token ring and it finds the data.
+- Reads are slower, since to get the Latest write, you need to scan the entire ss tables, assuming compaction didn't occur.
+- Cassandra stores timestamp with every column value inserted, updated and deleted. To serve read request, Cassandra combines data from multiple datafiles and create a consistent image of data based on last write wins principal. As every read involves reading from multiple files, read performance can be slower if Cassandra is not maintained well.
+- One expcerpt from Discord's : [How discord stores billion's of messages](https://blog.discord.com/how-discord-stores-billions-of-messages-7fa6ec7ee4c7):
+  - We noticed Cassandra was running 10 second “stop-the-world” GC constantly but we had no idea why. We started digging and found a Discord channel that was taking 20 seconds to load. The Puzzles & Dragons Subreddit public Discord server was the culprit. Since it was public we joined it to take a look. To our surprise, the channel had only 1 message in it. It was at that moment that it became obvious they deleted millions of messages using our API, leaving only 1 message in the channel.
+  - When a user loaded this channel, even though there was only 1 message, Cassandra had to effectively scan millions of message tombstones (generating garbage faster than the JVM could collect it). 
+  - Deleting can also be a pain because records aren't deleted, rather a tombstone is placed ontop of the record so that eventually when tables reach a certain size, they're merged and then tombstoned rows are deleted.
+
+## Consistency Level (Tunable Consistency in Cassandra)
+- Set with every read/write
+- Say consistency level is ONE, just ping a certain node containing the data and return the fetched data, no coordination/conflict resolution, it is very fast.
+- QUORUM, 51 or greater nodes are answering the same data.
+- LOCAL QUORUM : 51 or greater nodes answering the same data in local Data Center.
+- LOCAL ONE : Read repair only in local DC.
+- TWO :
+- ALL : All replicas acknowledge, Full consistency.
+- Paxos : For lightweight transaction. ( IF NOT EXISTS)
+
+## Paxos
+- Family of distributed algorithms used to reach consensus.
+- Consensus is required in leader-slave basics when the leader fails and a new leader has to be elected. Consensus is required in peer to peer in case of the peer-to-peer all the time for any action to guarantee consistency.
+- Paxos defines 3 roles : proposer, acceptors and learners.
+- Paxos nodes can take all these roles.
+- Paxos nodes must be persistent.(Atleast in vanilla Paxos)
+- A Paxos runs at aiming a single consensus.
+- If a majority of  acceptors promise IDp, no ID less than IDp can make it through.
+- If a majority of acceptors accept (IDp, value) consensus is reached. (Consensus is and always will be on value not on IDp : IDp is internal to Paxos logic).
+- If a proposer or learner gets majority of accept for a specific IDp, they know that consensus is reached on value.
+
+### Practical Case:
+[Link](https://youtu.be/d7nAGI_NZPk?t=1239)
+
+### Reference
+- https://www.youtube.com/watch?v=d7nAGI_NZPk
+
+## INSERTS
+- Insert will always overwrite, unless you specify (IF NOT EXISTS : Paxos will run).
+
+## Features of CQL
+- Reverse the order of clustering (Great for timestamp), you don't need to hop over already written rows.
+```WITH CLUSTERING ORDER BY (interaction_time DESC);``` 
+- TTLs : Helpful for user sessions on web. (Be careful with it).
+
+## Cassandra vs RDBMs
+Major reason behind Cassandra’s extremely faster writes is its storage engine. Cassandra uses  Log-structured merge trees, whereas traditional RDBMS uses B+ Trees as underlying data structure.
+Consider an update statement,
+```UPDATE Department SET DeptName = 'Sales' WHERE DEPTID = 100;```
+### Oracle's Behavior
+Following operations occur:
+- Server process will check if respective block is present in database buffer Cache/RAM
+- If block is not available in buffer Cache, server process will scan respective datafile and copy block to memory.
+- Copied block will be modified in Memory.
+- Respective redo and undo entries will be created.
+- Once committed, database will write block again to respective datafile.
+- Both scanning the datafile and copying in memory and writing it again to disk is expensive work.
+
+### Cassandra's Behavior
+- Log redo entry in commit log (Cassandra’s own redo log)
+- Write update entry in memtable (memtable is table in database's RAM)
+- Occassionally flush data from the memtable to SSTable and perform compaction occasionally.
+- ### Cassandra doesn’t care about existing value of column which is being modified, it skips read part completely and create a record in memory including column and updated value. 
+- It then groups inserts and updates in memory, and at intervals, sequentially writes the data to disk in append mode. With each flush, data is written in immutable files and is never overwritten. As a result, as it skips scanning of long data files and again adding data to same long datafiles, writes take significantly less time in Cassandra.
+- 
+
+## Cassandra Usecases:
+### Chat application
+- Your search path will be based on who is talking to who then grabbing the last x messages. Which for Cassandra you'd use a compound partitioning key of user uuid with the uuid of the group / user they are talking to. Add a clustering key with time and return the last x results.
+### Twitter Tweets/ Timeline Caching.
+- Use user
+## Reference 
+- https://www.youtube.com/watch?v=B_HTdrTgGNs
+- https://blog.discord.com/how-discord-stores-billions-of-messages-7fa6ec7ee4c7
+- https://www.linkedin.com/pulse/why-cassandra-writes-faster-than-traditional-rdbms-vishal-kharjul/
 # Check these algorithms
 - Count Min Sketch
 - Consistent Hashing

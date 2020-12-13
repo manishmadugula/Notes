@@ -63,6 +63,24 @@
 
 ![](res/dropbox_1.jpg)
 
+
+# Facebook Messenger
+
+## From Internet
+- Use Cassandra for faster writes. Make the (from-user, to-user) the partition key and the timestamp (DESC order by) your clustering key.
+```sql
+CREATE TABLE chat_messages (
+    message_id uuid,
+    from_user text,
+    to_user text,
+    body text,
+    class text,
+    time timeuuid,
+    PRIMARY KEY ((from_user, to_user), time)
+) WITH CLUSTERING ORDER BY (time ASC);
+```
+- The above approach however doesn't allow the user to delete the message, since delete in one user's view will delete it in other's view too. You can have flags to deal with this issue. ```visible_one and visible_two```
+
 # To Read
 - https://instagram-engineering.com/handling-growth-with-postgres-5-tips-from-instagram-d5d7e7ffdfcb
 - https://instagram-engineering.com/search-architecture-eeb34a936d3a

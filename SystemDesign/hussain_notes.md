@@ -312,3 +312,54 @@ Sometimes a sequential scan is better than scattered index scan. See Non Key Col
 
 ### PROS and CONS
 - ![](res/row_column.jpg)
+
+
+## PostgreSQL as a NoSQL
+- This is a recent addition to PostgreSQL, and it does make the platform more appealing to anyone who wants to try out NoSQL and store JSON (JavaScript Object Notation) files in the database. It gives greater flexibility on how data is stored compared to traditional relational databases; with PostgreSQL, you can have the best of all worlds.
+
+## Database Engines 
+![](res/db_storage_engine.jpg)
+### B-Tree
+- Every insert, can retrigger a rebalance of trees and also IO Ops is required.
+- SSD and B Tree are bad combination, since there is a limited number of rewrites.
+- SSD is fantastic for inserts on blank disk and reads, but updates are gonna hurt the SSD.
+#### InnoDB
+- ACID Compliant transaction support.
+- Row level locking.
+- There is always a primary key.
+- B+ Tree 
+- Primary key always point to the row. Secondary Indexes point to the primary key as a resultReads are slow, but writes are fast.
+- Owned by Oracle.
+- Foreign Key supports.
+- 
+
+#### MyISAM
+- Indexed sequential access methods.
+- B-Tree indexes point directly to the row.
+- No transactional support.
+- Table level locking is supported, not row level locking.
+- Owned by Oracle, MySQL used to use it.
+- Insert is fast since we know the end of the disk, but update and delete are slow (can lead to fragmentation and the offsets change and indexes needs to be updated).
+
+#### SQLite
+- SQLite is a relational database management system contained in a C library. In contrast to many other database management systems, SQLite is not a client–server database engine. Rather, it is embedded into the end program
+- B Tree.
+- Concurrent read and write.
+- Web SQL in browser uses it.
+- Full ACID complaince
+
+### LSM Trees
+- Log Structured merge trees
+- Inspired by Big Table
+- way faster for inserts
+#### Level DB
+- No transactions
+- LSM Trees work great with SSDs.
+- All updates and deletes are inserts. 
+
+#### Rocks DB
+- Transactional
+- Fast insert
+- High performance, multi threaded compaction.
+- Can be used with Rocks DB
+
