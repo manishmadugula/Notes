@@ -2,7 +2,7 @@
   - [Primitive Datatypes](#primitive-datatypes)
 - [Access Modifiers](#access-modifiers)
   - [For Classes and Interfaces.](#for-classes-and-interfaces)
-  - [For Methods](#for-methods)
+  - [For Methods/fields](#for-methodsfields)
 - [Non Access Modifiers](#non-access-modifiers)
   - [Static](#static)
     - [Static Variable](#static-variable)
@@ -14,6 +14,7 @@
     - [For Variable](#for-variable)
     - [For Method](#for-method)
     - [For Class](#for-class)
+- [Compile time constant must be](#compile-time-constant-must-be)
 - [Abstract](#abstract)
   - [Method](#method)
   - [Class](#class)
@@ -141,6 +142,7 @@
 # Datatypes
 ## Primitive Datatypes
 - Byte -> 1 byte -128 to 127
+- ### It is important to note negative sign has one more possible value.
 - Char -> **(Unicode 16)**2 byte 0 to 65535 **'\u00A9' needs hex code for each of the 4 places.**
 - Short -> 2 byte -32768 to 32767
 - Int -> 4 byte -2147483648 to 2147483647
@@ -152,16 +154,34 @@
 
 
 # Access Modifiers
+- Default access modifier in Java is package-protected, visible to all classes within the package not outside of package.
+- ### protected access modifier also allows non-subclass which are part of the same package
+- It is important to note, a class member is accessible outside the subpackage by inheritance only. Can't do
+  ```java
+    public class subClass{
+      SuperClassDifferentPackage supclass= new SuperClassDifferentPackage(2);
+      public int sampleInt(){
+        //Not allowed
+        return supclass.protectedInt;
+      }
+    }
+  ```
+
 ## For Classes and Interfaces.
-- class or interface cannot be private cause then it is useless as it cannot be accessed by anything outside.[link](http://net-informations.com/java/cjava/private.htm)
-- class or interface  cannot be protected as there is no way to make any particular class outside of the package to access it since it can just inherit it and start accessing it making it useless.
+- ### Top Level (not inner class or nested class) class or interface cannot be private cause then it is useless as it cannot be accessed by anything outside.[link](http://net-informations.com/java/cjava/private.htm)
+- ### Top Level class or interface  cannot be protected. [Link](https://stackoverflow.com/questions/3869556/why-can-a-class-not-be-defined-as-protected#:~:text=The%20answer%20why%20protected%20class,it%20will%20inherit%20will%20class.&text=Similarly%2C%20A%20top%20level%20class%20can't%20be%20private.)
+  - To understand this, let's look at what a protected method/field is, a protected method/field is visible to all the classes within the package and class in other packages which are subclasses to the class(current class) containing the protected method/field.
+  - It is important to note that the only way a class outside the package was able to inherit the current class is because the current class is public.
+  - No let us try to identify what it means for the class to be protected, it should be visible to all the classes within the package and all the packages(not class cause we are one step above method level) which inherit from current package, the above statement doesn't make sense in Java, since there are no concept of package inheritance, essentially rendering protected == package private (default access modifier).
 - implicit modifiers for interfaces are public static final for fields and public for methods.
 - 2 public class cannot be in the same file.
 
-## For Methods
+## For Methods/fields
 - methods declared public in superclass must be public in all the subclasses.
-- methods declared protected in superclass must be declared protected in all subclasses.
-- methods declared private are not inherited.
+- ### methods declared protected in superclass must be declared protected/public in all subclasses. i.e you cannot decrease the scope, you can increase it though.
+  - A subclass should always satisfy the contract of the superclass. Liskov Substitution principle.
+  - The visibility of methods is part of this contract. So anything publicly visible in the superclass should be public in the subclass as well.
+- ### methods declared private are not inherited.
 - main method has to be public else it cannot be called by Java Interpreter.
 
 # Non Access Modifiers
@@ -169,12 +189,16 @@
 ### Static Variable
 - Exists independent of any instances of the class.
 - Only one copy exists regardless of number of instances.
-- Static variables are initialized only once , at the start of the execution. These variables will be initialized first, before the initialization of any instance variables
+- Static variables are initialized only once , when the class loads [See below for when a class is loaded](#when-is-a-class-loaded-in-java). These variables will be initialized first, before the initialization of any instance variables
 ### Static Methods
 - Exists independent of any instances of the class.
 - Static methods cannot use non-static fields.
 - Operations that don't require any data from the instance of class(this).
-- #### **Cannot be overridden by subclass. It won't lead to method overriding but method hiding.** [Link](https://www.java67.com/2012/08/can-we-override-static-method-in-java.html)
+- ### **Cannot be overridden by subclass. It won't lead to method overriding but method hiding.** [Link](https://www.java67.com/2012/08/can-we-override-static-method-in-java.html)
+  - In practice it means that the compiler will decide which method to execute at the compile time, and not at the runtime, as it does with overridden instance methods.
+  - Overriding in Java simply means that the particular method would be called based on the run time type of the object and not on the compile time type of it (which is the case with overriden static methods). Okay... any guesses for the reason why do they behave strangely? Because they are class methods and hence access to them is always resolved during compile time only using the compile time type information.
+  - Why this matters? The advantage of dynamic binding is that it allows us to write code that is generic and you don't have to recompile all the source code that is dynamically bonded, It is probably the basis of dependency injection.
+  - If you use super classes's reference to call the static method of a subclass's body it will call super classes's static method, instead of calling subclasses. (No dynamic binding takes place). Can't use superclass reference to call subclasses's method implementation.
 
 ### Static class
 - Only nested class can be static
@@ -182,7 +206,9 @@
 - Static nested classes do not have access to other members of the enclosing class.
 
 ### Static and non Static initialization blocks
-- The non-static block gets called every time an instance of the class is constructed. The static block only gets called once, when the class itself is initialized, no matter how many objects of that type you create. Used for initialization not for declaration.
+- The non-static block gets called every time an instance of the class is constructed. The static block only gets called once, when the class itself is initialized, no matter how many objects of that type you create. 
+- ### Both static and non-static initializer runs before the constructor runs.
+- ### Used for initialization not for declaration.
   ```java
   public class Test {
       public static final StaticClass timevarman;
@@ -205,15 +231,22 @@
 
 ## Final
 ### Instance Variable
-- Cannot be intialized inside a method as it can be called multiple times but can be initialized inside a constructor.
+- ### A Final Instance Variable has to be initialized before the constructor ends, you can initializ it in non-static initializer or inside the constructor, but not within any other method.
+- ### Declaring them as static final will help you to create a CONSTANT. Only one copy of variable exists which can’t be reinitialize.
 ### For Variable
 - Final variable can be explicitly initialized only once i.e reference variable declared final can never be reassigned.
-- The data within the final object can change so the state of the object can change not the reference of the object.
+- The data within the final object can change so the state of the object can change not the reference of the object. (i.e when you are declaring the variable as final, it is the reference which is final, not the underlying object).
 ### For Method
 - Final method can't be overridden by subclass.
+- ### It is important to note that a private method cannot be inherited, a final method can be inherited, just not overriden.
 ### For Class
 - Final class can't be inheritted.
 
+# Compile time constant must be
+- declared final
+- primitive or String
+- initialized within declaration
+- initialized with constant expression
 
 # Abstract
 ## Method
@@ -225,6 +258,17 @@
 - Class having one or more abstract method has be declared abstract.
 - Any class extending the abstract class has to implement all its methods else be declared abstract itself.
 
+```java
+public abstract class AbstractClassExample {
+    abstract void abstractMethod();
+
+    int returnOne(){
+        return 1;
+    }
+
+}
+```
+
 # Object Oriented Programming
 
 - Every class inherits from Object class of Java.
@@ -232,7 +276,7 @@
 
 ## Class Initialization
 ### When is a class loaded in java
-- Class loading is done by ClassLoaders in JAVA. They can be implemented to load a class as soon as they are referenced in code(```ClassName c = null```) or until the need to for initialization is required(```ClassName c = new ClassName()```)
+- Class loading is done by ClassLoaders in Java which can be implemented to eagerly load a class as soon as another class references it or lazy load the class until a need of class initialization occurs. If Class is loaded before its actually being used it can sit inside before being initialized. I believe this may vary from JVM to JVM. While its guaranteed by JLS that a class will be loaded when there is a need of static initialization.
 
 ### When is a class initialized
 - After class loading, initialization takes place which means initializing all static members of the class.
@@ -285,7 +329,7 @@
     ```
 #### Some more points
 - Classes are initialized from top to bottom so field declared on top initialized before field declared in bottom.
-- ###  If Class initialization is triggered due to access of static field, only Class which has declared static field is initialized and it doesn't trigger initialization of super class or sub class even if static field is referenced by Type  of Sub Class, Sub Interface or by implementation class of interface
+- ###  If Class initialization is triggered due to access of static field, only Class which has declared static field is initialized and it doesn't trigger initialization of super class or sub class even if static field is referenced by Type  of Sub Class, Sub Interface or by implementation class of interface (see below example)
 - ### Interface initialization in Java doesn't cause super interfaces to be initialized.
 -  ### Static fields are initialized before non-static fields in Java.
    Static fields are initialized during static initialization of class while non static fields are initialized when an instance of the class is created.
@@ -343,7 +387,7 @@
     private static class InnerClass {
         static {
             System.out.println("Inner Class initialized");
-            s = new InnerClassInitialization();
+            s = new OuterClass();
         }
         private static OuterClass s;
     }
@@ -384,7 +428,7 @@
 
   - A parent class constructor is not inherited in child class and this is why super() is added automatically in child class constructor if there is no explicit call to super or this.
 
-- Call one constructor inside another constructor. this should be the first statement in constructor body.
+- ### Call one constructor inside another constructor. this should be the first statement in constructor body.
     ```java
     public class Account{
         int m;
@@ -399,14 +443,14 @@
     }
     ```
 - Call super class constructor in subclass using super. super() has to be the first line in the constructor.
-- You cannot call this and super inside the constructor as both has to be called in first line, also this will call super anyways inside it so doesn't make sense.
+- ### You cannot call this and super inside the constructor as both has to be called in first line, also this will call super anyways inside it so doesn't make sense.
 - RULE_OF_THUMB -> Don't use setters or other methods in constructors. 
 - java compiler puts a default call to super() if we don't add it, and it is always the non-arg super that is inserted by compiler.
 - Abstract class are still a super class and it's constructor are run when someone makes an instance of its subclass.
 
 
 ### IMPORTANT - Having only Private constructors
-- Because a class must call its super class constructor always. If the super class constructor can't be accessed, then the sub class can't be initialized. - Thus classes without public/protected constructors cannot be subclassed.(Unless both subclass and superclass are nested inside the same class).
+- ### Because a class must call its super class constructor always. If the super class constructor can't be accessed, then the sub class can't be initialized. - Thus classes without public/protected constructors cannot be subclassed.(Unless both subclass and superclass are nested inside the same class).
 - Also a package local constructor cannot be used in another package.
 
 ## this and super
@@ -415,7 +459,7 @@
 - super and this can be used anywhere inside a class **except static areas/methods.**
 
 ## Inheritance
-- to call super class methods inside subclass use ```super.methodName();```
+- ### to call super class methods inside subclass use ```super.methodName();```
 
 ## Abstraction 
 -  OOP concept which focuses on relevant information by hiding unnecessary detail
@@ -424,10 +468,10 @@
 
 ### Abstract Classes
 #### Abstract Classes and static methods
--  It’s not welcomed in a object oriented design, because static methods can not be overridden in Java. It’s very rare, you see static methods inside abstract class
+-  ### It’s not welcomed in a object oriented design, because static methods can not be overridden in Java. It’s very rare, you see static methods inside abstract class
 
 #### Abstract Classes and constructor
-- An abstract class can declare and define a constructor in Java.
+- ### An abstract class can declare and define a constructor in Java.
 -  Since you can not create an instance of an abstract class, a constructor can only be called during constructor chaining, i.e. when you create an instance of the concrete implementation class. 
 - Even if constructor won't be used to initialize abstract class,  it can still be used to initialize common variables, which are declared inside an abstract class, and used by the various implementation. 
 
@@ -436,7 +480,9 @@
 -  Interface can speed up development process and facilitate communication between two different module even if they are not complete.
 - All variables declared inside interface is implicitly public final variable or constants.
 - All methods declared inside Java Interfaces are implicitly public and abstract
-- In Java its legal for an interface to **extend** multiple interface. **Look carefully, I used the word extend, i.e inherit and not implement. A class cannot extend more than one class.**
+- ### An interface cannot implement another interface in Java.
+  - In Java its legal for an interface to **extend** multiple interface. **Look carefully, I used the word extend, i.e inherit and not implement. A class cannot extend more than one class.**
+  -  An interface can extend any number of interfaces but one interface cannot implement another interface, because if any interface is implemented then its methods must be defined and interface never has the definition of any method.
   ```java
   interface Session extends Serializable, Clonnable{ }
   ```
@@ -463,7 +509,8 @@
 
 - **Java interface can extend multiple interface also Java class can implement multiple interfaces, Which means interface can provide more Polymorphism support than abstract class.**
 
-   By extending abstract class, a class can only participate in one Type hierarchy but by using interface it can be part of multiple type hierarchies. If you choose abstract class over interface than you lost your chance to extend another class. One of the common example, in favor of interface over abstract class is Thread vs Runnable case. If you want to execute a task and need run() method it's better to implement Runnable interface than extending Thread class.
+   By extending abstract class, a class can only participate in one Type hierarchy but by using interface it can be part of multiple type hierarchies. If you choose abstract class over interface than you lost your chance to extend another class.
+  - ### One of the common example, in favor of interface over abstract class is Thread vs Runnable case. If you want to execute a task and need run() method it's better to implement Runnable interface than extending Thread class.
 
 - **Since abstract class can include concrete methods, it’s great for maintenance point of view, particularly when your base class is evolving and keep changing.**
 
@@ -505,7 +552,7 @@
   - ### final methods can't be overriden.
   - ### it can't have a lower access modifier.
     - if parent is protected then child cannot be private but it can be public.
-  - must not throw new or broader checked exception.
+  - ### must not throw new or broader checked exception.
 ### Method Overloading
   - ### same name different parameters.
   - ### If name is same, parameters is same but return type or access modifier is different it would throw error.
@@ -524,7 +571,7 @@
     FS = new System.IO.FileStream("C:\\temp.txt", System.IO.FileMode.Open);
   ```
   Above code, create a variable FS to hold a new object and then assign a new object to the variable. Here type is known before the variable is exercised during run-time, usually through declarative means. The FileStream is a specific object type, the instance assigned to FS is early bound. Early Binding is also called static binding or compile time binding.
-  - ### static, private and final methods and variables are resolved using static binding which makes there execution fast because no time is wasted to find correct method during runtime.
+  - ### static, private and final methods and variables are resolved using static binding which makes there execution fast because no time is wasted to find correct method during runtime. (Doubt?? if this is applicable to Java)
 
 ### Late Binding (Dynamic Binding)
   - Late binding functions, methods, variables and properties are detected and checked only at the run-time. It implies that the compiler does not know what kind of object or actual type of an object or which methods or properties an object contains until run time. The biggest advantages of Late binding is that the Objects of this type can hold references to any object, but lack many of the advantages of early-bound objects.
@@ -544,9 +591,11 @@
 - #### As a member of the OuterClass, a nested class can be declared private, public, protected, or package private.
 - #### Outer class can only be declared public or  package private
 - #### only nested classes can have static keyword in their class defination.
+- All outer classes are static by the defination of class, so doesn't make sense to define them static explicitly. (There is always going to be one class per class).
 
 ### Reason to use nested classes
 - It is a way to logically group classes that are used only in one place, also leads to more readable and more maintainable code by placing code closer to where it is used.
+- No other class should use this class.
 
 
 ### Types of Nested Classes
@@ -599,7 +648,7 @@ public enum SitePointChannel {
     PHP,
     WORDPRESS,
     JAVASCRIPT,
-    DESIGN
+    DESIGN;
 }
 ```
 - you can assign an enum like ```SitePointChannel channel = SitePointChannel.JAVA;```
@@ -648,9 +697,9 @@ public enum SitePointChannel {
 - The only reason we don’t have to put public static final in is that the compiler fills it in for us.
 - They can implement interface just like classses.
 - They can have fields and methods.
-- The difference is they cannot be created using the new keyword
+- ### The difference is they cannot be created using the new keyword
 - They cannot be exetend other classes.
-- All enums implicitly extend java.lang.Enum. In Java, a class can only extend one parent and therefore an enum cannot extend any other class (but implement interfaces).
+- ### All enums implicitly extend java.lang.Enum. In Java, a class can only extend one parent and therefore an enum cannot extend any other class (but implement interfaces).
 
 
 #### Methods in enum
@@ -671,22 +720,33 @@ public enum SitePointChannel {
 - Java enumeration constants can have fields, which must be given a value at creation time.
 - Keep in mind that as with instances of a regular class, each enumeration constant has its own fields. 
 - In order to define values, the enclosing type must have a constructor that accepts parameters.
+- ### ENUM Values are comma separated. And also when there are fields and methods, the list of enum constants must end with a semicolon.
 - ### each enumeration constant is an object of its enumeration type, so a constructor is called for each of the enumeration constants.
 
 ```java
-public enum Month{
-  January(31),
-  February(28),
-  March(31),
-  April(30),
-  May(31)
+public enum Month {
 
-  private int numberOfDays;
+    JANUARY(31),
+    FEBRUARY(28),
+    MARCH(31),
+    APRIL(30),
+    MAY(31),
+    JULY(31),
+    AUGUST(31),
+    SEPTEMBER(30),
+    OCTOBER(31),
+    NOVEMBER(30),
+    DECEMBER(31);
 
-  Month(int days){
-    this.numberOfDays = days;
-  }
+    private int numberOfDays;
 
+    Month(int days){
+        this.numberOfDays = days;
+    }
+
+    public int getDays(){
+        return numberOfDays;
+    }
 }
 ```
 
