@@ -1,8 +1,8 @@
 # Panes
-**Alt + 1 : Open project's pane**
-Alt + 4 : Open run pane
-Alt + 5 : Open debug pane
-**Shift + Esc (While a pane is opened) : To close all panes**
+- **Alt + 1 : Open project's pane**
+- Alt + 4 : Open run pane
+- Alt + 5 : Open debug pane
+-  **Shift + Esc (While a pane is opened) : To close all panes**
 
 
 # Refactor
@@ -40,7 +40,7 @@ Alt + 5 : Open debug pane
 - **Alt+Enter : To show possible solutions.**
 
 ## Alias / Live templates
-    - **Type "iter" to create a foreach loop.**
+    - **Type "iter" to create a foreach loop**
     - "sout" to System.out.println
     - "psvm" to expand public static void main
     - "ifn" : if null

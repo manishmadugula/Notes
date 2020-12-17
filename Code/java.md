@@ -1,144 +1,3 @@
-- [Datatypes](#datatypes)
-  - [Primitive Datatypes](#primitive-datatypes)
-- [Access Modifiers](#access-modifiers)
-  - [For Classes and Interfaces.](#for-classes-and-interfaces)
-  - [For Methods/fields](#for-methodsfields)
-- [Non Access Modifiers](#non-access-modifiers)
-  - [Static](#static)
-    - [Static Variable](#static-variable)
-    - [Static Methods](#static-methods)
-    - [Static class](#static-class)
-    - [Static and non Static initialization blocks](#static-and-non-static-initialization-blocks)
-  - [Final](#final)
-    - [Instance Variable](#instance-variable)
-    - [For Variable](#for-variable)
-    - [For Method](#for-method)
-    - [For Class](#for-class)
-- [Compile time constant must be](#compile-time-constant-must-be)
-- [Abstract](#abstract)
-  - [Method](#method)
-  - [Class](#class)
-- [Object Oriented Programming](#object-oriented-programming)
-  - [Class Initialization](#class-initialization)
-    - [When is a class loaded in java](#when-is-a-class-loaded-in-java)
-    - [When is a class initialized](#when-is-a-class-initialized)
-    - [How is a class initialized](#how-is-a-class-initialized)
-      - [If static initialization](#if-static-initialization)
-      - [Some more points](#some-more-points)
-      - [Some examples](#some-examples)
-  - [Constructor](#constructor)
-    - [IMPORTANT - Having only Private constructors](#important---having-only-private-constructors)
-  - [this and super](#this-and-super)
-  - [Inheritance](#inheritance)
-  - [Abstraction](#abstraction)
-    - [Abstract Classes](#abstract-classes)
-      - [Abstract Classes and static methods](#abstract-classes-and-static-methods)
-      - [Abstract Classes and constructor](#abstract-classes-and-constructor)
-    - [Interfaces](#interfaces)
-      - [Some design points](#some-design-points)
-      - [Marker Interfaces](#marker-interfaces)
-    - [Abstract Classes vs Interfaces](#abstract-classes-vs-interfaces)
-  - [Encapsulation](#encapsulation)
-    - [Abstraction vs Encapsulation](#abstraction-vs-encapsulation)
-  - [Polymorphism](#polymorphism)
-    - [Method Overriding](#method-overriding)
-    - [Method Overloading](#method-overloading)
-    - [Early Binding (Static binding)](#early-binding-static-binding)
-    - [Late Binding (Dynamic Binding)](#late-binding-dynamic-binding)
-  - [Nested Classes](#nested-classes)
-    - [Reason to use nested classes](#reason-to-use-nested-classes)
-    - [Types of Nested Classes](#types-of-nested-classes)
-      - [Static Nested Classes](#static-nested-classes)
-      - [Inner Class/ Non Static Nested Class.](#inner-class-non-static-nested-class)
-  - [Accessors - Getters and Setters](#accessors---getters-and-setters)
-  - [Enums in Java](#enums-in-java)
-    - [Advantages](#advantages)
-    - [Enums as fixed number of constants](#enums-as-fixed-number-of-constants)
-    - [Enums as a class - Important](#enums-as-a-class---important)
-      - [Methods in enum](#methods-in-enum)
-      - [Enums with Fields (IMPORTANT)](#enums-with-fields-important)
-      - [Enums with Methods](#enums-with-methods)
-  - [Type of class and object.](#type-of-class-and-object)
-- [Collections](#collections)
-  - [HashMap](#hashmap)
-    - [Rehashing / Exceeding Load Factor](#rehashing--exceeding-load-factor)
-    - [```capacity = number of buckets * load factor```](#capacity--number-of-buckets--load-factor)
-  - [HashTable (Deprecated)](#hashtable-deprecated)
-  - [Concurrent HashMap](#concurrent-hashmap)
-    - [You can also deal with such situation using replace API on concurrentHashMap which will update the hashMap with newValue only if the oldValue matches the currentValue.](#you-can-also-deal-with-such-situation-using-replace-api-on-concurrenthashmap-which-will-update-the-hashmap-with-newvalue-only-if-the-oldvalue-matches-the-currentvalue)
-  - [LinkedHashMap](#linkedhashmap)
-  - [TreeMap](#treemap)
-  - [ConcurrentSkipListMap](#concurrentskiplistmap)
-  - [IdentityHashMap](#identityhashmap)
-  - [EnumMap](#enummap)
-    - [ConcurrentModificationException](#concurrentmodificationexception)
-  - [WeakHashMap](#weakhashmap)
-  - [SynchronizedMap](#synchronizedmap)
-- [JVM](#jvm)
-  - [Class Loader](#class-loader)
-  - [Runtime Data Areas](#runtime-data-areas)
-    - [Method Area / Perm Gen Space (JAVA-8 Metaspace) (Shared - Not Thread Safe)](#method-area--perm-gen-space-java-8-metaspace-shared---not-thread-safe)
-    - [Heap (Shared - Not Thread Safe)](#heap-shared---not-thread-safe)
-    - [PC Register (Isolated Per Thread) i.e Thread Safe](#pc-register-isolated-per-thread-ie-thread-safe)
-    - [Java Stack (Isolated Per Thread) i.e Thread Safe](#java-stack-isolated-per-thread-ie-thread-safe)
-    - [Native Method Stack (Isolated Per Thread) i.e Thread Safe](#native-method-stack-isolated-per-thread-ie-thread-safe)
-  - [Execution Engine](#execution-engine)
-    - [Interpreter](#interpreter)
-    - [Just in Time Compiler (JIT)](#just-in-time-compiler-jit)
-    - [Hotspot Profiler/VM](#hotspot-profilervm)
-    - [Garbage collector](#garbage-collector)
-    - [AOT Compiler](#aot-compiler)
-- [Garbage Collector](#garbage-collector-1)
-  - [Types of garbage collections](#types-of-garbage-collections)
-  - [Based on hypothesis](#based-on-hypothesis)
-  - [Terminology](#terminology)
-    - [Live Objects](#live-objects)
-    - [Dead Objects](#dead-objects)
-  - [Steps](#steps)
-    - [Mark](#mark)
-    - [Sweep](#sweep)
-    - [Compaction](#compaction)
-  - [Heap space division](#heap-space-division)
-    - [Young Generation](#young-generation)
-      - [Eden Space](#eden-space)
-      - [Survivor Space](#survivor-space)
-    - [Old/ Tenured Generation](#old-tenured-generation)
-  - [GC Types based on implementation.](#gc-types-based-on-implementation)
-    - [Performace of GC](#performace-of-gc)
-      - [Latency](#latency)
-      - [Throughput](#throughput)
-    - [Serial GC](#serial-gc)
-    - [Concurrent GC (Low Latency GC)](#concurrent-gc-low-latency-gc)
-    - [Parallel GC](#parallel-gc)
-    - [G1 Garbage First GC (Java 9 onwards default)](#g1-garbage-first-gc-java-9-onwards-default)
-  - [Finalize Method.](#finalize-method)
-  - [Debug GC](#debug-gc)
-- [String](#string)
-  - [String Pool](#string-pool)
-  - [Why Strings are immutable](#why-strings-are-immutable)
-  - [Useful Methods](#useful-methods)
-    - [indexOf](#indexof)
-    - [lastIndexOf](#lastindexof)
-    - [contains](#contains)
-    - [substring](#substring)
-  - [Regular Expressions](#regular-expressions)
-    - [matches](#matches)
-    - [Find occurances of a pattern in a string using regular expression](#find-occurances-of-a-pattern-in-a-string-using-regular-expression)
-  - [Good Practises](#good-practises)
-- [StringBuffer](#stringbuffer)
-- [StringBuilder](#stringbuilder)
-  - [append](#append)
-  - [concat](#concat)
-- [Java Language Features](#java-language-features)
-  - [Weak Reference](#weak-reference)
-  - [Soft Reference](#soft-reference)
-  - [Annotations](#annotations)
-    - [Where it can be used](#where-it-can-be-used)
-    - [Built-In Annotations](#built-in-annotations)
-  - [User Input](#user-input)
-  - [Regex](#regex)
-- [To read](#to-read)
-
 # Datatypes
 ## Primitive Datatypes
 - Byte -> 1 byte -128 to 127
@@ -152,6 +11,52 @@
 - double -> 8 bytes
 - boolean -> 1 bit (true or false)
 
+## AutoBoxing
+- Autoboxing is the automatic conversion that the Java compiler makes between the primitive types and their corresponding object wrapper classes. For example, converting an int to an Integer, a double to a Double, and so on. If the conversion goes the other way, this is called unboxing.
+
+```java
+\\example 1
+Character ch = 'a';
+
+\\example 2
+List<Object> li = new ArrayList<>();
+for (int i = 1; i < 50; i += 2)
+    li.add(i);
+
+```
+
+- In the above example, even though Object class is not a superclass of primitives, since primivites are not reference types, but still we can add due to the fact that int gets autoboxed to Integer. 
+
+## Var in Java 10
+- In Java 10, the var keyword allows local variable type inference, which means the type for the local variable will be inferred by the compiler, so you don’t need to declare that.
+- Instead of 
+  ```java
+  MAP<String,String> map=new HashMap<String,String>(); 
+  MAP<User,List<String>> listofMovies=new HashMap<>();
+  ```
+  you can now use
+
+  ```java
+  var map=new HashMap<String,String>();
+  var listofMovies=new HashMap<User,List<String>>();
+  ```
+- Each statement containing the var keyword has a static type which is the declared type of value(Unlike in js). This means that assigning a value of a different type will always fail. 
+  ```java
+  var id=0;// At this moment, compiler interprets 
+  //variable id as integer.
+  id="34"; // This will result in compilation error 
+  //because of incompatible types: java.lang.String 
+  //can't be converted to int.
+  ```
+
+- You cannot initialize a var variable to null. 
+- polymorphic behavior does not work with the var keyword. Say doctor and engineer inherit the person class. You can't do
+  ```java
+  var p=new Doctor(); // In this case, what should be
+  //the type of p; it is Doctor or Person?
+  p=new Engineer(); // Compilation error saying
+  //incompatible types
+  ```
 
 # Access Modifiers
 - Default access modifier in Java is package-protected, visible to all classes within the package not outside of package.
@@ -428,6 +333,8 @@ public abstract class AbstractClassExample {
 
   - A parent class constructor is not inherited in child class and this is why super() is added automatically in child class constructor if there is no explicit call to super or this.
 
+- A Java constructor cannot be abstract, static, final, and synchronized
+
 - ### Call one constructor inside another constructor. this should be the first statement in constructor body.
     ```java
     public class Account{
@@ -448,10 +355,33 @@ public abstract class AbstractClassExample {
 - java compiler puts a default call to super() if we don't add it, and it is always the non-arg super that is inserted by compiler.
 - Abstract class are still a super class and it's constructor are run when someone makes an instance of its subclass.
 
+### Default Constructor
+- If there is no constructor in a class, compiler automatically creates a default constructor.
+
+### Parameterized constructor
+- If there is a single parameterized constructor, Java's compiler won't create a default one.
+
+### Copy Constructor
+- There is no copy constructor in Java. However, we can copy the values from one object to another like copy constructor in C++.
+```java
+class Student{  
+    
+    Student(int i, String n){
+      id = i;  
+      name = n;  
+    }
+
+    Student(Student s){  
+      id = s.id;  
+      name =s.name;  
+    }  
+}
+```
 
 ### IMPORTANT - Having only Private constructors
 - ### Because a class must call its super class constructor always. If the super class constructor can't be accessed, then the sub class can't be initialized. - Thus classes without public/protected constructors cannot be subclassed.(Unless both subclass and superclass are nested inside the same class).
 - Also a package local constructor cannot be used in another package.
+
 
 ## this and super
 - super is used to access methods and variable of parent class as well as its constructor.
@@ -610,10 +540,31 @@ public abstract class AbstractClassExample {
 -  Static nested classes can be accesed as ```OuterClass.StaticNestedClass```
 
 #### Inner Class/ Non Static Nested Class.
+- ### The inner class(nested non static) has access to all the members of the outer class. This is important (Mosh did mistake in the iterator example creation assuming it doesn't.)
 - As with instance methods and variables, an inner class is associated with an instance of its enclosing class and has direct access to that object's methods and fields. 
 - Inner classes have access to other members of the enclosing class, even if they are declared private.
 - ### **Also, because an inner class is associated with an instance, it cannot define any static members itself.**
 - Objects that are instances of an inner class exist within an instance of the outer class.
+- You can explicitly refer to the OuterClass instance from within the inner class using ```OuterClassName.this.outerClassMethodOrField```. Useful when both inner and outer class have the same name
+  ```java
+  class Outer {
+      void show() {
+          System.out.println("outter show");
+      }
+
+      class Inner{
+          void show() {
+              System.out.println("inner show");
+          }
+
+          void outerShow(){
+            //Call using Outer.this.show();
+            Outer.this.show();
+          }
+      }
+  }
+  ```
+
 - Inner Classes are of 2 types local classes and anonymous classes.
 
 
@@ -777,7 +728,272 @@ public enum SitePointChannel {
 - ### SomeClass.class
 
 
+# Generics
+
+
+## Using Object vs Generic Approach for Generalization
+
+### Compile Time checks
+Instead of using generics, if we just use Array of Objects to implement our GenericList, we have
+```java
+  public class GenericList {
+    private Object[] items = Object[10];
+    
+    private int count;
+    
+    public void add(Object item){
+      items[count++] = item
+    }
+
+    public Object get(int idx){
+      return items[idx];
+    }
+```
+- The problem with the above approach, is that in the above approach, we don't have any **compile time check** for the type of the object that is passed, so if we ever have any type casting in the main/calling class we will get a run-time error.
+```java
+  var list = GenericList();
+  list.add(1);
+  list.add("1");
+  int number = (int)list[1]; //This line will throw a run-time exception.
+```
+
+## Things to keep in mind
+
+### Can't be Instantiated.
+- Java compiler doesn't know what is T at the compile time so it cannot instantiate it.
+### Can't use primitives in generics
+- However autoboxing still can happen
+```java
+GenericList<Integer> l = new GenericList<>();
+l.add(1);//Valid
+```
+## Generics in class
+```java
+public class GenericList<T> {
+  private T[] items = (T[])Object[10];
+  
+  private int count;
+  
+  public void add(T item){
+    items[count++] = item
+  }
+}
+```
+- See here We have to instantiate using the Object[] and not directly T[].
+
+
+## Generics in methods
+- different position than that of class, the template parameter is defined before the return type, instead of after the name( as with classes).
+  ```java
+  //class need not have generics to have a generic method.
+    public class Utils{
+      public <T extends Comparable<T>> T max(T first, T second){
+          return first.compareTo(second) > 0 ? first : second;
+      }
+    }
+  ```
+- ## Remember to write ```T extends Comparable<T>``` and not just ```T extends Comparable```, since that will cause possibilities of run-time exceptions. (Very Important since a similar mistake was made.)
+- calling a method generic is also different, there is no arrow notation to define the type while calling, the type is inferred from the first time T is assigned.
+  ```java
+  Utils.max(1,2);
+  ```
+- Calling ```Utils.max(1,"245")``` will cause compile time warning if ```Comparable<T>``` is extended and run-time exception if only ```Comparable``` is extended.
+
+## Multiple Type Params in Generics
+```java
+public static <K,V> void printCustom(K key, V value){
+  System.out.println("Key : " + k + ": Value " + value);
+}
+
+
+public static void main(){
+  printCustom(14,"Fourteen"); // (K can be anything and V can also be any other Object or same too).
+}
+```
+
+## Bounded Type Params
+
+### Class constraints
+- Say we only want to store numbers in a list, so T should only be Number class or any child of Number class (Integer, Float, Byte, Long, Double etc)
+```java
+public class GenericList<T extends Number> {
+  private T[] items = (T[])Object[10];
+  
+  private int count;
+  
+  public void add(T item){
+    items[count++] = item
+  }
+}
+```
+### Interface constraints
+- We can also place the constraint in interfaces, say our class will require the T to be comparable. (i.e implements comparable)
+  ```java
+  public class GenericList<T extends Comparable<T>> {
+    private T[] items = (T[])Object[10];
+    
+    private int count;
+    
+    public void add(T item){
+      items[count++] = item
+    }
+
+    public int compareIndex(int idx1, int idx2){
+      items[idx1].compareTo(items[idx2]);
+    }
+
+  }
+  ```
+
+- Multiple Interfaces can be passed (Note it is a single ampersand)
+  ```java
+  public class GenericList<T extends Comparable<T> & Clonable> {
+    private T[] items = (T[])Object[10];
+      ....
+    }
+  }
+  ```
+
+
+
+
+## Type Erasure (Generics under the hood)
+- When a class is compiled from .java file to byte-code. The compiler converts the type parameter T and replace with an actual class. In other words, Type erasure is a process in which compiler replaces a generic parameter with actual class or bridge method.
+
+  - T : Gets converted to Object
+  - T[] : Gets converted to Object[]
+  - T extends Number : Gets converted to Number
+  - T extends Comparable : Gets converted to Comparable
+  - T extends Comparable & Clonable : Gets converted to Comparable (Left-most one)
+
+
+## List<SubType> not a subtype of List<SuperType>
+- If we have the requirement, where Users is superclass and Instructors is subclass and we want a generic print all method which should print all the subtypes of users with List<T extends User> as input, we would need to use wildcards. (List<Instructor> is not a subtype of List<User>)
+
+## Wildcards
+
+# Important Classes
+## Number Class
+- SuperClass of Float, Byte, Integer, Long, Double, Short, BigInteger etc.
+
+
+# Important Interfaces
+## Comparable Interface
+- It is a generic interface.
+  ```java
+  public class User implements Comparable<User>{
+
+    int points;
+
+    @Overide
+    int compareTo(User other){
+      return this.points - other.points;
+    }
+
+  }
+  ```
+- If you don't pass the generic type argument to comparable, the compareTo method will be implemented as follows
+  ```java
+  int compareTo(Object other){ // instead of int compareTo(User other)
+    ....
+  }
+  ```
+  - This is bad since the compile time checks for casting etc, won't be there.
 # Collections 
+
+## Iterable
+- part of java.lang package not collections, fundamental interface to Java
+- The advantage of using the iterable interface is it allows our code to be decoupled from the client side, i.e if the inner containers is changed from say array to arrayList none of the client side code that is using our class is affected. 
+### Iterator Object
+- Foreach is a syntantic sugar over iterator object. Bytecode representation will be using the iterator object, so if you want to iterate over an object use Iterable interface and define the get iterator object method.
+  ```java
+    IterableExample<String> iterableExample = new IterableExample();
+    for (String s : iterableExample) {
+        System.out.println( s);
+    }
+  ```
+  is same as
+  ```java
+  var iterator = iterableExample.iterator();
+  while(iterator.hasNext()){
+      String current = iterator.next();
+      System.out.println(current);
+  }
+  ```
+
+- Used to iterate over an object of type iterable.
+- Complete custom iterable and iterator example. Try implementing yourself to get concrete idea.
+- Look at comments below, some important information is there.
+```java
+import java.util.Iterator;
+
+public class IterableExample<T> implements Iterable<T> {
+
+    private T[] items = (T[]) new Object[10];
+    private int count;
+
+    void add(T item){
+        items[count++] = item;
+    }
+
+    T get(int idx){
+        return items[idx];
+    }
+
+
+    //We define our own custom iterator as an inner class and return that.
+    @Override
+    public Iterator<T> iterator() {
+        return new ListIterator();
+    }
+
+    //See that the Iterator also should have the generic parameter T passed for type safety.
+    private class ListIterator implements Iterator<T>{
+        
+        //The inner class(nested non static) has access to all the members of the outer class
+        // (Mosh did mistake by adding non required fields for the Outer Classes's instance, correct implementation
+        // reference : https://www.csc.ncsu.edu/courses/csc216-common/Heckman/lectures/19_InnerClasses_Iterators.pdf)
+        //Using this index we can check the current i in the for loop.
+        int index=0;
+
+        //You can check what methods doesn't have default implementation in IntelliJ by looking at the icon of the method,
+        // it will have 2 parallel lines.
+        @Override
+        public boolean hasNext() {
+            return index < count;
+        }
+
+        @Override
+        public T next() {
+          //direct access to outer class member variables and functions
+          //Also can explicitly reference outerclass instance as 
+          //return IterableExample.this.get(index++); if there is a get in the inner class too.
+          return get(index++);
+        }
+    }
+}
+```
+- Using the above approa, if in future we replace the array with an ArrayList or LinkedList or HashSet the client side's for each loop won't be affected.
+
+## Collections Interface (extends Iterable)
+- add
+- addAll
+- clear
+
+## List (extends Collection)
+- Ordered collection, access objects using index??
+
+### ArrayList (extends List)
+
+### LinkedList (extends List)
+
+## Queue (extends Collection)
+
+### Priority Queue (extends Queue)
+
+## Set extends Collection
+
+### HashSet (extends Set)
 
 ## HashMap
 - It uses a tree instead of linkedlist to make sure in worst case item retrieval is O(log(n)) for collisions.
