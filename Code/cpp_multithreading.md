@@ -406,7 +406,7 @@ int main() {
 
 - it is a function template that accepts a callback as an argument and potentially executes them asynchronously.
 
-- It returns std::future<T> which stores the value returned by the async function. 
+- It returns ```std::future<T>``` which stores the value returned by the async function. 
 
 - We can fire the async in the 3 modes
     - std::launch::async

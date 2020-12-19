@@ -113,7 +113,7 @@
     int Array<T>::getLength() { return m_length; } // note class name is Array<T>, not Array
   ```
 
- **Note that each templated member function declared outside the class declaration needs its own template declaration. Also, note that the name of the templated array class is Array<T>, not Array -- Array would refer to a non-templated version of a class named Array.**
+ **Note that each templated member function declared outside the class declaration needs its own template declaration. Also, note that the name of the templated array class is ```Array<T>```, not Array -- Array would refer to a non-templated version of a class named Array.**
 
  ## Important Problem 
  

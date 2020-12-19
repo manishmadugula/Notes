@@ -27,36 +27,16 @@ for (int i = 1; i < 50; i += 2)
 
 - In the above example, even though Object class is not a superclass of primitives, since primivites are not reference types, but still we can add due to the fact that int gets autoboxed to Integer. 
 
-## Var in Java 10
-- In Java 10, the var keyword allows local variable type inference, which means the type for the local variable will be inferred by the compiler, so you don’t need to declare that.
-- Instead of 
-  ```java
-  MAP<String,String> map=new HashMap<String,String>(); 
-  MAP<User,List<String>> listofMovies=new HashMap<>();
-  ```
-  you can now use
 
-  ```java
-  var map=new HashMap<String,String>();
-  var listofMovies=new HashMap<User,List<String>>();
-  ```
-- Each statement containing the var keyword has a static type which is the declared type of value(Unlike in js). This means that assigning a value of a different type will always fail. 
-  ```java
-  var id=0;// At this moment, compiler interprets 
-  //variable id as integer.
-  id="34"; // This will result in compilation error 
-  //because of incompatible types: java.lang.String 
-  //can't be converted to int.
-  ```
 
-- You cannot initialize a var variable to null. 
-- polymorphic behavior does not work with the var keyword. Say doctor and engineer inherit the person class. You can't do
-  ```java
-  var p=new Doctor(); // In this case, what should be
-  //the type of p; it is Doctor or Person?
-  p=new Engineer(); // Compilation error saying
-  //incompatible types
-  ```
+
+# Equals vs == operator
+We can use == operators for reference comparison (address comparison) and .equals() method for content comparison. In simple words, == checks if both objects point to the same memory location whereas .equals() evaluates to the comparison of values in the objects.
+
+## To get the address of the object use:
+```java
+System.identityHashCode(s1); //Don't use object.hashCode(), since this depends on the contents.
+```
 
 # Access Modifiers
 - Default access modifier in Java is package-protected, visible to all classes within the package not outside of package.
@@ -899,253 +879,23 @@ public class GenericList<T extends Number> {
   }
   ```
   - This is bad since the compile time checks for casting etc, won't be there.
-# Collections 
 
-## Iterable
-- part of java.lang package not collections, fundamental interface to Java
-- The advantage of using the iterable interface is it allows our code to be decoupled from the client side, i.e if the inner containers is changed from say array to arrayList none of the client side code that is using our class is affected. 
-### Iterator Object
-- Foreach is a syntantic sugar over iterator object. Bytecode representation will be using the iterator object, so if you want to iterate over an object use Iterable interface and define the get iterator object method.
-  ```java
-    IterableExample<String> iterableExample = new IterableExample();
-    for (String s : iterableExample) {
-        System.out.println( s);
-    }
-  ```
-  is same as
-  ```java
-  var iterator = iterableExample.iterator();
-  while(iterator.hasNext()){
-      String current = iterator.next();
-      System.out.println(current);
-  }
-  ```
+## Comparator Interface
+- It is also a generic interface. Don't use raw types.
+- If there are multiple fields that an object can be compared against, then a comparable interface just won't do. In this case we can define our own custom comparator objects for each field that can be compared against, and feed our comparator object to the sort method in the calling function.
 
-- Used to iterate over an object of type iterable.
-- Complete custom iterable and iterator example. Try implementing yourself to get concrete idea.
-- Look at comments below, some important information is there.
 ```java
-import java.util.Iterator;
-
-public class IterableExample<T> implements Iterable<T> {
-
-    private T[] items = (T[]) new Object[10];
-    private int count;
-
-    void add(T item){
-        items[count++] = item;
-    }
-
-    T get(int idx){
-        return items[idx];
-    }
-
-
-    //We define our own custom iterator as an inner class and return that.
+import java.util.Comparator;
+public class EmailComparator implements Comparator<Customer> {
     @Override
-    public Iterator<T> iterator() {
-        return new ListIterator();
-    }
-
-    //See that the Iterator also should have the generic parameter T passed for type safety.
-    private class ListIterator implements Iterator<T>{
-        
-        //The inner class(nested non static) has access to all the members of the outer class
-        // (Mosh did mistake by adding non required fields for the Outer Classes's instance, correct implementation
-        // reference : https://www.csc.ncsu.edu/courses/csc216-common/Heckman/lectures/19_InnerClasses_Iterators.pdf)
-        //Using this index we can check the current i in the for loop.
-        int index=0;
-
-        //You can check what methods doesn't have default implementation in IntelliJ by looking at the icon of the method,
-        // it will have 2 parallel lines.
-        @Override
-        public boolean hasNext() {
-            return index < count;
-        }
-
-        @Override
-        public T next() {
-          //direct access to outer class member variables and functions
-          //Also can explicitly reference outerclass instance as 
-          //return IterableExample.this.get(index++); if there is a get in the inner class too.
-          return get(index++);
-        }
+    public int compare(Customer o1, Customer o2) {
+        return o1.getEmail().compareTo(o2.getEmail());
     }
 }
+
+//In main call like:
+Collections.sort(customerList, new EmailComparator());
 ```
-- Using the above approa, if in future we replace the array with an ArrayList or LinkedList or HashSet the client side's for each loop won't be affected.
-
-## Collections Interface (extends Iterable)
-- add
-- addAll
-- clear
-
-## List (extends Collection)
-- Ordered collection, access objects using index??
-
-### ArrayList (extends List)
-
-### LinkedList (extends List)
-
-## Queue (extends Collection)
-
-### Priority Queue (extends Queue)
-
-## Set extends Collection
-
-### HashSet (extends Set)
-
-## HashMap
-- It uses a tree instead of linkedlist to make sure in worst case item retrieval is O(log(n)) for collisions.
-- Accepts null
-  ```java
-    HashMap<Integer, String> hashMap = new HashMap<Integer, String>();
-    hashMap.put(null, "value");
-    System.out.println(hashMap.get(null));
-    //Prints
-    //"value"
-    ```
-- ### HashMap in Java stores both key and value object as Map.Entry in a bucket.
-
-- ### Map.Entry has the following fields ex->
-  ```java
-  {
-    int hash = 11314241,
-    Key key = {"Manish"},
-    Integer value = 24,
-    Node next = null
-    //If tree is used left and right nodes.
-  }
-  ```
-  ![](res/hashmap_java.jpg)
-- ### HashMap is not thread safe.
-- To be a key hashmap has to implement both hashCode() and equals method( to resolve collisons).
-- When we pass Key and Value object  to put() method on Java HashMap, HashMap implementation calls **hashCode** method on Key object and applies returned hashcode into its own hashing function to find a bucket location for storing Entry object. Objects like String, Integer, and other wrapper classes (Double) are good candidates for key since they are immutable and also implement the hashCode method.
-- **Your non immutable custom object can also be the key if it implements the hashCode and equals contract and a few fields which are used to calculate the hashCode implementation for you object are defined final i.e its hashCode should not vary once the object is inserted into Map. If the custom object is Immutable than this will be already taken care because you can not change it once created.**
-
-
-### Rehashing / Exceeding Load Factor
-- If a hashmap's size exceeds a given threshold which is the **load factor**, say .75, it will re-size itself, creating a new array of buckets, twice the size of the previous bucket array and then **it starts putting old elements in the new bucket array.** This process is called **Rehashing**. The HashMap cannot be used in a multithreaded environment, since if 2 threads trigger rehashing this can lead to race conditions.
-
-  ### ```capacity = number of buckets * load factor```
-
-[Working of hashmap](https://www.geeksforgeeks.org/internal-working-of-hashmap-java/#:~:text=As%20HashMap%20also%20allows%20null,null%20will%20always%20be%200.&text=hashCode()%20method%20is%20used,of%20object%20in%20integer%20form.&text=In%20HashMap%2C%20hashCode()%20is,and%20therefore%20calculate%20the%20index.)
-## HashTable (Deprecated)
-- HashTable doesn't accept null
-  ```java
-  Hashtable<Integer, String> hashTable = new Hashtable<Integer, String>();
-  hashTable.put(null, "342");
-  //Exception -> java.lang.NullPointerException
-  ```
-
-- ### HashMap is thread safe.
-- ### Has synchronised keyword on all public methods. So it is going to cause overhead on read and writes to maps. 
-
-
-## Concurrent HashMap
-- Reads don't require a lock, so full concurrency during retrieval. Most retrieval operations are not blocked even if other threads are writing to it, unless both read and write are in the same segment. 
-- Writes require the lock at a granular level called segments, this makes sures reads are rarely blocked.
-- ### Does not fail-fast. Won't cause ConcurrentModificationException (Look at EnumMap).
-- Null key isn't allowed, unlike HashMap since, on map.get(null) returns null, it is not sure, if null is mapped to null value or if null is not mapped. In HashMap it is allowed since we can use contains() call to check it it has value, but in concurrent Map values can changes in between API calls so null isn't allowed.
-- No guarantee on operation times, can be O(Log(N)) sometimes during collision.(Trees used instead of linked list).
-- Multiple operations are not atomic. Will still need to use synchronized/ Atomic Types sometimes.
-  - Say we are trying to run the following method in multiple threads
-  ```java
-
-    static Map<String, Integer> orders = new ConcurrentHashMap<>();
-    
-    
-    //Not thread safe
-    static void processOrder(){
-      for(String city : orders.keySet()){
-        for(int i=0; i<50;i++){
-          //The combination of below 2 operations are not atomic.
-          Integer x = orders.get(city);
-          //another thread can overwrite city's value before we are going to write to it.
-          orders.put(city, x+1);
-        }
-      }
-    }
-  ```
-
-  This causes synchronization issues, one easy fix is to just write get and put in synchornized block, instead for incrementing it you can use AtomicInteger.getAndIncrement() operation which is more performant and also atomic.
-  ```java
-  static Map<String, AtomicInteger> orders = new ConcurrentHashMap<>();
-    
-    
-  //thread safe
-  static void processOrder(){
-    for(String city : orders.keySet()){
-      for(int i=0; i<50;i++){
-        //Atomic operation.
-        orders.get(city).getAndIncrement();
-        
-      }
-    }
-  }
-  ```
-  ### You can also deal with such situation using replace API on concurrentHashMap which will update the hashMap with newValue only if the oldValue matches the currentValue.
-  ```replace(K key, V oldValue, V newValue)```
-
-
-
-## LinkedHashMap
-- ### It is similar to hashMap, but with Iteration guaranteed to be in order of insertion order.
-- Maintains a doubly linked list to keep track of insertion order.
-
-## TreeMap
-- Iteration is ordered according to natural sorted order
-- ### Keys should implement Comparable if they are Custom Object. Else exception will be thrown.(ClassCastException). You can instead pass a custom comparator in constructor.
-- Uses red-black tree to make sure bst is balanced.
-- Also implements methods which returns the closest match to the key.
-- Log(N) is complexity
-- Implementation of SortedMap and NavigableMap Interfaces
-
-## ConcurrentSkipListMap
-- A scalable concurrent implementation of SortedMap and ConcurrentNavigableMap
-- This is equivalent of TreeMap in concurrent world.
-- Guarantees O(Log(N)).
-- Parallel reads are very rarely blocked, and writes only lock on segments. Just like ConcurrentHashMap
-- Keys sorted on natural order.
-
-## IdentityHashMap
-- Instead of .equals method, it uses "==" operator to check implement reference equality.
-- not synchronised
-- Uses System.identityHashCode(key) instead of key.hashCode().
-- ### The memory footprint is smaller than HashMap since there are no Entry/Nodes, this is useful incase of dealing with interned strings, since all strings which are equal refer to same object unless created using new.
-
-## EnumMap
-- Takes enum as a key
-- Null key is not permitted 
-- not synchronised
-- ### Does not fail-fast. Won't cause ConcurrentModificationException
-### ConcurrentModificationException
-- It happens when a read is happening from a Map, and if the currentThread/ someOtherThread is also trying to write to the map, the ConcurrentModificationException comes.
-- #### It can also come in single threaded application
-  ```java
-  Map<String,Integer> m = new HashMap<String,Integer>();
-  m.put("user1",2);
-  m.put("user2",2);
-  m.put("user3",2);
-  Iterator<String> iter = m.keySet().iterator();
-  while(iter.hasNext())
-  {
-      iter.next();
-      m.put("user7",6);
-  }
-  //Causes Exception, won't cause exception in case of EnumMap.
-  ```
-
-## WeakHashMap
-- Elements in weak hashmap can be reclaimed by the garbage collector. The weak hashmap has the weak reference to the object, and if there are no other strong reference to the object then garbage collector will destroy that item.
-- Uses in case of lookup/cache. As the lifetime of cache entries are determined by external refernces to the key.
-
-## SynchronizedMap
-- ### A convinient decorator to create a fully synchronized map.
-- It is gonna make all the public methods synchronised and thus is similar to HashTable. 
-- This is not recommended.
-
-
 
 # JVM
 [Link for video](https://www.youtube.com/watch?v=ZBJ0u9MaKtM&t=2s)
