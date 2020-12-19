@@ -546,6 +546,41 @@ class Student{
   ```
 
 - Inner Classes are of 2 types local classes and anonymous classes.
+#### Local Inner Class
+- They are the usual non static nested classes as we have been using
+
+#### Anonymous Class
+It is an inner class without a name and for which only a single object is created. An anonymous inner class can be useful when making an instance of an object with certain “extras” such as overloading methods of a class or interface, without having to actually subclass a class.
+
+Anonymous inner class are mainly created in two ways:
+- ### Class (may be abstract or concrete)
+- Interface ( The usual way)
+  - Useful in creating a task in a new thread
+The syntax of an anonymous class expression is like the **invocation of a constructor**, except that there is a class definition contained in a block of code.
+- Don't forget that we are actually invoking the constructor in case of abstract/ concrete classes.
+- The anonynmous class syntax actually invokes an object of the anonymous class. 
+```java
+new InterfaceSample(){
+  @Override
+  public void test_method(){
+    //This is where you can override the method of InterfaceSample.
+  }
+}
+```
+- In above code, we can also use a concrete/ abstract class instead of a interface.
+- Useful in creating threads
+  ```java
+  Thread t = new Thread(
+    new Runnable(){ 
+              @Override
+              public void run() 
+              { 
+                  System.out.println("Child Thread"); 
+              } 
+          }); 
+  ```
+- Functional Interfaces + Anonymous classes + Syntactic sugar = Lambdas
+
 
 
 ## Accessors - Getters and Setters 

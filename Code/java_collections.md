@@ -125,6 +125,7 @@ var stringArray = myCollection.toArray(new String[0]);//Java compiler will autom
 - ```lastIndexOf(element)``` //Index  of last apperanace of element or -1 if the element doesn't exist.
 - ```sublist(start_index, excluding_end_index)``` //returns a new list
 - ```get(index)``` //Returns the item at the index. (Can't use the array deferencing operator) 
+- ### List<Integer> ```list = List.of(1,2,3,4,56,78,8);``` useful in testing the code in competitive programming.
 
 ### ArrayList (extends List)
 - (Can't use the array deferencing operator) i.e array[2]
