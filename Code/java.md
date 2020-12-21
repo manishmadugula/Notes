@@ -886,6 +886,24 @@ public class GenericList<T extends Number> {
 - If we have the requirement, where Users is superclass and Instructors is subclass and we want a generic print all method which should print all the subtypes of users with List<T extends User> as input, we would need to use wildcards. (List<Instructor> is not a subtype of List<User>)
 
 ## Wildcards
+- As seen above List<SubType> is not a subtype of List<SuperType>, wildcard is how we tell the compiler to have a upper bound(? extends) and lower bound(? super) on the List.
+
+### Upper Bound (? extends T)
+- Accepts all the values of T which are either T or are a subclass of T.
+
+```java
+  //Accepts all the List of Objects where object is the subclass of Number.
+  static double sumAllNumbers(List<? extends Number> list){
+      double sum=0.0;
+      for (Number number : list) sum += number.doubleValue();
+      return sum;
+  }
+```
+
+
+### Lower Bound (? super T)
+- Accepts all the values of T, which are either T or are the superclass of T.
+
 
 # Important Classes
 ## Number Class

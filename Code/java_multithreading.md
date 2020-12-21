@@ -1,13 +1,3 @@
-- To create a thread you need to create a class( can be anonymous ), inherit the Thread class and overwrite it's run method.
-- you need to start the thread explicitly after initializing it. You cannot start the same thread more than once, you need to initialize another thread with same class if you want to run again.
-    ```java
-        Thread t = new Thread() {
-            public void run(){
-                System.out.println("Hello from the anonymous class");
-            }
-        };
-    ```
-
 # Threads
 - Threads in java are Operating System threads/Native Threads/Kernel Threads.
 - Each thread has thread stack, program counter, stack frames.
@@ -15,12 +5,149 @@
 - There is also a scheduling overhead.
 - Lot of IO Operations also result in a lot of blocking operations.
 - These 2 problems
+- you need to start the thread explicitly after initializing it. You cannot start the same thread more than once, you need to initialize another thread with same class if you want to run again.
 
+
+## Thread Class
+- ```Thread.activeCount()``` : Total running threads in current process
+- ```Thread.sleep(1000);```Causes the currently executing thread to sleep for the specified time in milliseconds. (need to be surrounded by try catch block).
+### Thread.currentThread()
+- ```Thread.currentThread().getName()``` : Returns the name of the thread.
+- ```Thread.currentThread().getId()``` : Returns the Id of the thread.
+
+
+## Runtime Class
+- ```Runtime.getRuntime().availableProcessors())``` : Total available logical processors
+
+## Ways to start a thread (You need to override the run method)
+
+### Implementing Runnable Interface
+- Runnable Interface is a functional interface and hence we can represent an object of runnable interface by using lambdas.
+
+#### Using lambda (Recommended way)
+- ### IMPORTANT
+```java
+Thread t = new Thread(()-> System.out.println("Hello"));
+t.start()
+t.join()
+```
+#### Using lambda (For passing a parameter)
+- You cannot modify the captured fields inside the lambda.
+```java
+String str = "Print Me after changing me";
+int x = 2;
+Thread t = new Thread(()->{
+    //toUpperCase doesn't modify the str, it creates a new string, so it is doable within lamda.
+    System.out.println(str.toUpperCase(Locale.ROOT));
+    int r = x; 
+    r+=2;
+    System.out.println(r);
+});
+t.start()
+t.join()
+```
+
+#### Using method references
+- Your method cannot contain any parameters
+    ```java
+    public static void exampleMethod(){
+        System.out.println("hello");
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t = new Thread(Main::exampleMethod);
+        t.start();
+        t.join();
+    }
+    ```
+
+#### Using anonymous class
+- Implement the Runnable interface 
+    ```java
+    Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            System.out.println("Hello");
+        }
+    });
+
+    t.start();
+    t.join();
+    ```
+
+#### Actually creating a new class
+- ### This way we can provide parameters to the thread creation.
+```java
+public class SampleClass implements Runnable{
+    String s;
+    SampleClass(String p){
+        s = p;
+    }
+    @Override
+    public void run() {
+        System.out.println(s);
+    }
+}
+
+public static void main(String[] args) throws InterruptedException {
+    Thread t = new Thread(new SampleClass("Hello from the future"));
+    t.start();
+    t.join();
+}
+
+```
+
+### Inherting Thread Class
+- Same as implementing the Runnable, but you now inherit rather than implement.
+- Not recommended, since then your class can't inherit anything else.
+```java
+public class SampleClass extends Thread{
+    String s;
+    SampleClass(String p){
+        s = p;
+    }
+    @Override
+    public void run() {
+        System.out.println(s);
+    }
+}
+```
+
+### Callable Interface (If your method returns something)
+See below
+
+### Executor Framework
+See below
+
+## Joining the thread (Not recommended way of doing things)
+- Used to make sure, that the current thread, which has spawned the child thread, waits for the completion of child thread.
+- Throws Interrupted Exception so enclose in try catch.
+- Not recommended, since the current thread (can be a main thread) to be blocked, Use callbacks not wait i.e asynchornous programming.
+
+## Interrupt a thread
+- We can send an interrupt to a thread, using thread.interrupt().
+- ### Note that simply calling interrupt doesn't cancel the thread, it is upto the thread to decide, whether to stop on getting the interrupt.
+- ### When a thread is sleeping and it is interrupted, it throws an interrupt exception, that's why it is important to handle the interrupted exception when pausing a thread.
+
+```java
+Thread t = new Thread(()->{
+    System.out.println("Starting download");
+    for (int i = 0; i < Integer.MAX_VALUE; i++) {
+        if(Thread.currentThread().isInterrupted()){
+            return;
+        }
+    }
+    System.out.println("Download Complete");
+});
+Thread.sleep(2000);
+t.interrupt(); //send an interrupt request.
+t.start();
+t.join();
+```
 
 
 # Synchronous/Asynchronous Java API
 - Using Completable futures
-- Using callbacks and not wait.
 
 # Java Memory Model (Hardware Perspective)
 ![](res/jmm_hardware.PNG)
@@ -46,6 +173,24 @@
 - So T2 might end up reading a stale value.
 ![](res/jmm_visibility1.PNG)
 - To avoid this use synchronised and volatile keyword.
+
+## Solutions to race conditions (IMPORTANT)
+- Confinement : Not share data across multiple threads / a map and reduce kind of approach.
+- Immutablity : Use immutable objects like string, that can't be modified, everytime you try to change it's value a new object is created.
+- Synchronization : Using locks and mutexes and semaphores.
+  - Not recommended way in any case
+- Atomic Objects : Objects where a single operation is an atomic operation, so there are no lost updates.
+  - Better way if we want to implement counter logic.
+  - Uses Compare and Swap CPU instruction to do increment in a single atomic operation.
+- ### Partitioning : 
+  - Partitioning data into segments so they can be accessed concurrently.
+  - Multiple threads can access the collection, but only a single thread can access a segment of the collection.
+  - Used in concurrent hash map.
+
+## Solution to solve visibility problem
+- Synchronized keyword
+  - Not recommened
+- Volatile keyword
 
 
 ## Cache coherance strategies
@@ -106,6 +251,13 @@ Since the instance variables(frame) has not been declared volatile or the method
     ```java
     synchronised("mon")
     ```
+- You also shouldn't use objects like Integer, which you plan to modify because they also are immutable. So the following code won't work.
+    ```java
+    synchronized(x){
+        x++; // This will create a new Integer object each time the value is incremented.
+    }
+    ```
+  - When in doubt, you can use ```System.identityHashCode(object)``` to see if you are dealing with the same object or not.
 
 - Monitor object can also be thought of as lock.
 - Monitor object can be passed in constructor and shared across multiple threads, such that only one thread can get access of monitor object's lock.
@@ -589,6 +741,87 @@ finally {
     sem.release();
 }
 ```
+
+# Atomic Varible
+## AtomicTypes
+- Uses compare and swap cpu instructions which are atomic.
+- Still causes contention, since they have to be flushed to main memory on every update so rest of the threads can see them.
+### Atomic Integer
+```java
+    AtomicInteger x=new AtomicInteger(0);
+    ExecutorService service = Executors.newFixedThreadPool(100);
+    for (int i = 0; i < 10 ; i++) {
+        service.submit(new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 0; j < 1000; j++) {
+                    x.incrementAndGet();
+                }
+            }
+        });
+    }
+    service.shutdown();
+    service.awaitTermination(10, TimeUnit.MINUTES);
+    System.out.println("Value of x is now " + x);
+```
+
+## Adder (IMPORTANT)
+- If you have multiple threads, updating a value frequently, prefer this to atomic integer.
+- ### Even though the Atomic Integer is not waiting for a lock, it still is slow, since after every increment/decrement the value has to be flushed back to main memory for the rest of the threads to see the change. So there is contention among threads.
+- It actually uses the partition approach to solving race condition, just like in concurrent hash map.
+- Each of the thread has a copy of the  counter variable, and each thread increments their own variable, there is no need to either do locking/ flushing since hte counter variable is local to the thread, in the end, when we try to get the value from LongAdder, we can simply sum all the value from all the threads.
+![](res/concurrent_adder.jpg)
+- ### Throughput of LongAdder is way more than the AtomicLong, since the increment operation has no contention and only the final get operation has some contention because of the use of synchronized keyword, although there is a higher space consumption.
+### LongAdder
+```java
+//Default sum is zero
+LongAdder x=new LongAdder();
+ExecutorService service = Executors.newFixedThreadPool(100);
+for (int i = 0; i < 10 ; i++) {
+    service.submit(new Runnable() {
+        @Override
+        public void run() {
+            for (int j = 0; j < 1000; j++) {
+                x.add(1);
+            }
+        }
+    });
+}
+service.shutdown();
+service.awaitTermination(10, TimeUnit.MINUTES);
+System.out.println("Value of x is now " + x);
+```
+
+## Accumulator
+- Generic Version of adder
+- You can add custom logic, like min max multiplication etc.
+- Best suited for heavy write operation and few read operation
+- order of operations doesn't matter
+- function shouldn't have any side effects.
+- function should be applied repeatable and produce the same result, no matter how it is applied.
+
+### Long Accumulator
+```java
+public static void main(String[] args) throws InterruptedException {
+    //Value of m will be 1 initially.
+    LongAccumulator accumulator =new LongAccumulator((m,n) -> m*n, 1);
+    ExecutorService service = Executors.newFixedThreadPool(100);
+    for (int i = 0; i < 5 ; i++) {
+        service.submit(new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 1; j < 5; j++) {
+                    accumulator.accumulate(j);
+                }
+            }
+        });
+    }
+    service.shutdown();
+    service.awaitTermination(10, TimeUnit.MINUTES);
+    System.out.println("Value of x is now " + accumulator.get());
+}
+```
+
 
 # Executor Service
 

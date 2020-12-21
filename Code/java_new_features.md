@@ -72,12 +72,30 @@ public interface PrintInterface {
   System.out.println(randomGenerator.get());
 ```
 
-### Functional Interface
+### Function Interface
 - Map a value to different Value.
+```java
+  Function<String, Integer> map = str -> str.length();
+  System.out.println(map.apply("Happy new year"));
+```
+
+### Composing Function Interface
+```java
+  Function<String, String> replaceColon = str -> str.replace(':', '=');
+  Function<String, String> addBraces = str -> '{' + str + '}';
+
+  Function<String,String> combinedFunction = replaceColon
+                                              .andThen(addBraces);
+  
+  System.out.println(combinedFunction.apply("This is the sample string : Hello"));
+```
 
 ### Predicate Interaface
 - Takes a condition and returns a boolean to signify if the condition is true or false.
-
+```java
+  Predicate<String> isLongerThanFive = str -> str.length()>5;
+  System.out.println(isLongerThanFive.test("Hello"));
+```
 
 # Lambda
 - Functional Interfaces + Anonymous Classes + Syntanctic Sugar = Lambda Interfaces.
@@ -85,6 +103,7 @@ public interface PrintInterface {
 - Lambda doesn't require the type of parameter.
 - Lambda doesn't require the ```()``` brackets if there is a single parameter, only when there are no parameter or more than one parameter then it requires the ```()``` brackets
 - Lambda also doesn't require the ```{}``` brackets if the body of the method contains a single statement.
+- Return keyword is not needed in lambda, if it can be derived from context.
   ```java
     Printer p = x -> System.out.println(x);
   ```
@@ -97,6 +116,7 @@ public interface PrintInterface {
 - In the lambda expression, we can access the local variables in the enclosing method.
 - We can access static fields in the enclosing class, if it is a static method, and both instance fields and static fields in case of non static methods.
 - The value of this in lambda classes represent the current instance of the class containing the non static method which invoked the lambda.
+- You cannot change the value of fields (local/static/instance fields) that you capture, inside the lambda.
 
 ## Method References : V.IMPORTANT
 - The lambdas which can be implemented in a single line can also be replaced by a method reference.
