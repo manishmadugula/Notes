@@ -823,6 +823,10 @@ public static void main(String[] args) throws InterruptedException {
 ```
 
 
+# Concurrent and Synchronized Collections
+- See java_collections.md 
+
+
 # Executor Service
 
 - For CPU intensive task, ideal pool size is CPU Core count.
@@ -922,6 +926,15 @@ public static void main(String[] args) throws InterruptedException {
         }
     }
 ```
+
+- Without the return this is a Runnable, with return it becomes Callable.
+```java
+    var future = service.submit(()->{
+        System.out.println("Starting...");
+        return new Random().nextInt();
+    });
+```
+- You have to note that Thread Class doesn't support Callable interface, you need to use executor service.
 - Callable returns a Future
 
 ## Future
@@ -929,8 +942,22 @@ public static void main(String[] args) throws InterruptedException {
 - Calling ```future.get()```  will return the return value of the task if the task is completed, or wait till the task return the value.
      ![](res/future_working.PNG)
 - ```future.get()``` is a blocking method and will block the caller thread till future is done.
+- We should avoid .get() since it is blocking, use completable future instead.
 
 - You need to be careful when processing multiple future in a list, since doing f.get() on first item/placeholder, the main thread will go into block state, even if we have futures which are completed in the list. You can use ```future.isDone()``` to check if an item is completed then try to get it. Another way to deal with it is use timeout in get method. ```future,get(1,TIMEUNIT.MINUTES) // throws TimeoutExeception```.
+
+```java
+public static void main(String[] args) throws InterruptedException, ExecutionException {
+    var service = Executors.newFixedThreadPool(10);
+    var future = service.submit(()->{
+        System.out.println("Starting...");
+        return new Random().nextInt();
+    });
+    service.shutdownNow();
+    service.awaitTermination(1,TimeUnit.DAYS);
+    System.out.println(future.get());
+}
+```
 
 ### Cancel Method
 - It can cancel the task, if you call this method on the future, there is a catch though, if the cancel is called on a task which is in queue and is not processed by some thread then that task will be cancelled as expected, but a task that is being processed won't be cancelled. In that case you can use mayInterruptIfRunning flag to attempt to interrupt the thread ```future.cancel(true) //mayInterruptIfRunning : true```. Look at Interrupt in thread.
@@ -1044,10 +1071,26 @@ So in both these cases we were able to get some optimization (data locality or p
 ### Q: Why is blocking io intensive task not a good candidate for ForkJoinPool
 - Blocking IO is not recommended because ForkJoinPool tries to use limited threads, running on same cores, to take advantage of data locality and is thus faster. If we block the thread because of IO, ForkJoinPool will have to assign a new thread and flush the cache, which will still work but will be slower. In fact, then it is similar to using ExecutorService.
 
+# Asynchronous Programming
+## Problem
+- Every thread in Java is a native OS thread/kernel thread
+- This limits the number of threads you can have in your application.
+![](res/async_1.jpg)
+- If too many threads then we also run into other problems, like flushing cache of old thread and push the data required by new thread, this context switching causes a lot of memory overhead. This is the datalocality issue.
+- There is also a scheduling overhead since OS will be busy in scheduling many threads.
+- IO operation will cause the thread to be blocked or in the wait state till the IO operation is complete, wasting all the memory to keep the thread alive. This limits the capacity to scale IO operation.
+
+## Solution
+- We need non blocking IO operation.
+![](res/async_2.jpg)
+- Have a look at [Video](https://www.youtube.com/watch?v=M3jNn3HMeWg) to understand.
+- This article on C# covers the concept pretty well [Link](https://docs.microsoft.com/en-us/dotnet/standard/async-in-depth)
+
+
 # Completable Futures
 
 ## Problem
-- Use Future is going to lead to blocking code since doing Future.get() will block the entire code execution in main thread.
+- Use Future is going to lead to blocking code since doing Future.get() will block the entire code execution in main thread (If future isn't fulfilled yet).
 - This is especially a problem when you have multiple tasks and we are doing a for loop over the Future.get().
 - Even if there are completed futures in the program, if the first future item is not done, our code execution stops on calling the Future.get().
 ![](res/completablefuture1.jpg)
@@ -1089,9 +1132,120 @@ On converting the following to code we have
 ```
 - In above code the main method is never blocked
 - ### The CompletableFuture represents a single independent flow. Such that within one flow tasks are dependent on each other but one flow is not dependent on another flow.
-- ### There is no thread management in above code, no executor service, no future.get()
+- ### There is no thread management in above code, no executor service. You might want to use join or Thread.sleep, in case your command line application exits before the completable future was completed.
 
-## thenApply vs thenApplyAsync
+
+## Completable Future vs Future
+- Completably future is also a future, whose get method still blocks.
+```java
+ public static void main(String[] args) throws InterruptedException, ExecutionException {
+    var cfuture = CompletableFuture.supplyAsync(()->{
+        System.out.println("Blocking for 2 sec");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return 1;
+    });
+
+    //Still blocking.
+    cfuture.get();
+
+    System.out.println("Blocking complete");
+}
+```
+
+## Callable vs Supplier
+- Callable : A task that returns a result and may throw an exception. Implementors define a single method with no arguments called ```call```.
+- Supplier on the other hand, is very general. It just "supplies a value" and that's it. Doesn't throw exception. Supplier has a single method with no arguments ```get```. (It is the same Supplier which was discussed in the functional interfaces section of java_new_features.md file).
+- When you use a Callable, your interface choice implies that the object is going to be executed by another thread. When you use Supplier you imply that it's just an object that supplies data to another component.
+
+## Creating a Completable Future Object
+
+### runAsync
+- Takes a runnable.
+- If you want to run a thread, that doesn't return a value, simply use ```runAsync```;
+- Completable Future is the simplest way to invoke the threads, no executor service, no thread class just one line code. 
+```java
+var cfuture = CompletableFuture.runAsync(()->{
+                        System.out.println("Hello");
+                                                });
+cfuture.join();
+```
+
+### supplyAsync
+- Takes an object which implements the Supplier Interface (See functional interfaces in java_new_features.md). 
+
+## Running on Code Completion
+x- It is important to see that Completable futures allow us to modify the code in a declarative way, just like in case of streams.
+
+### thenRunAsync
+- Takes a runnable, which is executed after the future is completed.
+- Useful if your future didn't return anything and you want to run code on it's completion then use ```future.thenRunAsync```.
+
+### thenApply
+- Takes a Function Interface (See functional interfaces in java_new_features.md), which takes a value and returns one value.
+- Transforms the Completable Future from One Value to Another , like a Map
+- thenApply is used if you have a synchronous mapping function.
+```java
+CompletableFuture<Integer> future = 
+    CompletableFuture.supplyAsync(() -> 1)
+                     .thenApply(x -> x+1);
+```
+
+### thenCompose
+- thenCompose is used if you have an asynchronous mapping function (i.e. one that returns a CompletableFuture). It will then return a future with the result directly, rather than a nested future.
+- In other words thenCompose flattens nested futures
+```java
+CompletableFuture<Integer> future = 
+    CompletableFuture.supplyAsync(() -> 1)
+                     .thenCompose(x -> CompletableFuture.supplyAsync(() -> x+1));
+```
+
+### thenAccept
+- Takes a Consumer Interface (See functional interfaces in java_new_features.md), which takes in a parameter and doesn't return anything.
+- Usually the last function to apply to a future
+
+### thenCombine
+- We can start 2 tasks asynchronously and combine the results using this.  
+- We have to pass a BiFunction which takes in 2 parameters i.e return type of the 2 futures in this case an Integer and a Double and return the value.
+```java
+CompletableFuture<Integer> price = getPrice();
+CompletableFuture<Double> exchangeRate = getExchangeRate();
+CompletableFuture<Long> future = price.thenCombineAsync(exchangeRate, (x, y) -> {
+    //Do some processing
+    return 2L;
+});
+```
+
+### thenCompose vs thenApply
+- Let us the following example.
+```java
+static CompletableFuture<Integer> returnCompletableF(int x){
+    return CompletableFuture.supplyAsync(()->{
+        try {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e){
+
+        }
+        return x+1;
+    }).thenApplyAsync(y->2*y);
+}
+
+public static void main(String[] args) throws InterruptedException, ExecutionException {
+    CompletableFuture.supplyAsync(()->1)
+            .thenApplyAsync(x -> 2*x)
+            .thenApplyAsync(Main::returnCompletableF)
+            .thenAccept(System.out::println);
+    Thread.sleep(4000);
+}
+```
+- The above code actually prints out a CompletableFuture Object, this occurs because thenApply's Function maps an integer to another completable future, so the input to thenAccept becomes a Completable Future within a Completable Future, to flatten in such scenarios we use ```thenCompose```.
+
+
+### thenApply vs thenApplyAsync
 - thenApply means the same thread will do all the tasks in the same flow. Same thread will do get, enrich, performPayment, dispatch.
 - thenApplyAsync, you can pass a thread pool to thenApplyAsync and it will use this threadPool.
 - This is useful when you want different pools for cpu bound operation and io bound operation.
@@ -1108,10 +1262,12 @@ On converting the following to code we have
     }
 ```
 
+
 ## Default Pool
 - If we don't supply the executor service, internally the default pool being used is a ForkJoinPool.
 
 ## Exception Handling
+- If the Ordinary Future or the Completable Future throws an exception, we can't see the exception in the main thread, exception is caught by the main thread, when the ```get``` method of the future is called. (Execution Exception).
 - If getOrder or enrich or performPayment threw an exception return a failedOrder
 ```java
     ExecutorService cpuBound = Executors.newFixedThreadPool(4);
@@ -1126,61 +1282,82 @@ On converting the following to code we have
     }
 ```
 
-## Code Example
-- Better way to write and join might exist, need to see.
+## Waiting 
+
+### Waiting for all Tasks to be completed
+- In the thenRunAsync part of the below code, we can fetch the return value of individual futures using ```future.get()``` and it won't be blocking since the future is already fulfilled and the value will be immediately returned from future.
 ```java
-class WrapperCFExample{
-    public int findAccountNumber() {
-        int order = 1;
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return order;
-    }
-    public int calculateBalance(int x) {
-        int balance = 1000 + x;
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return balance;
-    }
-    public void notifyBalance(int x)  {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println(Thread.currentThread().getId());
-    }
-    public void startExample() throws InterruptedException {
-        List<CompletableFuture> l = new ArrayList<CompletableFuture>();
-        for (int i = 0; i < 10; i++) {
-            l.add(CompletableFuture.supplyAsync(this::findAccountNumber)
-                    .thenApply(this::calculateBalance)
-                    .thenAccept(this::notifyBalance));
-        }
-        for(CompletableFuture x : l){
-            x.join();
-        }
-    }
+var future1 = getFuture(2000);//number represent the timeout in ms
+var future2 = getFuture(4000);
+var future3 = getFuture(1000);
+
+var finalFuture = CompletableFuture.allOf(future1,future2,future3)
+    .thenRunAsync(()->{
+        //These won't be blocking.
+        System.out.println(future1.get());
+        System.out.println(future2.get());
+        System.out.println(future3.get());
+        System.out.println("All are completed");
+    });
+```
+- ```CompletableFuture.allOf``` will return a future of type void, so we need to do thenRunAsync to run code on it's completion, since it doesn't return anything at the completion of future.
+
+#### If you want list to be input.
+- You can simply convert list to an array and pass it there, varargs are just a syntactic sugar to arrays.
+- To convert a list to array use ```list.toArray(new CompletableFuture[0])```, the 0 means the java compiler will automatically assign the required memory for it.
+
+```java
+var future1 = getFuture(2000);
+var future2 = getFuture(4000);
+var future3 = getFuture(1000);
+
+List<CompletableFuture> list = new ArrayList<>(List.of(future1, future2, future3));
+
+var finalFuture = CompletableFuture.anyOf(list.toArray(new CompletableFuture[0]))
+        .thenAcceptAsync(x->{
+            System.out.println(x);
+            System.out.println("One of them was completed");
+        });
+```
+- TO-DO
+  -  https://stackoverflow.com/questions/35809827/java-8-completablefuture-allof-with-collection-or-list
+  - https://stackoverflow.com/questions/30025428/listfuture-to-futurelist-sequence
+
+### Waiting for any task to be completed/ First task
+- ```CompletableFuture.anyOf``` will return a future of type Object, this Object will be the return value of the future that was completed the first.
+```java
+public static void main(String[] args) throws InterruptedException, ExecutionException {
+    var future1 = getFuture(2000);//number represent the timeout in ms
+    var future2 = getFuture(4000);
+    var future3 = getFuture(1000);
+
+    var finalFuture = CompletableFuture.anyOf(future1,future2,future3)
+            .thenAcceptAsync(x->{
+                //will print 1000 (since that was completed the first)
+                System.out.println(x);
+                System.out.println("One of them was completed");
+            });
+
+    finalFuture.get();
 }
 ```
 
-# Asynchronous Programming
-## Problem
-- Every thread in Java is a native OS thread/kernel thread
-- This limits the number of threads you can have in your application.
-![](res/async_1.jpg)
-- If too many threads then we also run into other problems, like flushing cache of old thread and push the data required by new thread, this context switching causes a lot of memory overhead. This is the datalocality issue.
-- There is also a scheduling overhead since OS will be busy in scheduling many threads.
-- IO operation will cause the thread to be blocked or in the wait state till the IO operation is complete, wasting all the memory to keep the thread alive. This limits the capacity to scale IO operation.
+## Timeout
 
-## Solution
-- We need non blocking IO operation.
-![](res/async_2.jpg)
-- Have a look at [Video](https://www.youtube.com/watch?v=M3jNn3HMeWg) to understand.
-- This article on C# covers the concept pretty well [Link](https://docs.microsoft.com/en-us/dotnet/standard/async-in-depth)
+### completeOnTimeout
+- Wraps the future into another future, which will return a specific value on timeout, this is better approach than just raising exception on timeout. If the wrapped future is completed within the timeout, the code completes as if there was no completeOnTimeout method.
+```java
+CompletableFuture.supplyAsync(()->{
+    try {
+        Thread.sleep(1000);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    return "A valid result";
+}).completeOnTimeout("Failed to complete, timed out", 1500, TimeUnit.MILLISECONDS)
+.thenAccept(System.out::println);
+```
+
+### orTimeout
+- Raises exception on timeout
+- Not recommended

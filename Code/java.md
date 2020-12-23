@@ -27,8 +27,30 @@ for (int i = 1; i < 50; i += 2)
 
 - In the above example, even though Object class is not a superclass of primitives, since primivites are not reference types, but still we can add due to the fact that int gets autoboxed to Integer. 
 
+# Varargs
+- It is short-form for variable-length arguments. A method that takes a variable number of arguments is a varargs method.
+- It contains 3 dots.
+- The underlying type of a variadic method function(Object... args) is function(Object[] args). In other words, a T... is only a syntactic sugar for a T[]
+- The argument which is stored as varargs is an array.
+## Rules
+- There can be only one variable argument in the method.
+- Variable argument (varargs) must be the last argument.
+- ### You can also pass an actual array where varargs is expected, useful in scenarios like ```CompletableFuture.anyOf``` where you have a list of future which you want to wait on.
+
+```java
+//a is stored in array of type String
+static void varargsExample(int firstParameter, String ... a){
+  System.out.println(a.getClass());
+  for (String s : a) {
+      System.out.println(s);
+  }
+}
+
+//in main
+varargsExample(1,"eh","3dsf","Ny","name", "Is", "Manish");
 
 
+```
 
 # Equals vs == operator
 We can use == operators for reference comparison (address comparison) and .equals() method for content comparison. In simple words, == checks if both objects point to the same memory location whereas .equals() evaluates to the comparison of values in the objects.
@@ -869,7 +891,11 @@ public class GenericList<T extends Number> {
   }
   ```
 
+## Raw Types
 
+- Raw types refer to using a generic type without specifying a type parameter. For example, List is a raw type, while List<String> is a parameterized type.
+- We should avoid raw types, they aren't type safe, and some important kinds of errors will only appear at runtime
+- raw types were retained only to maintain backwards compatibility with older versions of Java.
 
 
 ## Type Erasure (Generics under the hood)
@@ -882,28 +908,45 @@ public class GenericList<T extends Number> {
   - T extends Comparable & Clonable : Gets converted to Comparable (Left-most one)
 
 
+
 ## List<SubType> not a subtype of List<SuperType>
 - If we have the requirement, where Users is superclass and Instructors is subclass and we want a generic print all method which should print all the subtypes of users with List<T extends User> as input, we would need to use wildcards. (List<Instructor> is not a subtype of List<User>)
 
+
 ## Wildcards
 - As seen above List<SubType> is not a subtype of List<SuperType>, wildcard is how we tell the compiler to have a upper bound(? extends) and lower bound(? super) on the List.
-
+- PECS (PRODUCERS EXTEND, CONSUMER SUPER)
+### Unbounded Wildcard
+- Just using ```List<?>``` will accept Lists of all the types.
 ### Upper Bound (? extends T)
 - Accepts all the values of T which are either T or are a subclass of T.
-
+- You cannot add (say integer) the list below though, since you don't have access to the type of ?, it can be Double, Integer, Big Decimal. You have no way of knowing. So this is only for reading. list is of type producer, you read from it, if your parameter is producer use extend.
 ```java
-  //Accepts all the List of Objects where object is the subclass of Number.
-  static double sumAllNumbers(List<? extends Number> list){
-      double sum=0.0;
-      for (Number number : list) sum += number.doubleValue();
-      return sum;
-  }
+//Accepts all the List of Objects where object is the subclass of Number.
+static double sumAllNumbers(List<? extends Number> list){
+    double sum=0.0;
+    for (Number number : list) sum += number.doubleValue();
+    return sum;
+}
 ```
 
 
 ### Lower Bound (? super T)
 - Accepts all the values of T, which are either T or are the superclass of T.
-
+- If you want to write to list you need to use ? super T, you cannot read from it(without casting). here since the list is consuming the data, it is a consumer and consumers super. (PECS : Producers extend, Consumer Super)
+```java
+//Cannot get Number from the list (without casting)
+static void insertFewNumbersToList(List<? super Number> list){
+  list.add(1);
+  list.add(1f);
+  list.add(1.1);
+}
+public static void main(String[] args) throws InterruptedException {
+  //Cannot use List<String> Here though. That is the type safety you get.
+  List<Number> list = new ArrayList<>();
+  insertFewNumbersToList(list);
+}
+```
 
 # Important Classes
 ## Number Class
@@ -1289,6 +1332,10 @@ You can configure the gc to use in the flag passed.
 
 ## Regex
 ![](res/regex.jpg)
+
+
+## Misc
+### Diamond Problem and how Java deals with it, (also how dart mixins work)
 
 # To read
 

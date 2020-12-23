@@ -1,5 +1,5 @@
 # Regular Array
-
+- Arrays.asList(a)
 # Iterable
 - part of java.lang package not collections, fundamental interface to Java
 - The advantage of using the iterable interface is it allows our code to be decoupled from the client side, i.e if the inner containers is changed from say array to arrayList none of the client side code that is using our class is affected. 
@@ -85,10 +85,12 @@ public class IterableExample<T> implements Iterable<T> {
 ### Compare 2 collections.
 ```collection.equals(otherCollection)```
 ### Convert to a regular array
+- This is very useful in ```CompletableFuture.allOf```. Which expects an array of Completable Futures not List/Collection.
 - toArray returns an array of objects. You cannot simply cast to string[]. You need to do the following.
 ```java
 var stringArray = myCollection.toArray(new String[0]);//Java compiler will automatically assign enough memory, even if 0 is passed.
 ```
+- Do note above we can simply pass 0 in the indices for Java compiler to automatically assign enough memory.
 
 
 ## Collections (Utility Class)
@@ -113,6 +115,37 @@ var stringArray = myCollection.toArray(new String[0]);//Java compiler will autom
 
 #### Collections.reverse(```List<T>``` list)
 
+#### Collections.synchronizedCollection()
+
+- Converts to sychronized Collection
+- Use Collections class in java, it has methods which can convert ordinary collections to synchronized collections, a sychronized collections, just wraps the ordinary collections method in synchronized keyword.
+- It is very unefficient to use sychronized collections.
+```java
+    List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+    Thread t1 = new Thread(()-> {
+        Collections.addAll(list, 1,2,3,4);
+    });
+
+    Thread t2 = new Thread(()-> {
+        Collections.addAll(list, 4,5,6,7);
+    });
+
+    t1.start();
+    t2.start();
+
+    t1.join();
+    t2.join();
+
+    System.out.println(list);
+```
+
+- Not recommended
+- Use concurrent collections instead
+- Similar methods include
+  - Collections.synchronizedList
+  - Collections.synchronizedCollection
+  - Collection.synchronizedMap
+  - Collection.synchronizedSet
 
 ## List (extends Collection)
 - access objects using index (also Linked List)
@@ -282,7 +315,11 @@ map.get(c1.getEmail()) // will return the c1 object.
   ### You can also deal with such situation using replace API on concurrentHashMap which will update the hashMap with newValue only if the oldValue matches the currentValue.
   ```replace(K key, V oldValue, V newValue)```
 
+#### Internals
+- Concurrency-Level: Defines the number which is an estimated number of concurrently updating threads. The implementation performs internal sizing to try to accommodate this     many threads.   
 
+- Load-Factor: It's a threshold, used to control resizing.
+- A ConcurrentHashMap is divided into number of segments, default 32 segments, so at max 32 threads can work at a time.
 
 ## LinkedHashMap
 - ### It is similar to hashMap, but with Iteration guaranteed to be in order of insertion order.
@@ -340,3 +377,57 @@ map.get(c1.getEmail()) // will return the c1 object.
 - It is gonna make all the public methods synchronised and thus is similar to HashTable. 
 - This is not recommended.
 
+
+# Synchronized Collections vs Concurrent Collections
+- Though both Synchronized and Concurrent Collection classes provide thread-safety, the differences between them come in performance, scalability and how they achieve thread-safety.
+- Synchronized collections like synchronized HashMap, Hashtable, HashSet, Vector, and synchronized ArrayList are much slower than their concurrent counterparts e.g. ConcurrentHashMap, CopyOnWriteArrayList, and CopyOnWriteHashSet.
+- The main reason for this slowness is locking; synchronized collections locks the whole collection e.g. whole Map or List while concurrent collection never locks the whole Map or List.
+- They achieve thread-safety by using advanced and sophisticated techniques like lock stripping. For example, the ConcurrentHashMap divides the whole map into several segments and locks only the relevant segments, which allows multiple threads to access other segments of the same ConcurrentHashMap without locking.
+- Similarly, CopyOnWriteArrayList allows multiple reader threads to read without synchronization and when a write happens it copies the whole ArrayList and swaps with a newer one.
+- So if you use concurrent collection classes in their favorable conditions e.g. for more reading and fewer updates, they are much more scalable than synchronized collections.
+
+# Synchronized Collections
+- Look at the Collections classes's decorate methods above
+
+# Concurrent Collections
+
+## ConcurrentHashMap
+- See above in Map Interface
+
+## ConcurrentSkipListMap (Concurrent Binary Tree Map)
+- See above in Map Interface
+
+## CopyOnWriteArrayList
+- CopyOnWriteArrayList is a thread-safe variant of ArrayList where operations which can change the ArrayList (add, update, set methods) creates a clone of the underlying array.
+- Iterator of CopyOnWriteArrayList will never throw ConcurrentModificationException.
+- As name suggest CopyOnWriteArrayList creates copy of underlying ArrayList with every mutation operation e.g. add or set. Any type of modification to CopyOnWriteArrayList will not reflect during iteration since the iterator was created.
+- any iteration of the data structure is safe as the iteration is occurring over an essentially immutable "snapshot" of the data.
+- List modification methods like remove, set and add are not supported in the iteration. This method will throw UnsupportedOperationException. 
+- It is used for every thread to be able to safely iterate the array without fear of a ConcurrentModificationException or other unknown/undefined behavior. The following code will throw ConcurrentModificationException if run using ArrayList, You may not get always because the list is initially empty, that's why for the list to be populated, we add few items in list before hand).
+```java
+public static void main(String[] args) throws InterruptedException {
+  List<Integer> list = new CopyOnWriteArrayList<>(List.of(1,2,3,4,5));
+  Thread t1 = new Thread(() -> {
+      for (var n : list) {
+          System.out.println(n);
+      }
+  });
+
+  Thread t2 = new Thread(() -> {
+      for (int i = 0; i < 1000; i++) {
+          list.add(i);
+      }
+  });
+  t1.start();
+  t2.start();
+
+  t1.join();
+  t2.join();
+}
+```
+
+## ArrayBlockingQueue
+
+## LinkedBlockingQueue
+
+## ConcurrentLinkedDeque
