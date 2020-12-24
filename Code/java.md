@@ -979,6 +979,7 @@ public static void main(String[] args) throws InterruptedException {
 ## Comparator Interface
 - It is also a generic interface. Don't use raw types.
 - If there are multiple fields that an object can be compared against, then a comparable interface just won't do. In this case we can define our own custom comparator objects for each field that can be compared against, and feed our comparator object to the sort method in the calling function.
+- The above method can be simply called using a lambda function since it is a functional interface.
 
 ```java
 import java.util.Comparator;
@@ -992,6 +993,9 @@ public class EmailComparator implements Comparator<Customer> {
 //In main call like:
 Collections.sort(customerList, new EmailComparator());
 ```
+
+### Reveresed Method
+- To reverse the order of sorting.
 
 # JVM
 [Link for video](https://www.youtube.com/watch?v=ZBJ0u9MaKtM&t=2s)

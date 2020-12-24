@@ -213,3 +213,183 @@ public class LambdaDemo {
 
 
 # Streams
+- Streams are wrappers around a data source, allowing us to operate with that data source and making bulk processing convenient and fast.
+
+## Creating a stream
+
+### Stream method of Collection interface
+```java
+Stream<Movie> streamInstance = collection.stream();
+```
+
+### Static method stream of the Arrays class
+- Array instances don't have stream method like Collection instances, but arrays class has the static method stream().
+```java
+int[] arr = {1,2,3,4,5,6,7};
+Arrays.stream(arr).forEach(System.out::println);
+```
+
+### Stream class's static ```of``` method
+- You can create a stream of arbitrary number of items
+```java
+Stream.of(1,2,3,4,5,6,7).forEach(System.out::println);
+```
+
+### Infinite generation of streams using generator function
+
+```java
+Stream<Double> stream = Stream.generate(()->Math.random());
+```
+- The above method when used with forEach/map etc. will generate a stream of infinite numbers. 
+```java
+Stream.generate(()->Math.random())
+      .forEach(System.out::println);
+```
+- You can limit the above generator to few numbers using ```limit()```
+```java
+Stream.generate(()->Math.random())
+      .limit(100)
+      .forEach(System.out::println);
+```
+
+- The above method allows you give any generator and not have all the items in memory and do a lazy evaluation.
+
+### Infinite generation using iterate function
+- Will use previous value to get the new value.
+```java
+Stream.iterate(1,x -> x+1)
+      .limit(10)
+      .forEach(System.out::println);
+```
+
+## Types of stream methods
+### Intermediate Operation
+- filter, map, flatmap,limit, skip, sorted, distinct, peek
+
+### Terminal Operation
+- If you don't call terminal operation, nothing is done.
+#### Reducers
+- count
+- max
+- min
+- anyMatch
+- allMatch
+- noneMatch
+#### Collectors
+- forEach, collect
+
+## Transform values of stream
+
+### Map
+- Takes a ```Function Interface<V,U>```, which transforms a stream of type T to stream of type U.
+```java
+movies.stream()
+      .map(x->x.getTitle())
+      .forEach(System.out::println);
+```
+
+### FlatMap
+- Used to flatten a Stream<Collection<Objects>> to a Stream<Objects>.
+- FlatMap expects you to return the stream of flattened objects.
+```java
+List<List<Integer>> list = new ArrayList<>(List.of(
+                new ArrayList<>(List.of(1,2,3,45)),
+                new ArrayList<>(List.of(6,783,485)),
+                new ArrayList<>(List.of(11,21,32,145))
+        ));
+
+list.stream()
+    .flatMap(n -> n.stream())
+    .forEach(System.out::println);
+```
+- To flatten nested levels of collection/array objects use flatMap multiple times as shown below.
+
+```java
+List<List<List<Integer>>> list = new ArrayList<>(List.of(
+                                      new ArrayList<>(List.of(
+                                          new ArrayList<>(List.of(1,2,3,45)),
+                                          new ArrayList<>(List.of(6,783,485)),
+                                          new ArrayList<>(List.of(11,21,32,145))
+                                      )),
+                                      new ArrayList<>(List.of(
+                                          new ArrayList<>(List.of(1,2,3,45)),
+                                          new ArrayList<>(List.of(6,783,485)),
+                                          new ArrayList<>(List.of(11,21,32,145))
+                                      ))
+                              ));
+
+list.stream()
+    .flatMap(n -> n.stream()
+                   .flatMap(m -> m.stream()))
+    .forEach(System.out::println);
+```
+
+## Filtering stream
+- simply returns a filtered stream of the same type. where objects satisfy the predicate supplied in the filter method.
+```java
+movies.stream()
+      .filter(x->x.getLikes()>10)
+      .forEach(x-> System.out.println(x.getTitle()));
+```
+
+## Slicing stream
+
+### Limit, Skip
+- Useful in pagination
+- Say we want to display 10 items per page, we can do
+```java
+int pageSize = 10;
+int pageNumber=3;
+Stream.iterate(1,x->x+1)
+        .skip((pageNumber-1)*pageSize)
+        .limit(pageSize)
+        .forEach(System.out::println);
+```
+
+### takeWhile and dropWhile
+- takes/drops items from the stream till the condition is true and the drop/takes the rest.
+
+## Order/sort the items of stream
+
+### Default compareTo
+```java
+//list of integers
+list.stream()
+    .sorted()
+    .forEach(System.out::println);
+```
+
+### Custom Comparator
+
+```java
+//list of integers
+list.stream()
+    .distinct()
+    .sorted((x,y)-> (int)(1.1*y-x))//Custom comparator
+    .forEach(System.out::println);
+```
+
+
+## Unique value only
+### Distinct method
+```java
+list.stream()
+    .distinct()
+    .sorted((x,y)-> (int)(1.1*y-x))//Custom comparator
+    .forEach(System.out::println);
+```
+
+
+## Peek Method
+- Intermediate Function, usually used for debugging.
+
+```java
+list.stream()
+    .flatMap(l->l.stream())
+    .peek(m-> System.out.println("flatMap : " + m))
+    .distinct()
+    .peek(m-> System.out.println("distinct : " + m))
+    .sorted()
+    .peek(m-> System.out.println("sorted : " + m))
+    .forEach(System.out::println);
+```

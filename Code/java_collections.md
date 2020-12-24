@@ -1,4 +1,10 @@
 # Regular Array
+
+## Simple way to initialize arrays
+```java
+int[] arr = {1,2,3,4,5,6,7};
+```
+
 - Arrays.asList(a)
 # Iterable
 - part of java.lang package not collections, fundamental interface to Java
