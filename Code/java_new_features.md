@@ -433,7 +433,13 @@ System.out.println(l.stream().findFirst().isPresent());
 l.stream().findFirst().ifPresentOrElse(System.out::println,()->System.out.println("Value is not present"));
 ```
 
-
+## forEach
+- for each item in the stream perform something.
+- this is a terminal operation.
+- Takes a consumer.
+```java
+list.stream().forEach(System.out::println)
+```
 
 ## Simple Reducers
 
