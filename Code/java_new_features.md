@@ -78,6 +78,10 @@ public interface PrintInterface {
   Function<String, Integer> map = str -> str.length();
   System.out.println(map.apply("Happy new year"));
 ```
+- Has an identity function, which returns itself.
+```java
+Function.identity() //m->m
+```
 
 ### Composing Function Interface
 ```java
@@ -262,6 +266,16 @@ Stream.iterate(1,x -> x+1)
       .forEach(System.out::println);
 ```
 
+### Primitive Streams
+- Use IntStream instead of Stream class for static factory methods like generate and iterate, because it is more performant
+- Similarly we have DoubleStream and LongStream.
+
+#### Range Method
+- Generates a range of integers, end is exclusive
+```java
+IntStream.range(0,10).forEach(System.out::println);
+```
+
 ## Types of stream methods
 ### Intermediate Operation
 - filter, map, flatmap,limit, skip, sorted, distinct, peek
@@ -393,3 +407,140 @@ list.stream()
     .peek(m-> System.out.println("sorted : " + m))
     .forEach(System.out::println);
 ```
+
+## Optional Class
+- Represent an object which may or maynot have a value.
+- You need to call the get method of the optional to get the value.
+
+### get
+- If a value is present, returns the value, otherwise throws NoSuchElementException.
+- Be careful since an exception is thrown if there is not valid value.
+```java
+System.out.println(l.stream().findFirst().get());
+```
+
+### isPresent()
+- Returns true if the value is present.
+```java
+System.out.println(l.stream().findFirst().isPresent());
+```
+
+### ifPresent(Consumer<? super T>)
+- Runs the code in consumer if the value is present
+
+### ifPresentOrElse(Consumer<? super T>, Runnable)
+```java
+l.stream().findFirst().ifPresentOrElse(System.out::println,()->System.out.println("Value is not present"));
+```
+
+
+
+## Simple Reducers
+
+### Count
+- Return the number of elements in stream, returns Long
+
+### anyMatch
+- Returns a boolean if any element in the stream which matches the condition. Takes predicate as input
+
+### allMatch
+- Returns true if all element in the stream, matches the given condition. Takes predicate as input
+
+### noneMatch
+- Returns true if none of the elements in the stream matches the given condition.
+
+### findFirst / findAny
+- Returns an Optional describing the first element of this stream, or an empty Optional if the stream is empty. If the stream has no encounter order, then any element may be returned.
+
+### max/ min
+- Returns the maximum element of this stream according to the provided Comparator. Also returns an Optional
+```java
+        System.out.println(movies.stream().max((x,y)->x.getLikes()-y.getLikes()).get().getTitle());
+        //System.out.println(movies.stream().max(Comparator.comparing(Movie::getLikes)).get().getTitle());
+```
+
+## General Purpose reduce
+- We can use ```reduce``` to perform any general reduce operation on the stream of objects, like add them all or multiply them etc.
+- ```reduce``` returns an optional, because sometimes there can be empty stream.
+```java
+int t = list.stream().reduce((x,y)->x+y).get();
+```
+- There is an overloaded reduce which takes an initial value, but returns an actual object rather than optional.
+```java
+int t = list.stream().reduce(2,Integer::sum);
+```
+
+
+## Collectors Class
+- Implement various useful reduction operations, such as accumulating elements into collections, summarizing elements according to various criteria, etc.
+- Can also join strings by a delimitter
+- If we want to collect the objects of a stream into a datastructure like List or Set etc.
+
+### Convert to List
+```java
+List<Movie> filterList = movies.stream().filter(movie -> movie.getLikes()>15).collect(Collectors.toList());
+```
+
+### Convert to Set
+```java
+Set<Movie> filterSet = movies.stream().filter(movie -> movie.getLikes()>15).collect(Collectors.toSet());
+```
+
+### Convert to Map
+```java
+Map<String, Integer> filterMap = movies.stream().filter(movie -> movie.getLikes()>15)
+.collect(Collectors.toMap(Movie::getTitle, Movie::getLikes));
+```
+
+### Summing to Int
+```java
+movies.stream().collect(Collectors.summingInt(Movie::getLikes));
+```
+
+### Summarizing the statistics 
+- Returns the following statistics 
+- IntSummaryStatistics{count=3, sum=60, min=10, average=20.000000, max=30}
+```java
+movies.stream().collect(Collectors.summarizingInt(Movie::getLikes))
+```
+
+### Joining values using delimitter (IMPORTANT)
+- returns a string with all concatenated items in string.
+```java
+movies.stream().map(Movie::getTitle).collect(Collectors.joining(" , "));
+```
+
+
+### groupingBy
+- ```Map<groupingAttribute, Collector>```, default collector (downstream collector) is list, collector can be any of the above, counting, set, mapping etc. 
+```java
+//group Map<Genre, List of Movies>
+var s1 = movies.stream().collect(Collectors.groupingBy(Movie::getGenre));
+
+//group Map<Genre, Set of Movie>
+var s2 = movies.stream().collect(Collectors.groupingBy(Movie::getGenre, Collectors.toSet()));
+
+//group Map<Genre, Number Of elements in this group>
+var s3 = movies.stream().collect(Collectors.groupingBy(Movie::getGenre, Collectors.counting()));
+
+//group Map<Genre, Concatenated String of movie name>
+var s4 = movies.stream().collect(Collectors.groupingBy(Movie::getGenre,
+                                 Collectors.mapping(Movie::getTitle,
+                                 Collectors.joining())));
+```
+
+### partition items
+- Similar to group by, but partition based on a condition rather than a attribute value.
+- In both groupingBy and paritionBy and mapping we can provide downstream collectors, which perform additional actions on top of the collected value.
+```java
+//partition Map<Boolean, List of movies>
+Map<Boolean, List<Movie>> s = movies.stream().collect(Collectors.partitioningBy(m->m.getLikes()>10));
+
+//partition Map<Boolean, Concatenated String of movie name>
+Map<Boolean, String> s2 = movies.stream().collect(Collectors.partitioningBy(m->m.getLikes()>10,
+                                                  Collectors.mapping(Movie::getTitle,
+                                                  Collectors.joining(","))));
+
+```
+
+
