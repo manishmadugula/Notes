@@ -326,6 +326,8 @@ no-store specifies that the content is not to be cached by any of the caches
 no-cache indicates that the cache can be maintained but the cached content is to be re-validated (using ETag for example) from the server before being served. That is, there is still a request to server but for validation and not to download the cached content.
 ```Cache-Control: max-age=3600, no-cache, public```
 
+# Dead Letter Queue
+- In case of asynchronous communication, if we want to tell failure cases to the calling service/ publishing service, we can write the failure to the dead letter queue and the publishing service can be subscriber of this queue.
 
 # UDP Usecases
 - For videos and real time gaming, it doesn't make sense to resend the lost packet, since on recieving it you will see things back in time so udp is a good protocol.[Link](https://www.youtube.com/watch?v=oIRkXulqJA4&list=PLIhvC56v63IJVXv0GJcl9vO5Z6znCVb1P&index=6)
@@ -417,6 +419,8 @@ The way event sourcing works with CQRS is to have part of the application that m
 ## References
 - https://www.confluent.io/blog/making-sense-of-stream-processing/
 - https://www.confluent.io/blog/event-sourcing-cqrs-stream-processing-apache-kafka-whats-connection/#:~:text=Event%20sourcing%20involves%20modeling%20the,or%20%E2%80%9Clog%E2%80%9D%20of%20events.&text=Event%20sourcing%20involves%20changing%20the,log%2C%20like%20a%20Kafka%20topic.
+
+
 
 # Things I wish Developer's Knew About Databases - Jaana Dogan
 ## Network Issues can be a problem

@@ -1317,6 +1317,36 @@ You can configure the gc to use in the flag passed.
 - @Deprecated //Source code processing.
 - @SuppressWarnings 
 
+### Custom Annotation
+- Similar to creating class. The ```@interface``` element is used to declare an annotation.
+- Points to keep in mind
+  - Method should return one of the following: primitive data types, String, Class, enum or array of these data types.
+  - Method should not have any throws clauses
+  - Method should not have any parameter.
+  - We should attach @ just before interface keyword to define annotation.
+  - We may assign a default value to the method.
+  - We can use another annotation ```@Target(ElementType.X)``` where X can be TYPE or METHOD or CONSTRUCTOR or FIELD, to limit where the annotation can be used.
+  - You can specify for your custom annotation if it should be available at runtime(for inspection via reflection)/ source(only visible in source code, not in byte code/ run time)/ class(visible in source and byte code but not in runtime),. You do so by annotating your annotation definition with the @Retention annotation. Here is how that is done: ```@Retention(RetentionPolicy.RUNTIME)```
+  - The ```@Inherited``` annotation signals that a custom Java annotation used in a class should be inherited by subclasses inheriting from that class.
+  - The ```@Documented``` annotation is used to signal to the JavaDoc tool that your custom annotation should be visible in the JavaDoc for classes using your custom annotation.
+```java
+
+  //Define using @interface
+  //Restrict where an annotation can be used
+
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Target;
+
+  //Annotation can only be used above a class/interface/enum/another annotation
+  @Target(ElementType.TYPE)
+  public @interface MyAnnotation {
+      //Methods for Java Annotation, Annotation properties are also called elements
+      String Name();
+      int count() default 99;
+      String[] arrayString();
+  }
+  ```
+
 ## User Input
 
 - The Scanner.next()/ nextInt() won't consume the newline character so to use nextLine after nextInt you need to first consume newline by an additional nextLine.
