@@ -37,18 +37,27 @@
   ```
 
 - Questions like find the third max number (in 1,2,2,3) max is 3.
-  - Use a set(bst) in c++ cause it is sorted and takes care of duplicates. [link](https://leetcode.com/problems/third-maximum-number/)
+  - Use a set(bst) in c++ cause it is sorted and takes care of duplicates. [link](https://leetcode.com/problems/third-maximum-number/)]
+    - ### It is important to note that, doing set.begin() returns the smallest item in the set and set.rbegin() returns the largest. This nature of sorted iterator traversal and fetch can be very useful when dealing with sorted and distinct numbers.
   - If duplicates are allowed use a priority queue. [link](https://leetcode.com/problems/kth-largest-element-in-an-array/) or refer to quick select below.
 
 - Sometimes bruteforce is the best solution - [link](https://leetcode.com/problems/can-place-flowers/)
 
 - max of 3 numbers is max(max(a,b),c);
 
-- Sieve of Eratosthenes (To find all the prime numbers less than n). In this method, you first set the prime value ofall numbers to be true. Then, for a variable i starting from 2 to the square root of limit(the number given), you set the value of prime of all the multiples of i to be false. [Link](https://www.khanacademy.org/computing/computer-science/cryptography/comp-number-theory/v/sieve-of-eratosthenes-prime-adventure-part-4)
+- Sieve of Eratosthenes (To find all the prime numbers less than n). 
+  - The definition of a prime number is a positive integer that has exactly two positive divisors. 
+  - One is not prime, neither is zero
+  - 2 is the smallest prime
+  - In this method, you first set the prime value ofall numbers to be true.
+  - If the current variable is marked not prime we skip the variable
+  -  Then, for a variable i starting from 2 to the square root of limit(the number given), you set the value of prime of all the multiples of i to be false.
+  -  ![](res/sieve.jpg)
+  -  See this video for details [Link](https://www.khanacademy.org/computing/computer-science/cryptography/comp-number-theory/v/sieve-of-eratosthenes-prime-adventure-part-4)
 
-- There are 2 optimizations here, 
-  - you only need to traverse from i==2 to sqrt(n), because multiple of numbers more than sqrt(n) are more than n;
-  - You can start from ```j == i*i``` because the multiples of i before i*i have already been marked by loops(```i==2 to i==i-1```).
+  - There are 2 optimizations here, 
+    - you only need to traverse from i==2 to sqrt(n), because multiple of numbers more than sqrt(n) are more than n;
+    - You can start from ```j == i*i``` because the multiples of i before i*i have already been marked by loops(```i==2 to i==i-1```).
   
     ```c++
     int countPrimes(int n) {
@@ -72,7 +81,7 @@
     }
     ```
 
-Now, all the numbers left whose prime value is true are prme numbers and can be displayed.
+  - Now, all the numbers left whose prime value is true are prme numbers and can be displayed.
 
 
 
@@ -94,7 +103,7 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 
 - vector's iterator are bidirectional
 - list's iterator can't move in it+2 or it-2, can only do it++,it--. You can use advance(it,4).
-- umap's iterator can't can't move in it+2 or it-2, can only do it++,it--. You can use advance(it,4).
+- unordered_map's iterator can't can't move in it+2 or it-2, can only do it++,it--. You can use advance(it,4).
 - pair is very useful when you want a container for 2 data types without writing an additional class for it.
   - First element is stored as "first"
   - second as "second"
@@ -144,6 +153,8 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 
 ## Tokenizing a string in c++
 ###  Using stringstream
+- remember ```getline(stringstream, token_to_store, character_to_delimit)```.
+- Don't use string instead of character above.
   ```c++
     string s = "Hello how are you";
     stringstream ss(s);
@@ -169,11 +180,27 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
 ### Vector/ String
 - Use erase-remove idiom (Optimized)
   - Motivation behind this idiom is in vector/ string calling erase multiple times on the same container generates lots of overhead from moving the elements.
-  - So a solution is to use remove/remove_if which do not remove elements from the container, but move all elements that don't fit the removal criteria to the front of the range, keeping the relative order of the elements. This is done in a single pass through the data range.  remove returns an iterator pointing to the first of these tail elements so that they can be deleted using a single call to erase.
+  - So a solution is to use remove/remove_if which do not remove elements from the container, but move all elements that don't fit the removal criteria to the back of the range, keeping the relative order of the elements. This is done in a single pass through the data range.  remove returns an iterator pointing to the first of these tail elements so that they can be deleted using a single call to erase.
   - Doing the same using only erase results in as many passes as there are elements to remove. For each of these passes, all elements after the erased element have to be moved, which is more time-consuming than shifting elements in a single pass.
   - Can't be used for set
   ```c++
   v.erase(std::remove_if(v.begin(), v.end(), IsOdd), v.end());
+  ```
+- Remove might expect the class to override the equality operator. Notice the equality operator returns an integer. You don't have this issue in case of remove_if. 
+  ```c++
+  class SampleClass {
+      public:
+          int x;
+          int y;
+          SampleClass(int samplex, int sampley) {
+              x = samplex;
+              y = sampley;
+          }
+          int operator==(SampleClass example) {
+              if (example.x == x && example.y == y) return true;
+              return false;
+          }
+  };
   ```
 - Using just erase (Not optimized)
   ```c++
@@ -198,6 +225,23 @@ Now, all the numbers left whose prime value is true are prme numbers and can be 
       it++;
     }
   }
+
+# Generate Random Number
+- Seed first using srand
+```c++
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main ()
+{
+  srand ( time(NULL) );
+  printf ("Random Number: %d\n", rand() %100);
+  return 0;
+}
+```
+- Rand returns an int, from 0 to RAND_MAX.
+- To get random float ```(float)rand()/(float)RAND_MAX```
 
 # Dynamic Programming
 ## Unique Path - 2
@@ -370,6 +414,29 @@ Think simple working recursive solution, which satisfies all constraints of the 
 - stold -> Converts a string to long double
 - to_string() -> Converts a datatype to string.
 
+#### Conversions
+- Character Array to String
+  ```c++
+  //notice the zero at the end.
+  char c[] = { 'a', 'v','d','e','f',0 };
+
+  //either can be used
+  string s = c;
+  string d(c);
+  ```
+- String to ```const char*```
+  ```c++
+  string s="dsgsg";
+  const char* cc = s.c_str();
+  ```
+- String to Character array
+  ```c++
+    string s="dsgsg";
+    //one more for null terminated character.
+    char c[6];
+    strcpy_s(c, s.c_str());
+  ```
+
 
 #### Iterators (Random Access Iterators)
 - Iterator to the beginning ```s.begin()```
@@ -512,6 +579,20 @@ Multiple element
 ## Containers
 
 ### Vector
+
+#### Conversion
+- Array to vector (Useful in some sites.)
+  ```c++
+  int a[] = { 1,2,3,4,5,6,7,7,10 };
+  int n = sizeof(a) / sizeof(int);
+  vector<int> v(a,a+n);
+  ```
+- Vector to an array.
+  ```c++
+  vector<int> v(10, 1);
+  int a[10];
+  copy(v.begin(), v.end(), a);
+  ```
 
 #### Iterators (Random Access Iterators)
 - Iterator to the beginning ```v.begin()```
@@ -682,9 +763,10 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 
 #### Modify
 
-### Ordered Map
+### Map
 
 #### Get
+- The power of set/ map is the fact that doing set.begin() will return the smallest number/ defined by comparator i.e iteration will be inorder.
 - The order at which the iterator iterate is guaranteed. *begin() gives you the smallest and *rbegin() the largest element, as determined by the comparison operator, and two key values a and b for which the expression !compare(a,b) && !compare(b,a) is true are considered equal. The default comparison function is std::less<K>.
 
 #### Add
@@ -709,6 +791,24 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 ## Note on find
 - For list, vector and string, find is static function from algo libraty.
 - For unordered_map, map it is a member function.
+
+# Primer on Arithmetic and Geometric Progressions
+## Geometric Progression
+- A geometric sequence is a sequence in which the ratio consecutive terms is constant.
+
+- Sum of elements in a geometric progression
+![](res/gp.png)
+- Sum of infinite elements in geometric sequence if common ratio is less than 1 is 
+![](res/gp2.jpg)
+- Sum of infinite elements in a geometric sequence if common ratio is more than 1 is infinite.
+
+## Arithmetic Progression
+![](res/ap.png)
+
+## Example
+- $O(n) = O(n+n/2+n/4+...infinity))=O(2n)$. (Use infinite geomtric progression formulae).
+- $O(n^2) =O(n+(n-1)+(n-2)+(n-3)+(n-4))$
+
 
 # Primer on Permutation and Combinations
 ## PERMUTATION :
