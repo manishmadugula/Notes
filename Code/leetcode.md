@@ -675,6 +675,7 @@ Multiple elements
 - Key from iterator ```it->first```  or ```(*it).first```
 
 #### Add
+- Add using umap[key] = value.
 - ```umap.insert(make_pair(1,1))``` or ```umap.insert({1,1})```
 - ## IMP DON'T DO ```umap.insert(1,1)``` (Since insert takes a pair as an input).
 
@@ -1084,6 +1085,7 @@ This is exactly what median of medians algorithm does, essentially to find optim
 ## The thing about using functor vs plain function is calling ```functor()``` returns you a function
 - So you can directly call ```sort(v.begin(),v.end(),func);```
 - But you need to use () for functor ```sort(v.begin(),v.end(),functor())```
+- Calling functor() is nothing but creating an object of type functor. The property of this object is that it's () operator is overloaded and thus can behave as a function.
 
 - same for accumulate ``` accumulate(v.begin(), v.end(), 1, functor())``` vs ```accumulate(v.begin(), v.end(), 1, func)``` 
 

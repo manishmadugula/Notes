@@ -758,6 +758,7 @@ Following operations occur:
 - Polyglot Persistence (PP)
 - Domain Driven Design (DDD)
 - Bounded Context (BC)
+- Thundering Herd Problem (In computer science, the thundering herd problem occurs when a large number of processes or threads waiting for an event are awoken when that event occurs, but only one process is able to handle the event. When the processes wake up, they will each try to handle the event, but only one will win.)
 
 - Rsync algorithm
 - Frugal Streaming
@@ -766,6 +767,8 @@ Following operations occur:
 - Ray casting
 - Alon Matias Szegedy
 - Hierarchical Timing Wheels
+
+See -> https://www.naniz.co/posts/2020/12/system-design-algorithm-and-interview-cheat-sheet/
 
 Ref -> https://leetcode.com/discuss/interview-question/547669/Algorithm-you-should-know-before-system-design.
 

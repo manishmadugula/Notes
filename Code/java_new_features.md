@@ -275,6 +275,12 @@ Stream.iterate(1,x -> x+1)
 ```java
 IntStream.range(0,10).forEach(System.out::println);
 ```
+- ### Remember Primitive Streams aren't autoboxed to Integer on Collect. You need to explicitly call boxed.
+```java
+List<Integer> li = IntStream.range(0, 1000000000).boxed()
+.filter(x->x%2==0).collect(Collectors.toList());
+
+```
 
 ## Types of stream methods
 ### Intermediate Operation
@@ -549,4 +555,22 @@ Map<Boolean, String> s2 = movies.stream().collect(Collectors.partitioningBy(m->m
 
 ```
 
+# Parallel Streams
+- Java Parallel Streams is a feature of Java 8 and higher, meant for utilizing multiple cores of the processor. Normally any java code has one stream of processing, where it is executed sequentially. Whereas by using parallel streams, we can divide the code into multiple streams that are executed in parallel on separate cores and the final result is the combination of the individual outcomes. The order of execution, however, is not under our control.
+- The parallel streams use the default ForkJoinPool.commonPool.
+- It is important to be careful while using parallel streams, because there is no straightforward way to provide a custom fork join pool for stream processing, and while one streams is being processed, no other task in common thread pool can be performed. Non straightforward way for custom pool https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream.
+- Parallel streams utilize splititerators and fork join pools. 
+- Parallel Streams quickly iterate over the large-sized collections
 
+## Ways to create a parallel stream
+### Using parallel() method on a stream
+```java
+List<Integer> li = IntStream.range(0, 1000000000).boxed().parallel()
+.filter(x->x%2==0).collect(Collectors.toList());
+```
+
+### Using parallelStream() on a Collection
+```java
+List<Integer> li2 = List.of(1,2,3,3,5,6,7,8).parallelStream()
+.filter(x->x%2==0).collect(Collectors.toList());
+```

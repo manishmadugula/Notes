@@ -383,6 +383,13 @@ map.get(c1.getEmail()) // will return the c1 object.
 - It is gonna make all the public methods synchronised and thus is similar to HashTable. 
 - This is not recommended.
 
+# HashMap, HashTable, ConcurrentHashMap and NULL
+- hashcode of null is 0.
+- ConcurrentHashMap and HashTable don't allow null as keys.
+- ### The main reason that nulls aren't allowed in ConcurrentMaps (ConcurrentHashMaps, ConcurrentSkipListMaps) is that ambiguities that may be just barely tolerable in non-concurrent maps can't be accommodated. The main one is that if map.get(key) returns null, you can't detect whether the key explicitly maps to null vs the key isn't mapped. In a non-concurrent map, you can check this via map.contains(key), but in a concurrent one, the map might have changed between calls.
+- HashMap allows for null.
+- Hashtable does not allow null keys. This is because the objects used as keys in a Hashtable implements the hashCode() and equals() methods for their storage and retrieval. Since null is not an object it cannot implement the methods. If you try hashing a null key, it will throw a NullPointerException .
+
 
 # Synchronized Collections vs Concurrent Collections
 - Though both Synchronized and Concurrent Collection classes provide thread-safety, the differences between them come in performance, scalability and how they achieve thread-safety.

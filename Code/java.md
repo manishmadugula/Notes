@@ -59,6 +59,108 @@ We can use == operators for reference comparison (address comparison) and .equal
 ```java
 System.identityHashCode(s1); //Don't use object.hashCode(), since this depends on the contents.
 ```
+# NULL in Java
+- Unlike common misconception, null is not Object or neither a type. It’s just a special value, which can be assigned to any reference type and you can type cast null to any type.
+- null is Case sensitive: null is literal in Java and because keywords are case-sensitive in java, we can’t write NULL or 0 as in C language.
+- Any reference variable in Java has default value null.
+- ### static method, can be called by null reference.
+- Non-static method, cannot be called by null reference.
+- The comparison and not equal to operators are allowed with null in Java.
+- ### HashCode of null is 0. ```System.identityHashCode(null))```
+- ### ConcurrentHashMap and HashTable don't allow null to be the key or values. See collections notes for reason.
+  - HashMap allows null to be keys.
+
+# Various ways of object creation
+- new Keyword
+- Deserialization
+- clone
+- Class.forName().newInstance()
+
+
+# Throwables
+## Exceptions
+- We have two choices when an exception object is created in our application. 
+  - Either we will handle it within method
+  - Or we can pass it to the caller method to let it handle.
+  - This is very important decision to be made while setting the responsibilities of a method.
+-  Throw only those exceptions which a method can not handle by any mean. Method should first try to handle it as soon as it encounters. Throw the exception only if it is not possible to handle inside method.
+- If an exception is not handled in the application, then it will propagate to JVM and JVM will usually terminate the program itself.
+- In reality, most applications will have to recover from pretty much all exceptions including NullPointerException, IllegalArgumentExceptions and many other unchecked exceptions. The action / transaction that failed will be aborted but the application has to stay alive and be ready to serve the next action / transaction.
+### Checked Exceptions
+-  These exceptions should be either caught or handled during compile time. If we do not catch or handle them then the compiler will throw a compilation error.
+- These are used where chances of failure are greater.
+Mainly when an exception occurs and we know what we need to do.
+- checked exceptions denote error scenarios which are outside the immediate control of the program. They occur usually interacting with outside resources/network resources e.g. database problems, network connection errors, missing files etc.
+```java
+  try
+  {
+      FileReader file = new FileReader("somefile.txt");
+  } 
+  catch (FileNotFoundException e) 
+  {
+      //Alternate logic
+      e.printStackTrace();
+  }
+```
+- Checked exceptions ideally should never be used for programming errors, but absolutely should be used for resource errors and for flow control in such cases.
+
+#### Examples
+- File Not Found Exception
+- Interrupted Exception
+- Execution Exception
+- Parse Exception
+- IO Exception
+
+
+### Unchecked Exceptions/Runtime Exception
+- It is not a requirement to handle or catch them at compile time. These are mainly due to the mistakes in the program.
+- 
+
+#### Examples
+- Arithmetic Exception
+- Arithmetic Exception
+- Null Pointer Exception
+- Array Index Out of Bounds Exception
+
+## Errors
+- are serious runtime environment problems that are almost certainly not recoverable. Some examples are OutOfMemoryError, LinkageError, and StackOverflowError. They generally crash you program or part of program. Only a good logging practice will help you in determining the exact causes of errors.
+- Can't catch using Exception in catch clause. Need to use throwable.
+
+## Best Practises for exception handling
+- ### Remember “Throw early catch late” principle
+  - This principle implicitly says that you will be more likely to throw it in the low-level methods, where you will be checking if single values are null or not appropriate. And you will be making the exception climb the stack trace for quite several levels until you reach a sufficient level of abstraction to be able to handle the problem.
+- User defined custom exceptions for fine grained exception control
+-  Never swallow the exception in catch block
+```java
+catch (NoSuchMethodException e) {
+   return null;
+}
+```
+- Declare the specific checked exceptions that your method can throw
+```java
+public void foo() throws Exception { 
+  //Incorrect way
+}
+```
+- Do not catch the Exception class rather catch specific sub classes
+- Never catch Throwable class
+  - rrors are irreversible conditions that can not be handled by JVM itself. 
+- Either log the exception or throw it but never do the both
+-  Never throw any exception from finally block
+    ```java
+    try {
+      someMethod();  //Throws exceptionOne
+    } finally {
+      cleanUp();    //If finally also threw any exception the exceptionOne will be lost forever
+    }
+    ```
+    - This is fine, as long as cleanUp() can never throw any exception. In the above example, if someMethod() throws an exception, and in the finally block also, cleanUp() throws an exception, **that second exception will come out of method and the original first exception (correct reason) will be lost forever.** If the code that you call in a finally block can possibly throw an exception, make sure that you either handle it, or log it. Never let it come out of the finally block.
+-  Always catch only those exceptions that you can actually handle. Don't catch the exception just to throw it again.
+-  Use finally blocks instead of catch blocks if you are not going to handle exception
+-  Never use exceptions for flow control in your program
+-  Validate user input to catch adverse conditions very early in request processing. Validate all values first, before moving forward with processing, else if anything is invalid and some database fields are mutated, your db will be in inconsistent state.
+-  Always include all information about an exception in single log message
+-  Document all exceptions in the application with javadoc
 
 # Access Modifiers
 - Default access modifier in Java is package-protected, visible to all classes within the package not outside of package.
