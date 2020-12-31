@@ -145,6 +145,24 @@ t.start();
 t.join();
 ```
 
+## Misc
+- A thread cannot be started twice.
+  - Throws the IllegalThreadStateException.
+```java
+Thread t1 = new Thread(()->System.out.println("Hey"));
+t1.start();
+t1.start();
+```
+
+### Run vs start in thread.
+- Run runs, the method/runnable in the same thread, where as start creates a new thread.
+```java
+Thread t1 = new Thread(()->System.out.println("Hey"));
+t1.run()//runs on the main thread itself
+t1.start()//creates a new thread and runs on it.
+```
+
+
 
 # Synchronous/Asynchronous Java API
 - Using Completable futures

@@ -1472,6 +1472,39 @@ You can configure the gc to use in the flag passed.
 
 
 ## Misc
+- In java the assignment operator returns the object that is assigned
+```java
+boolean r;
+boolean x = r = false;
+if(r=true) //This condion passes
+  System.out.println("We entered the loop")
+```
+- Look carefully in MCQs they don't write new while creating objects or they don't assign proper Reference type to objects.
+
+```java
+try{
+  
+}
+catch(Exception e){
+  throw Exception(); 
+  // This will lead to compilation error.
+}
+```
+
+```java
+ArrayList arr = new CopyOnWriteArrayList();
+// This will cause compilation error.
+```
+- Remember the using static keyword doesn't really change behavior of the function overload behaviour. The following code will lead to compilation error.
+```java
+  public static void main(String[] args){
+    ...
+  }
+  public void main(String[] args){
+    ...
+  }
+``` 
+
 ### Diamond Problem and how Java deals with it, (also how dart mixins work)
 
 # To read

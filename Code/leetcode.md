@@ -1096,6 +1096,10 @@ This is exactly what median of medians algorithm does, essentially to find optim
 # Binary Tree
 - A tree with n vertices will have n-1 edges. (Think every node has only one edge to parent except the root.)
 
+# Binary Search Tree
+## Deletion a node with 2 children
+-
+
 # Trie (Prefix Trees)
 ```c++
 class TrieNode{
