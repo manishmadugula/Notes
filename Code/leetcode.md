@@ -1270,6 +1270,179 @@ void union_sets(int a, int b) {
 - https://leetcode.com/problems/longest-consecutive-sequence/submissions/
 
 
+# String
+
+## KMP
+
+### TIP -> MOST IMPORTANT STEP TO REMEMBER IN LPS AND KMP BOTH is the case where the iterator 1 and iterator 2 are not equal and also the iterator2's value is also not 0, then you perform the following operation ```iterator2 = LPS[iterator2-1]``` i.e reset iterator2's value to the appropriate position.
+
+### Longest Prefix Which is also a suffix. (LPS) Array
+
+To find the longest prefix which is also a suffix we need to follow the below rules.
+
+We form an array in which the values at each index denote the length of the longest prefix which is also a suffix and is not the same as the string itself. i.e for string abcabc ->length of prefix which is also a suffix is 3 (not 6 cause it can't be the string itself).
+
+- We need to use 2 iterators i and len.
+- Initialize len=0;i=1 and LCS[0]=0;
+- At each iteration we check if A[len] == A[i].
+- If True we increment both i and len. Also we update the LPS[i] = len+1;
+- If False
+    - If len is zero then LPS[i]=0 and i++;
+    - If len is not zero then len = LPS[len-1];
+
+Reason
+- First index of LPS Array should have value of zero cause no prefix exist which is not the string(A[0] is a character) itself.
+
+- len tells the max length of the prefix and also a suffix for substring 0 to i-1.
+
+- Thus if A[len]==A[i] it means to find the length of largest suffix which is also prefix for string 0 to i just take the value of "len"(length of largest prefix which is also a suffix for string 0 to i-1) and add 1 to it i.e LPS[i] = len + 1; (Can't we write LPS[i] = LPS[i-1]+1?)
+
+- If len is zero and A[i] doesn't match the first character(A[len=0]) the Longest Prefix that is a suffix is zero as there is nothing less than len(which is also the last index of maximum prefix of string 0 to i-1) to be compared with anything less than i and also since A[i] and A[0] not same so LPS[i]=0;
+
+- If len is not zero then there can be something in the already matched prefix which can match with the suffix when we add the character at A[i]. **So we cannot do LPS[i]=0 and move ahead**. We need to analyse. We were analysing the strings below index len-1 but unfortunately the character at index len did not match with i. But what if the same pattern till index len-1 exist before in the prefix that starts from 0. i.e considering string ending with len-1 as suffix does there exist a prefix starting at 0. to know that we see LPS[len-1] and we don't yet increment i, we see if the character at index=LPS[len-1] matches with character at i. if yeah then great we just continue with our algorithm else we continue to find the pattern as deep as it goes.
+
+![LPS](res/LPS.jpg "LPS")
+
+
+### Main Algorithm
+- The reason brute force approach is bad, is because everytime we detect a difference between main and substring, we reset the iterator of the main string back to last_position + 1, because there can be something in the main_string[i+1,:] that matches with the substring, if we can somehow cache this pattern, we can get a optimized solution.
+- KMP's main motivation is  the main_string's iterator should not go back from it's position ever, only the substring's iterator resets it's position. The substring iterator is resetted according to the lps_array's value ```j=lps[j-1]``` if ```j!=0```, else if ```j==0``` the main_string's iterator(i) is incremented.
+- It is somewhat similar to formation of LPS Array above.
+
+```c
+class Solution {
+    
+     void lps(vector<int> &arr, string str){
+         int len = 0;
+         int i = 1;//lps[0] == 0, see above
+         while(i<str.length()){
+             if(str[i] == str[len]){
+                 len++;
+                 arr[i] = len;
+                 i++;
+             }
+             else{
+                 if(len == 0){
+                    arr[i] = 0;
+                    i++;
+                 }
+                 else{
+                   //IMPORTANT STEP
+                     len = arr[len-1];
+                 }
+             }
+         }
+     }
+    
+public:
+    int strStr(string haystack, string needle) {
+        
+        if(needle.size()==0) return 0;
+        vector<int> l(needle.length(),0);
+        lps(l, needle);
+        int i=0;
+        int j=0;
+        while(i<haystack.length()){
+            if(needle[j] == haystack[i]){
+              //if match then increment both iterator.
+                i++;
+                j++;
+            }
+            else{
+                if(j==0) i++;
+                else{
+                    j=l[j-1]; //in the already matched part i.e 0:j-1,
+                    // see the length of the largest prefix which is also a suffix.
+                }
+            }
+            if(j == needle.length()){//if end is reached return
+                return i-j;
+            }
+        }
+        return -1;
+        
+    }
+};
+```
+### Time Complexity (V.IMPORTANT)
+- The time complexity is O(n), since i is never decremented and is always incremented. Now if we observe carefully each decrement of j is actually mapped to one increment of j, and if we observe carefully j and i are always incremented together, so there can be at max (n: size of the big string) decrements. so total time complexity is O(n+n) = O(n).
+
+## Rabin Karp Algorithm (Rolling Hash Function)
+- Used to find occurance of a string in another string, same as KMP.
+- Easier to implement, but less stable than KMP, in case if hash function chosen has lot of collision.
+- We first compute hash of the smaller string(say add all the character of the small string)
+- Then we essentially also compute the hash of the all the contiguous substrings of the text of length m.
+- To efficiently compute the hash of all contiguous substrings, we need a hash function with the following property : ash at the next shift must be efficiently computable from the current hash value and next character in text i.e rehash must be O(1) operation.
+- Also hash function shouldn't compute value that overflows the datatype.
+- One decent hash function is say $P$ is the pattern and n is the length of the pattern, r can be any number( usually taken total types of character i.e 26) : $hash(P) = P[0]*r^{n-1}+P[1]*r^{n-2}+P[2]*r^{n-3} + ....$ [Link](https://youtu.be/qQ8vS2btsxI?t=755)
+- Good performing hash is bernstein hash.
+
+### Time Complexity
+- Worst Case is O(mn)
+- The average and best-case running time of the Rabin-Karp algorithm is O(n+m)
+
+
+## String divisibility Problems
+### Find the smallest, substring which when repeated forms the original string.
+- https://www.geeksforgeeks.org/find-given-string-can-represented-substring-iterating-substring-n-times/
+- https://stackoverflow.com/questions/6021274/finding-shortest-repeating-cycle-in-word
+- Find the length of the largest proper prefix which is also a suffix (but not the entire string) (LPS) for the given string, say the value is x.
+- Now subtract length of the string with x.
+- Check if n%(len-x) == 0, if yes such a string is possible and it's value is ```string[0:len-x-1]```;
+  ```c++
+  int findSmallestUnit(string str){
+      vector<int> lps(str.length(),0);
+      int i=1;
+      int len=0;
+      while(i<str.length()){
+          if(str[i] == str[len]){
+              len++;
+              lps[i] = len;
+              i++;
+          }
+          else{
+              if(len == 0) i++;
+              else{
+                  len = lps[len-1];
+              }
+          }
+      }
+      int n=str.length();
+      int x = lps[n-1];
+      if(n%(n-x) == 0){
+          return n-x;    
+      }
+      return n;
+  }
+  ```
+
+- If you don't remember this solution, simply perform a $O(n^2)$ approach to this problem, where you start from the start of the string and check if the substring which starts from the start of a string to i can be repeated to form the whole string. (Use mod of the smaller string iterator while comparing to avoid forming new string).
+  ```c++
+  int findSmallestUnit(string str){
+      for(int i=1;i<str.length();i++){
+          int j=0;
+          for(;j<str.length();j++){
+              if(str[j%i] != str[j]){
+                  break;
+              }
+          }
+          if(j==str.length()) return i;
+      }
+      return str.length();
+  }
+  ```
+
+
+### Given 2 substring find if they are divisible.
+- Check the length of 2 string, and see if the lenght are divisible.
+- If yes then check content (Use mod of the smaller string iterator while comparing to avoid forming new string).
+
+### Given 2 string, find the largest common substring of these 2 strings which when repeated forms both the strings. (Also check first if it possible to do that)
+- To prove that such a substring exists, find the smallest substring of the 2 strings which when divided forms the larger string. If the smallest substring returned by both are same then it is possible
+- Now find the gcd of the lengths of the both strings, the GCD gives the length of the largest number which when repeated can form both the numbers. That is what the defination of GCD is. Now just return the substring from 0 to gcd.
+[Personal Solution](https://leetcode.com/problems/greatest-common-divisor-of-strings/submissions/)
+
+
 # Important Questions
 
 

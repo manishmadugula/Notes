@@ -249,34 +249,6 @@
 
 
 
-- ### Longest Prefix Which is also a suffix. (LPS) Array
-
-    To find the longest prefix which is also a suffix we need to follow the below rules.
-
-    We form an array in which the values at each index denote the length of the longest prefix which is also a suffix and is not the same as the string itself. i.e for string abcabc ->length of prefix which is also a suffix is 3 (not 6 cause it can't be the string itself).
-
-    - We need to use 2 iterators i and len.
-    - Initialize len=0;i=1 and LCS[0]=0;
-    - At each iteration we check if A[len] == A[i].
-    - If True we increment both i and len. Also we update the LPS[i] = len+1;
-    - If False
-        - If len is zero then LPS[i]=0 and i++;
-        - If len is not zero then len = LPS[len-1];
-
-    Reason
-    - First index of LPS Array should have value of zero cause no prefix exist which is not the string(A[0] is a character) itself.
-
-    - len tells the max length of the prefix and also a suffix for substring 0 to i-1.
-
-    - Thus if A[len]==A[i] it means to find the length of largest suffix which is also prefix for string 0 to i just take the value of "len"(length of largest prefix which is also a suffix for string 0 to i-1) and add 1 to it i.e LPS[i] = len + 1; (Can't we write LPS[i] = LPS[i-1]+1?)
-
-    - If len is zero and A[i] doesn't match the first character(A[len=0]) the Longest Prefix that is a suffix is zero as there is nothing less than len(which is also the last index of maximum prefix of string 0 to i-1) to be compared with anything less than i and also since A[i] and A[0] not same so LPS[i]=0;
-
-    - If len is not zero then there can be something in the already matched prefix which can match with the suffix when we add the character at A[i]. **So we cannot do LPS[i]=0 and move ahead**. We need to analyse. We were analysing the strings below index len-1 but unfortunately the character at index len did not match with i. But what if the same pattern till index len-1 exist before in the prefix that starts from 0. i.e considering string ending with len-1 as suffix does there exist a prefix starting at 0. to know that we see LPS[len-1] and we don't yet increment i, we see if the character at index=LPS[len-1] matches with character at i. if yeah then great we just continue with our algorithm else we continue to find the pattern as deep as it goes.
-
-    ![LPS](res/LPS.jpg "LPS")
-
-
 
 - ### Binary Search
 

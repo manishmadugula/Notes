@@ -24,3 +24,24 @@
     ```
     - Make sure there are no redundant conditionals
 - Avoid switch clauses and replace with inherited classes/polymorphism.
+```c#
+    foreach (var animal in zoo) {
+        switch (typeof(animal)) {
+            case "dog":
+                echo animal.bark();
+                break;
+
+            case "cat":
+                echo animal.meow();
+                break;
+        }
+    }
+```
+becomes
+
+```c#
+foreach (var animal in zoo) {
+    echo animal.speak();
+}
+```
+- [Link](https://stackoverflow.com/questions/126409/ways-to-eliminate-switch-in-code#:~:text=23%20Answers&text=Switch%2Dstatements%20are%20not%20an,of%20using%20a%20switch%20statement.&text=See%20the%20Switch%20Statements%20Smell,are%20scattered%20throughout%20a%20program.)

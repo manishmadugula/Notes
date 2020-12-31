@@ -671,7 +671,8 @@ class Student{
 
 - Inner Classes are of 2 types local classes and anonymous classes.
 #### Local Inner Class
-- They are the usual non static nested classes as we have been using
+- Local Inner Classes are the inner classes that are defined inside a block. Generally, this block is a method body. Sometimes this block can be a for loop, or an if clause.Local Inner classes are not a member of any enclosing classes.
+- Local inner class cannot be instantiated from outside the block where it is created in.
 
 #### Anonymous Class
 It is an inner class without a name and for which only a single object is created. An anonymous inner class can be useful when making an instance of an object with certain “extras” such as overloading methods of a class or interface, without having to actually subclass a class.
