@@ -1096,9 +1096,36 @@ This is exactly what median of medians algorithm does, essentially to find optim
 # Binary Tree
 - A tree with n vertices will have n-1 edges. (Think every node has only one edge to parent except the root.)
 
+# Binary Heap
+- Can be implemented using an array.
+- It’s a complete tree (All levels are completely filled except possibly the last level and the last level has all keys as left as possible). This property of Binary Heap makes them suitable to be stored in an array.
+- To get the parent using ```(childindex-1)/2```
+- To get the child nodes use ```(2*parentindex +1 , 2*parentindex+2)```
+- All inserts, delete, update must take care of preserving both structure and order property of the binary heap.
+
+## Inserting a node in binary heap (Min)
+- Insert at the end of the array(to preserve structure), and then heapify up. 
+- Check parent and see if parent is less than child, if yes then swap(swap operation doesn't change the structure so safe), keep doing till parent is less than child.
+- ![](res/binary_heap_insert.jpg)
+
+## Deleting the min/root node in binary heap (Min)
+- Here also we need to ensure heap structure and heap order properties after the root has been removed.
+- we will restore the root item by taking the last item in the list and moving it to the root position. (This maintains our heap structure property)
+- we will restore the heap order property by pushing the new root node down the tree to its proper position, by heapify down.
+- ![](res/heapify_down.png)
+
 # Binary Search Tree
+## Node to be deleted is leaf
+- Simply remove from the tree.
+
+## Node to be deleted has only one child
+- Copy the child to the node and delete the child 
+
 ## Deletion a node with 2 children
--
+- Find inorder successor of the node. Copy contents of the inorder successor to the node and delete the inorder successor.
+- The inorder successor can itself have atmost one node and thus deleting it will fall in one of the above 2 cases.
+
+![](res/bst_delete.png)
 
 # Trie (Prefix Trees)
 ```c++
@@ -1273,6 +1300,157 @@ void union_sets(int a, int b) {
 - Minimum Spanning Trees and Finding a cycle in a undirected graph : Kruskal Algorithm.
 - https://leetcode.com/problems/longest-consecutive-sequence/submissions/
 
+# Segment Trees
+- A Segment Tree is a data structure that allows answering range queries over an array effectively, while still being flexible enough to allow modifying the array.
+
+## Structure
+- we start with the segment a[0…n−1], split the current segment in half (if it has not yet become a segment containing a single element), and then calling the same procedure for both halves. For each such segment we store the sum of the numbers on it. The above procedure forms a binary tree. 
+- We also ensure that the length of the array is made the power of 2, by appending empty nodes in it. The defination of empty nodes depends on the problem.
+- The above constraint makes sure segment trees form complete binary trees.
+- Let's take a = [1,3,-2,8,7] as an example
+- ![](res/segment_trees.png)
+- In most implementation tree is not constructed explicitly.
+- The height of the Segment Tree is O(logn), because when going down from the root to the leaves the size of the segments decreases approximately by half.
+- Value of leaf vertex would be equal to the (corresponding) element a[i], in most cases.
+
+## Construct
+- Assign values to leaf node using the array values.
+- You start from the root node, and recurse till you reach the leaf node.
+- The leaf node then returns the value inside it. and the parent node combines the value recieved from both the nodes using merge operation.
+- The time complexity of this construction is O(n), assuming that the merge operation is constant time 
+
+## Implementation
+- ### Fill the current array, till it's size becomes equal to the next power of 2.
+  - To find the next power of 2 after x, we need to find log(x), which will give a double and we take the ceil of that and raise 2 to the power of the ceil result to find the next power of 2. 
+- Create another array segment Tree whose size is twice of that of the above modified array.
+### Creation of the segmentTree
+- Ensure at each node, you have the following information
+  - Array Index of the segment Tree Array, which the current node corresponds to.
+  - The left and right bounds of the current node.
+- If left and right bounds are equal we are at the leaf node and you can directly assign the value from array.
+- Else find the middle bound between left and right bound and perform build on the children 2 node, then combine the value to get current Nodes's value.
+
+### Sum range
+- Ensure you have following information
+  - Array Index of the segment Tree Array, which the current node corresponds to.
+  - The left and right bounds of the current node.
+  - The left and right indices which signifies the range of the query.
+- Now test if the range falls beyond the bounds, then return 0.
+- If it completely engulfs the bound, return the value stored at this node in segment Tree.
+- Else, compute mid node and  return the result of recursive call to left and right nodes.
+
+### Update node
+- We assume that the position i which is to be updated, falls within the left and right bounds.
+- Ensure you have following information
+  - Array Index of the segment Tree Array, which the current node corresponds to.
+  - The left and right bounds of the current node.
+- If left and right bounds are same then you are at the leaf node, use the above array index to update the segment Tree using the new value.
+- Else, compute the mid value and check if position i, falls below mid or above mid, and recurse accordingly.
+  - Also you need to update the current node's value after the child node's recursion is complete.
+```c++
+class NumArray {
+    vector<int> segmentTree;
+    
+    int findNextPowTwo(int x){
+        double currentPowTwo = log2(x);
+        double currentPowTwoCeil = ceil(currentPowTwo);
+        return pow(2, currentPowTwoCeil);
+    }
+
+    void build(vector<int> nums, int l, int r, int v){
+        if(l==r){
+            segmentTree[v] = nums[l];
+        }
+        else{
+            int mid = (l+r)/2;
+            build(nums,l,mid,2*v+1);
+            build(nums,mid+1,r,2*v+2);
+            segmentTree[v] = segmentTree[2*v+1] + segmentTree[2*v+2];
+        }
+    }
+    
+    int helperSum(int i, int j, int l, int r, int v){
+        if(i<=l && j>=r){
+            return segmentTree[v];
+        }
+        else if(j<l || i>r){
+            return 0;
+        }
+        int m = (l+r)/2;
+        return helperSum(i,j,l,m,2*v+1) + helperSum(i,j,m+1,r,2*v+2);
+    }
+    
+    void helperUpdate(int i, int new_val, int v, int l, int r){
+        if(l==r){
+            segmentTree[v] = new_val;
+        }
+        else{
+            int m = (l+r)/2;
+            if(i<=m){
+                helperUpdate(i,new_val,2*v+1,l,m);
+            }
+            else{
+                helperUpdate(i,new_val,2*v+2,m+1,r);
+            }
+            segmentTree[v] = segmentTree[2*v+1] +  segmentTree[2*v+2];
+        }
+    }
+    
+public:
+    NumArray(vector<int>& nums) {
+        if(nums.size()==0) return;
+        int nextPowTwo = findNextPowTwo(nums.size());
+        for(int i=nums.size();i<nextPowTwo;i++){
+            nums.push_back(0);
+        }
+        segmentTree.assign(2*nums.size(),0);
+        build(nums,0,nextPowTwo-1,0);
+    }
+    
+    void update(int i, int val) {
+        helperUpdate(i, val, 0, 0, segmentTree.size()/2-1);
+    }
+    
+    int sumRange(int i, int j) {
+        return helperSum(i, j, 0, segmentTree.size()/2-1, 0);
+    }
+};
+```
+
+## Complexity
+### Space
+- One important property of Segment Trees is, that they require only a linear amount of memory. The standard Segment Tree requires 4n vertices for working on an array of size n.
+- The number of vertices in the worst case can be estimated by the sum $1+2+4+⋯+2⌈log2n⌉=2⌈log2n⌉+1<4n$.
+
+
+## Lazy Propagation (Useful in range updates)
+- We begin by considering problems of the simplest form: the modification query should add a number x to all numbers in the segment a[l…r]. The second query, that we are supposed to answer, asked simply for the value of a[i].
+- To make the addition query efficient, we store at each vertex in the Segment Tree how many we should add to all numbers in the corresponding segment. 
+  - For example, if the query "add 3 to the whole array a[0…n−1]" comes, then we place the number 3 in the root of the tree. 
+- Thus we don't have to change all O(n) values, but only O(logn) many.
+- If now there comes a query that asks the current value of a particular array entry, it is enough to go down the tree and add up all values found along the way.
+
+
+## Applications
+- finding the sum of consecutive array elements provided the range O(logn)
+- finding the minimum element in a such a range  O(logn), instead of sum store max each node.
+
+# Comparision between Segment Trees, Prefix Array and Naive algorithm for the range Sum Query
+
+## Segment Tree
+- Range Query (Log(n))
+- Update (Log(n))
+- Update Range(Log(n)), using Lazy propagation
+
+## Prefix Array
+- Range Query O(1)
+- Update O(n)
+- Update Range O(n)
+
+## Naive Approach (Modify the array itself)
+- Range Query O(n)
+- Update O(1)
+- Update O(n)
 
 # String
 
@@ -1770,6 +1948,146 @@ public:
   - You cannot construct a binary tree using just postorder and preorder (Unless the binary tree is a full binary tree).
   - If you know the binary tree is a bst then you just need a postorder to construct.
   
+
+# Interview Preparation
+
+## Day : 1 
+- For questions like : Rearrange such that adjacent characters are not same, The concept of odd even filling, first sort the numbers by their frequency (priority_queue) and then start filling the odd first then start filling even
+  - https://leetcode.com/problems/distant-barcodes/
+  - https://leetcode.com/problems/reorganize-string/
+### Couldn't Solve
+- https://leetcode.com/problems/distant-barcodes/
+- **https://leetcode.com/problems/critical-connections-in-a-network/**
+
+## Day : 2
+- Carefully choose BFS or DFS, if it is related to shortest path, it is probably bfs.
+  - https://leetcode.com/problems/01-matrix/ is BFS, since nearest distance is asked.
+  - You tried dfs and were trapped, so be careful
+  - The above question also required putting all the zeroes first in the queue then start the bfs once, rather than calling bfs for each zero.
+  - Similar question https://www.lintcode.com/problem/walls-and-gates/description
+
+- Use stable_sort in c++, if the order of the original elements have to be preserved in case sort_key is equal.
+
+### Concept of Sliding Window with subarray question
+- **Various type of subarray questions which deal with the various different values like find subarrays with no repeating integers, with k distinct integers, with atmost k distinct characters etc can be solved in the same way as below.**
+    - By using a sliding window approach by incrementing j on each iteration and checking if the condition holds true, if not increment i.
+    - Each iteration checks, does a subarray which ends on j, pass the conditon, if not increment i till it passes the condition
+    - Most sliding window questions deal with some kind of aggregate atMost k different characters, largest substring, min substring with k etc. Or they can be converted to aggregate like all substrings with exactly k different characters or a contiguous subarray with exactly k odd numbers.
+    - Questions like find subarrays with atmost k distinct or find all subarrays with all distinct integers, all the subarrays of i to j also hold the condition true. The count of those subarrays between i and j can be found using the length logic below see below.
+- Concept of grouping the subarrays based on it's length
+  - ```[1,2,3,4,5,6]``` the total subarrays which end with 6 is equal to the length of the subarray namely ```[1,2,3,4,5,6]``` , ```[2,3,4,5,6]```, ```[3,4,5,6]```, ```[4,5,6]```, ```[5,6]```, ```[6]```
+  - This is because total values that i can take is 6 from 0 to 5.
+  - With this knowledge we can solve the subarrays with exactly k different integers problem.
+  - **```SubArrays with exactly k different integer = subarrays with atmost k different integers - subarrays with atmost k-1 different integers.```**
+  - **```SubArrays with exactly k odd integer = subarrays with atmost k odd integers - subarrays with atmost k-1 odd integers.```**
+  - **```Number of Substrings Containing Atleast Three Characters : total number of all substrings - Substrings which contain atmost 2 character```**
+
+#### Total subarrays for a array of length x is
+- ```1 + 2 + 3 +4 + 5 +6....x```
+- Imagine a subarray is represented by i and j bounds, for a given j, the possible values of i are 1,2,3,4...till j and j goes from 1 to size of the string, total combinations of i for a given value of j is equal to the value of j. And value of j goes from 1 to size of array thus. We have the above formuale.
+
+#### Time complexity of sliding windows is usuall O(NK)
+- Where we make N iterations of incrementing j and on worst case our i has to increment on each iteration and that too K times.
+- K is dependent on the question.
+```c++
+class Solution {
+    
+    int subArraysWithAtMostKDistinct(vector<int> &A, int K){
+        //Intialization Part
+        int i=0;
+        int j=0;
+        int ans=0;
+        //The umap to efficiently check for condition
+        unordered_map<int,int> umap;
+        int k=0;
+        
+        //Iterate on j.
+        for(int j=0;j<A.size();j++){
+            //Adding j to the umap
+            if(umap.find(A[j])==umap.end()){
+                umap[A[j]]=0;
+            }
+            umap[A[j]]++;
+
+            //Check for the condition and increment i if condition fails.
+            if(umap[A[j]]==1){
+                k++;
+            }
+            while(k>K){
+                umap[A[i]]--;
+                if(umap[A[i]]==0){
+                    k--;  
+                } 
+                i++;
+            }
+
+            //compute the ans. (Look at the length logic above)
+            ans += j-i+1;
+        }
+        return ans;
+    }
+    
+public:
+    int subarraysWithKDistinct(vector<int>& A, int K) {
+        return subArraysWithAtMostKDistinct(A,K) - subArraysWithAtMostKDistinct(A,K-1);
+    }
+};
+```
+
+#### Similar Questions
+- https://leetcode.com/problems/subarrays-with-k-different-integers/
+- https://leetcode.com/problems/count-number-of-nice-subarrays/
+- https://leetcode.com/problems/longest-substring-without-repeating-characters/
+- https://leetcode.com/problems/longest-substring-with-at-most-two-distinct-characters/
+- https://leetcode.com/problems/longest-substring-with-at-most-k-distinct-characters/
+- https://leetcode.com/problems/number-of-substrings-containing-all-three-characters/
+- Other questions : https://leetcode.com/problems/subarrays-with-k-different-integers/discuss/523136/JavaC%2B%2BPython-Sliding-Window
+
+### Couldn't Solve
+- https://leetcode.com/problems/01-matrix/
+- https://leetcode.com/problems/subarrays-with-k-different-integers/
+
+
+## Day 3
+- To solve twoSum problem, and find all the possible solutions to 2 sum efficiently, you need to use hashmap. Also don't precompute hashmap, that will lead to duplicate solution, say [0,1,3,1] is there and you need to find the sum = 1, if you precompute hashmap, that means on encountering 0 you will say 2 solutions, then again on encountering each ones, you will say 1 solution leading to total of 4, but there are only 2 solution, so be careful.
+- Also for count-good-meals, instead of looping through powers of 2 first then looping through arr, loop through array and inside the first loop, try out all possible values of powers of 2.
+- As can be seen in Day 2's https://leetcode.com/problems/01-matrix/  and https://leetcode.com/problems/count-good-meals, the order of doing things can impact the speed of execution, try to optimize whereever you can.
+
+### TLE
+- https://leetcode.com/problems/count-good-meals/submissions/
+
+## Day 4
+- For some questions java is simply better choice.
+  -[ Design In-Memory File System](https://leetcode.com/problems/design-in-memory-file-system/)
+- Hard Question but solvable using DP
+  - https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/
+### Java Specifics
+- The object can simply implement the compareTo method and you don't need to pass the comparator to treemap/hashmap.
+- To split a string in java using a delimitter
+  ```java
+    String s[] = originalString.split("/");
+  ```
+- Custom Compare in Java
+  -  make sure you implement Comparable Interface and make the compareTo method public.
+  -  Also make sure you implement Comparable<T> not raw types.
+  -  ```java
+      @Override
+      public int compareTo(FileInstance r){
+          return this.name.compareTo(r.name); 
+      }
+      ```
+-  To deal with null values in map, check if the string contains the value using 
+    ```java
+    if(root.files.containsKey(name)){
+        return root.files.get(name);    
+    }
+    ```
+
+## Day 5
+- Spring Boot Tutorial
+
+## To-Do
+- Trajan's Algorithm for **https://leetcode.com/problems/critical-connections-in-a-network/**
 
 # Similar Questions
 

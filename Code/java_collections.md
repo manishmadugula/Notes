@@ -1,10 +1,14 @@
 # Regular Array
+- Arrays are also a subtype of Object in Java.
+- Arrays are objects so we can find the length of the array using attribute 'length'.
+- Arrays can store primitives as well as objects. But all must be of a single type in one array instance.
+- Java arrays are Cloneable and Serializable.
 
 ## Simple way to initialize arrays
 ```java
 int[] arr = {1,2,3,4,5,6,7};
 ```
-
+## Convert arrays to ArrayList.
 - Arrays.asList(a)
 # Iterable
 - part of java.lang package not collections, fundamental interface to Java

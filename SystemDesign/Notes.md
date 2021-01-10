@@ -746,6 +746,53 @@ Logstash is an open-source data ingestion tool that allows you to collect data f
 ## Kibana
 Kibana is an open-source data visualization and exploration tool for reviewing logs and events. Kibana offers easy-to-use, interactive charts, pre-built aggregations and filters, and geospatial support and making it the preferred choice for visualizing data stored in Elasticsearch. 
 
+# REST
+## GET Request
+- Not to be used for sending passwords, because GET ideally doesn't have a body and the URL is not encrypted so passwords will be visible to anyone snooping.
+
+## REST vs SOAP vs HTTP
+### REST
+- REST is an architectural style. (Standardized URL Scheme)
+- REST is protocol independent. It's not coupled to HTTP. 
+- REST stands for Representational State Transfer.
+- REST based HTTP requires less bandwidth and resource than SOAP.
+- REST uses URI to expose business logic.
+- REST can use SOAP web services because it is a concept and can use any protocol like HTTP, SOAP.
+- REST permits different data format such as Plain text, HTML, XML, JSON etc.
+- REST more preferred than SOAP.
+- REST Client like browser is a generic browser not tightly coupled with server.
+### SOAP
+- SOAP is a protocol. Just like HTTP sits on top of TCP/IP, SOAP sits on top of HTTP.
+- SOAP stands for Simple Object Access Protocol.
+- SOAP can't use REST because it is a protocol.
+- SOAP uses services interfaces to expose the business logic. (XSD) (XML Schema Defination)
+- SOAP defines standards to be strictly followed.
+- SOAP requires more bandwidth and resource than REST based HTTP.
+- SOAP permits XML data format only.
+- Due to strict standards, SOAP client is tightly coupled.
+```
+---------  HTTP portion of the message ------ 
+POST /InStock HTTP/1.1
+Host: www.example.org
+Content-Type: application/soap+xml; charset=utf-8
+Content-Length: nnn
+
+---------  SOAP portion of the message ------ 
+<?xml version="1.0"?>
+<soap:Envelope
+xmlns:soap="http://www.w3.org/2001/12/soap-envelope"
+soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
+
+<soap:Body xmlns:m="http://www.example.org/stock">
+  <m:GetStockPrice>
+    <m:StockName>IBM</m:StockName>
+  </m:GetStockPrice>
+</soap:Body>
+
+</soap:Envelope>
+```
+
+
 # Check these algorithms
 - Count Min Sketch
 - Consistent Hashing

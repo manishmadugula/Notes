@@ -11,6 +11,7 @@
 - double -> 8 bytes
 - boolean -> 1 bit (true or false)
 
+
 ## AutoBoxing
 - Autoboxing is the automatic conversion that the Java compiler makes between the primitive types and their corresponding object wrapper classes. For example, converting an int to an Integer, a double to a Double, and so on. If the conversion goes the other way, this is called unboxing.
 
@@ -26,6 +27,9 @@ for (int i = 1; i < 50; i += 2)
 ```
 
 - In the above example, even though Object class is not a superclass of primitives, since primivites are not reference types, but still we can add due to the fact that int gets autoboxed to Integer. 
+
+# Default Package
+- If no package declaration is specified for 2 classes, they cannot access each other method unless the method is public.
 
 # Varargs
 - It is short-form for variable-length arguments. A method that takes a variable number of arguments is a varargs method.
@@ -55,6 +59,138 @@ varargsExample(1,"eh","3dsf","Ny","name", "Is", "Manish");
 # Equals vs == operator
 We can use == operators for reference comparison (address comparison) and .equals() method for content comparison. In simple words, == checks if both objects point to the same memory location whereas .equals() evaluates to the comparison of values in the objects.
 
+# Cloning in Java
+-  A clone is an exact copy of the original. It essentially means the ability to create an object with similar state as the original object.
+
+## Clone
+- By default, java cloning is ‘field by field copy’.
+  - If the class has only primitive data type members then a completely new copy of the object will be created and the reference to the new object copy will be returned.
+  - If the class contains members of any class type then only the object references to those members are copied and hence the member references in both the original object as well as the cloned object refer to the same object.
+
+### Shallow Copy vs Deep Copy
+- Shallow clone is “default implementation” in Java. In overridden clone method, if you are not cloning all the object types (not primitives), then you are making a shallow copy.
+- In the deep copy, we create a clone which is independent of original object and making changes in the cloned object should not affect original object.
+
+### Clonable Interface
+
+In java, if a class needs to support cloning it has to do following things:
+- You must implement Cloneable interface.
+- You must override clone() method from Object class. [Its weird. clone() method should have been in Cloneable interface.]
+- If you don't do this you will get a CloneNotSupportedException runtime.
+- Make sure all the fields (Non-Primitive) also implement Clonable, else you need to copy every state in the non primitive field.
+- Clone is the protected method, you need to make it public to access in other packages.
+- No constructor is called on the object being cloned. As a result, it is your responsibility, to make sure all the members have been properly set.
+```java
+//Cloneable has to be implemented else there will be runtime exception CloneNotSupportedException
+public class ClassA implements Cloneable{
+    public int a;
+    public List<Integer> l;
+    public String b;
+    public ClassA(int a, List<Integer> l, String b){
+        this.a = a;
+        this.l = l;
+        this.b = b;
+    }
+    //Keep in mind the return type is Object so you need to cast wherever you clone
+    //The access specifier by default is protected, so only accessible within the same package.
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        ClassA temp =(ClassA) super.clone();
+        temp.l = new ArrayList<>(this.l);
+        return temp;
+    }
+}
+```
+## Copy Constructor
+- Copy constructors are special constructors in a class which takes argument for its own class type. 
+- when you pass an instance of class to copy constructor, then constructor will return a new instance of class with values copied from argument instance.
+```java
+public class PointOne 
+{
+    private Integer x;
+    private Integer y;
+ 
+    public PointOne(PointOne point){
+        this.x = point.x;
+        this.y = point.y;
+    }
+}
+```
+
+### Copy Constructors and Inheritance
+- When you define a class by extending above class, you need to define a similar constructor there also. In child class, you need to copy child specific attributes and pass the argument to the super class’s constructor.
+```java
+public class PointTwo extends PointOne
+{
+    private Integer z;
+    public PointTwo(PointTwo point){
+        super(point); //Call Super class constructor here
+        this.z = point.z;
+    }
+}
+```
+- The problem with inheritance is that exact behavior is identified only at runtime. So, in our case if some class passed the instance of PointTwo in constructor of PointOne.
+- In this case, you will get the instance of PointOne in return where you passed instance of PointTwo as argument.
+
+## Static Factory Methods
+- Another way of creating a copy constructor is to have static factory methods. They take class type in argument and create a new instance using another constructor of the class.
+```java
+public class PointOne implements Cloneable
+{
+    private Integer x;
+    private Integer y;
+    public PointOne(Integer x, Integer y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+    public PointOne copyPoint(PointOne point) throws CloneNotSupportedException
+    {
+        if(!(point instanceof Cloneable))
+        {
+            throw new CloneNotSupportedException("Invalid cloning");
+        }
+        //Can do multiple other things here
+        return new PointOne(point.x, point.y);
+    }
+}
+```
+
+## Java deep copy with serialization
+- See serialization notes.
+
+# Immutable Class
+To create Immutable Class
+- Make all fields final and private
+- Don’t provide “setter” methods — methods that modify fields or objects referred to by fields.
+- ## Special attention when having mutable instance variables
+  - ### Always remember that your instance variables will be either mutable or immutable. Identify them and return new objects with copied content for all mutable objects. Immutable variables can be returned safely without extra effort.
+
+```java
+//Make it final so no method can be overridden.
+public final class ImmutableClass {
+    private final Integer num;
+    private final String name;
+    private final List<Integer> list;
+    public ImmutableClass(Integer num, String name, List<Integer> list){
+        this.num = num;
+        this.name = name;
+        //This is important to do deep copy not the shallow copy.
+        this.list = new ArrayList<>(list);
+    }
+    public Integer getNum(){
+        return num;
+    }
+    public String getName(){
+        return name;
+    }
+    public List<Integer> getList(){
+        //This is important, don't return the original list, but create a copy of it.
+        return new ArrayList<>(list);
+    }
+}
+```
+
 ## To get the address of the object use:
 ```java
 System.identityHashCode(s1); //Don't use object.hashCode(), since this depends on the contents.
@@ -72,8 +208,9 @@ System.identityHashCode(s1); //Don't use object.hashCode(), since this depends o
 
 # Various ways of object creation
 - new Keyword
-- Deserialization
+- DeSerialization
 - clone
+- Reflection
 - Class.forName().newInstance()
 
 
@@ -161,6 +298,7 @@ public void foo() throws Exception {
 -  Validate user input to catch adverse conditions very early in request processing. Validate all values first, before moving forward with processing, else if anything is invalid and some database fields are mutated, your db will be in inconsistent state.
 -  Always include all information about an exception in single log message
 -  Document all exceptions in the application with javadoc
+-  return statement in finally block overrides the return statement anywhere else.
 
 # Access Modifiers
 - Default access modifier in Java is package-protected, visible to all classes within the package not outside of package.
@@ -175,6 +313,7 @@ public void foo() throws Exception {
       }
     }
   ```
+![](res/access-modifier.png)
 
 ## For Classes and Interfaces.
 - ### Top Level (not inner class or nested class) class or interface cannot be private cause then it is useless as it cannot be accessed by anything outside.[link](http://net-informations.com/java/cjava/private.htm)
@@ -208,6 +347,7 @@ public void foo() throws Exception {
   - Overriding in Java simply means that the particular method would be called based on the run time type of the object and not on the compile time type of it (which is the case with overriden static methods). Okay... any guesses for the reason why do they behave strangely? Because they are class methods and hence access to them is always resolved during compile time only using the compile time type information.
   - Why this matters? The advantage of dynamic binding is that it allows us to write code that is generic and you don't have to recompile all the source code that is dynamically bonded, It is probably the basis of dependency injection.
   - If you use super classes's reference to call the static method of a subclass's body it will call super classes's static method, instead of calling subclasses. (No dynamic binding takes place). Can't use superclass reference to call subclasses's method implementation.
+- Methods with static/final/private are resolved at the compile time and hence can't be overriden.
 
 ### Static class
 - Only nested class can be static
@@ -864,9 +1004,15 @@ public enum SitePointChannel {
 
 ## Type of class and object.
 - ### instanceof 
+  - tests whether the object reference on the left-hand side (LHS) is an instance of the type on the right-hand side (RHS) or some subtype.
 - ### getClass()
+  - - tests whether the object reference on the left-hand side (LHS) is an instance of the type on the right-hand side (RHS) or some subtype.
 - ### SomeClass.class
-
+  ```java
+    List<Integer> l = new ArrayList<>();
+    System.out.println(l instanceof List); // True
+    System.out.println(l.getClass() == List.class); //False
+  ```
 
 # Generics
 
@@ -1505,7 +1651,15 @@ ArrayList arr = new CopyOnWriteArrayList();
   }
 ``` 
 
+# Serialization
+
+# New IO
+
+# Reflection
+
 ### Diamond Problem and how Java deals with it, (also how dart mixins work)
+
+### JSR-330
 
 # To read
 

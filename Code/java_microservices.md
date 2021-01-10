@@ -1,9 +1,30 @@
 # Maven
 - See some videos about maven pom file.
 
+## POM File
+### Parent
+```xml
+<parent>
+    <groupId>mycompany.trade.com</groupId>
+    <artifactId>mycompany.trade.</artifactId>
+    <version>1.1.1.0-SNAPSHOT</version>
+</parent>
+```
+- maven reads the parent POM from your local repository (or proxies like nexus) and creates an 'effective POM' by merging the information from parent and module POM.
+-  reason to use a parent is that you have a central place to store information about versions of artifacts, compiler-settings etc. that should be used in all modules.
+
 # JUnit
 - See how to write test cases in JUnit.
 - Test driven code is writing testcase first and then write the code to pass those test cases.
+
+# JDBC
+- JDBC is a standard for connecting to a DB directly and running SQL against it 
+
+# JPA
+- JPA is a standard for Object Relational Mapping. The most famous JPA provider is Hibernate. 
+
+# Apache commons
+- It has utility classes.
 
 # Domain Driven Design
 - Eric Evans

@@ -574,3 +574,49 @@ List<Integer> li = IntStream.range(0, 1000000000).boxed().parallel()
 List<Integer> li2 = List.of(1,2,3,3,5,6,7,8).parallelStream()
 .filter(x->x%2==0).collect(Collectors.toList());
 ```
+
+# Default Methods in Interfaces
+- They provide you an highly desired capability of adding a capability to number of classes without even touching their code. Simply add a default method in interface which they all implement.
+
+## Why default methods were needed in java 8?
+- Modifying one interface in a JDK framework breaks all classes that extend the interface, which means that adding any new method could break millions of lines of code. Therefore, default methods have introduced as a mechanism to extend interfaces in a backward-compatible way.
+- Default interface methods are an efficient way to deal with this issue. They allow us to add new methods to an interface that are automatically available in the implementations. Thus, there's no need to modify the implementing classes.
+- For Java 8, the JDK collections have been extended and the forEach method is added to the entire collection (which work in conjunction with lambdas). Since this result each implementing class with compile errors, a default method added with a required implementation in order that the existing implementation should not be changed.
+- With default methods you can have both, a standard implementation which the List implementations do not need to implement on its own but still can be overridden if a concrete implementation has a more efficient way to do it knowing its internals.
+
+## Java 8 Interfaces vs Abstract Classes
+### - The abstract class can define constructors. They are more structured and can have a state associated with them. While in contrast, default method can be implemented only in the terms of invoking other interface methods, with no reference to a particular implementation's state.
+
+## Conflict Resolution in Default Methods
+- Since Java classes can implement multiple interfaces and each interface can define a default method with the same method signature, the inherited methods can conflict with each other.
+- In case if there is conflict in method inherited from both interfaces we need to override the default method in the concrete class.
+- To call the Interface's default method use ```InterfaceA.super.someDefaultMethod()``` Notice super is not a method, but a reference variable used to refer to parent object.
+
+```java
+public interface InterfaceA {
+    default void printThis() {
+        System.out.println("Hello from A");
+    }
+}
+
+public interface InterfaceB {
+    default void printThis() {
+        System.out.println("Hello from B");
+    }
+}
+
+public class ConcreteC implements InterfaceA, InterfaceB{
+   //You need to override printThis() method else there will be compilation error
+    @Override
+    public void printThis() {
+      //To call InterfaceA's printMethod()
+        InterfaceA.super.printThis();
+
+      //To call InterfaceB's printMethod()
+        InterfaceB.super.printThis();
+        System.out.println("Hello from C");
+    }
+}
+
+```
+
