@@ -27,7 +27,7 @@
 - Mechanism to perform dependency injection
 
 ## Spring Container
-- The Spring container is responsible for instantiating, configuring, and assembling the Spring beans.
+- The Spring container is responsible for instantiating, lifecycle, configuring, and assembling the Spring beans.
 
 ## Types of IOC Containers in Spring
 - BeanFactory and ApplicationContext and WebApplicationContext
@@ -137,14 +137,34 @@ public void setService2(Service2 service2) {
 @GetMapping
 - Specify the url which will trigger the below method
 
+@PathVariable
+
+@RequestBody
+
 @Autowired
+- Inject by type.
 
 @Controller 
 - Doesn't have responseBody in it.
 - Controller is also a Component.
 
+@Bean
+- The method will return a bean.
 
 @Configuration 
+- The class with @Configuration becomes the configuration class.
+- Sample spring configuration class
+```java
+@Configuration
+public class SwaggerConfig {
+    //Return a Bean of type Docket
+    @Bean
+    Docket getDocket(){
+        return new Docket(DocumentationType.SWAGGER_2);
+    }
+}
+```
+
 
 @Import 
 
@@ -154,21 +174,50 @@ public void setService2(Service2 service2) {
 - the response will be directly sent back to browser and not to view resolver.
 
 @Response Status
+
+@ControllerAdvice
+
+@JsonIgnore
+
+@Repository
+- Component which interacts with DB.
+
 ## Spring Boot Annotations
 @SpringBootApplication
 - ComponentScan runs in same package
-- 
 
+## JPA Annotations
+- See java_microservies.md
 
 # LifeCycle Hooks
 
-## Bean vs Class vs Servlet vs POJO
+## Bean vs Servlet vs POJO
+
+### POJO
+- A POJO has no naming convention for our properties and methods.
+- But, we aren't following any real convention for constructing, accessing, or modifying the class's state.
+- This class can be used by any Java program as it's not tied to any framework
+
 ### Bean
 - Spring beans are Java objects that are managed by the Spring container.
+- All JavaBeans are POJOs but not all POJOs are JavaBeans.
 - A JavaBean is basically a Java class which satisfies a few simple rules
-  - 
+  - Serializable i.e. they should implement Serializable interface. Still, some POJOs who don’t implement Serializable interface are called POJOs because Serializable is a marker interface and therefore not of much burden.
+  - Fields should be private. This is to provide the complete control on fields. Since if the field is not private anyone can change it to invalid value.
+  - Fields should have getters or setters or both.
+  - ### A no-arg constructor should be there in a bean.
+  - Fields are accessed only by constructor or getter setters.
+  - Getters and Setters have some special names depending on field name. For example, if field name is someProperty then its getter preferably will be ```getSomeProperty()```
+  - If you don't have getters and setters in the Bean you will face a response.
+
+### Servlet
+- a servlet specifically subclasses javax.servlet.Servlet and/or javax.servlet.http.HttpServlet and implements one or more of the doXXX methods.
+
+
+
 
 ## Bean Scope
+-
 - Default Scope is Singleton
 
 
@@ -178,9 +227,231 @@ public void setService2(Service2 service2) {
 - It is the front controller
 - Looks at the url and sends to the right controller and method.
 - Also sends the response to view resolver if required if there is no response body.
+- Handles all the requests
+
 
 # AutoConfiguration
 - Looks at the classes and jar in class path and configures different classes, like JacksonObjectMapper(Json to object and vice versa), error configuration, dispatcher servlet. 
+
+# REST USING SPRING BOOT
+
+## Return a JSON Object
+- Automatically handled by jackson json
+- ### The returned Object has to be a valid Spring Bean, i.e with public setters and getters else there will be exception
+
+## Submit Query Parameters in Spring Boot
+- You need to use ```@PathVariable``` annotation.
+- Your route should also have the variable with same name, else you will get error in the response.
+```java
+  @GetMapping(path = "/hello-world-bean/user/{yourName}")
+  public HelloWorldBean helloWorldBeanPathVariableExample(@PathVariable String yourName){
+      return new HelloWorldBean("Hello World Bean" + yourName);
+  }
+```
+
+## Throw Exception in Spring Boot
+- You should implement the RuntimeException which is an unchecked exception.
+- Also to get 404 Error Code Add the ResponseStatus Annotion in the Exception
+```java
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String s) {
+        super(s);
+    }
+}
+
+@GetMapping("/users/{id}")
+public User getUser(@PathVariable Integer id){
+    User user = userService.findUser(id);
+    if(user == null){
+        throw new UserNotFoundException("id : " + id);
+    }
+    return user;
+}
+```
+
+## Validation in Spring Boot
+- Use @Valid annotation
+```java
+public ResponseEntity createUser(@Valid @RequestBody User user)
+```
+ with following constraints
+```java
+@Size(min=2)
+private String name;
+
+@Past
+private Date birthDate;
+```
+- Following are the various constraints
+
+![](res/validation_constraitns.jpg)
+
+
+## Create a object with Spring Boot
+- You need to use ```@RequestBody``` annotation
+- It is best practise to return the URI of the created resource, no need to send all the information related to created user since that just wastes the bandwidth.
+- To just send the URI of the created resource, we can send the URI in the location portion of the header.
+- To perform this you need to return the location information in the ResponseEntity Object. It has a created method which expects a URI, you can create the URI using the ServletUriComponentBuilder;
+```java
+@PostMapping("/users")
+public ResponseEntity createUser(@RequestBody User user){
+    User savedUser = userService.save(user);
+
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(savedUser.getId()).toUri();
+
+    return ResponseEntity.created(location).build();
+}
+```
+
+## Monitoring APIs
+- Using Spring Actuator and HAL Explorer
+- Lots of useful metrics and properties about the Spring Application
+  - All the created Beans
+  - health checks
+  - Postive and Negative match on condition for Auto Configuration
+  - Environment
+  - Heap Dump
+  - Thread Dump
+  - Metrics
+    - Amount of memory used etc.
+    - CPU Usage
+    - JDBC Connections Active
+    - GC Information
+
+## Swagger API Documentations
+- You can document the API for the consumers in a very structured way using swagger.
+- It also enables you to document the constraints on the properties expected by each API.
+- Document the request type which are accepted (json/xml) and also the response type (json/xml)
+
+
+## Hypermedia as the engine of application state (HATEOS)
+
+
+## Content Negotiation is the ability to send both xml and json responses
+  - Use jackson xml
+
+## Filter the attributes to be sent in the response
+### Static Filtering
+- You can decorate some fields as ```@JsonIgnore``` so they won't be sent in the response as a JSON Object, like say a password field
+- Be careful there are multiple implementation of JsonIgnore, use fasterxml.jackson
+```java
+import com.fasterxml.jackson.annotation.JsonIgnore;
+public class SomeBean {
+    private String one;
+
+    @JsonIgnore
+    private String three;
+
+    public SomeBean(String value1, String value3) {
+        one = value1;
+        three = value3;
+    }
+
+    public String getOne() {
+        return one;
+    }
+
+    public void setOne(String one) {
+        this.one = one;
+    }
+
+    @JsonIgnore
+    public String getThree() {
+        return three;
+    }
+
+    public void setThree(String three) {
+        this.three = three;
+    }
+}
+```
+### Dynamic Filtering based on the request.
+
+
+## Versioning
+
+### URL Based Versioning
+- Polluting URL Space
+- Documentation is easier
+#### URI Based Versioning
+```java
+@GetMapping("/v1/person")
+PersonV1 getPersonVersion1(){
+    return new PersonV1("Manish Madugula");
+}
+
+@GetMapping("/v2/person")
+PersonV2 getPersonVersion2(){
+    return new PersonV2(new Name("Manish","Madugula"));
+}
+```
+#### Parameter Based Versioning
+```java
+@GetMapping(value = "/person", params = "version=v1")
+PersonV1 getPersonVersion1Param(){
+    return new PersonV1("Manish Madugula");
+}
+
+@GetMapping(value="/person", params = "version=v2")
+PersonV2 getPersonVersion2Param(){
+    return new PersonV2(new Name("Manish","Madugula"));
+}
+```
+
+
+### Header Based Versioning
+- Misuse of HTTP Header
+- Caching is not straightforward, since we also need to look at header and do complicated stuff with it, not simply see if URL are same
+- Cannot execute directly in browser, need POSTMAN etc.
+#### X-API-VERSION
+```java
+@GetMapping(value = "/person", headers = "X-API-VERSION=v1")
+PersonV1 getPersonVersion1XAPI(){
+    return new PersonV1("Manish Madugula");
+}
+
+@GetMapping(value="/person", headers = "X-API-VERSION=v2")
+PersonV2 getPersonVersion2XAPI(){
+    return new PersonV2(new Name("Manish","Madugula"));
+}
+```
+#### Accept Header/Produces Param/MIME Type Versioning/Media type Versioning/Content Negotaition
+```java
+@GetMapping(value = "/person", produces = "application/com.madmanish.restfulwebservices-v1+json")
+PersonV1 getPersonVersion1ContentNegotation(){
+    return new PersonV1("Manish Madugula");
+}
+
+@GetMapping(value="/person",  produces = "application/com.madmanish.restfulwebservices-v2+json")
+PersonV2 getPersonVersion2ContentNegotation(){
+    return new PersonV2(new Name("Manish","Madugula"));
+}
+```
+
+# Important Jars
+- spring-boot-starter-web
+  - Starter for building web, including RESTful, applications using Spring MVC. Uses Tomcat as the default embedded container
+- spring-boot-starter-data-jpa
+- spring-boot-starter-security
+  - Handles Spring Security OAuth, Basic Validation etc.
+- spring-boot-starter-validation
+  - Handles Constraints on the Request Body and Parameters by setting up validation logic.
+- spring-boot-starter-actuator
+  - Monitoring spring application
+- spring-data-rest-hal-explorer
+  - UI tool too see the monitoring data
+- spring-boot-devtools
+  - Live Load
+- spring-boot-starter-test
+  - Test framework for spring
+- springfox-swagger2
+  - API Documentation in JSON
+- springfox-swagger-ui
+  - API Documentation Visualize in UI
 
 # In 28 Minutes
 - Service Defination
@@ -189,12 +460,10 @@ public void setService2(Service2 service2) {
   - Example: Swagger
 
 - Jackson
+  - Converts to JSON and Back
 - ServletUriComponentBUILDER
 - ResponseEntity
 - ResponseEntityExceptionHandler
-- ControllerAdvice
-
-
 
 # Old Notes
 - Lifecycle hooks vs constructor

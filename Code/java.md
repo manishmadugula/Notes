@@ -28,6 +28,9 @@ for (int i = 1; i < 50; i += 2)
 
 - In the above example, even though Object class is not a superclass of primitives, since primivites are not reference types, but still we can add due to the fact that int gets autoboxed to Integer. 
 
+# JAVA is call by Value
+- Just that references are passed by Value, we don't deal with actual Objects.
+
 # Default Package
 - If no package declaration is specified for 2 classes, they cannot access each other method unless the method is public.
 
@@ -1424,6 +1427,14 @@ You can configure the gc to use in the flag passed.
 - It is immutable ```s1.toUpperCase()``` doesn't modify the string s1 but returns a new String with upperCase letters.
 - Using code like ```String s = "This " + 20 + "is" + Boolean.valueOf(true)"; ``` was discouraged since these kinds of statements lead to creation of lots of intermediate String objects. This issue is no longer an issue since these statements are now implemented using StringBuilder.
 
+## Integer Cache in JAVA
+- In Java 5, a new feature was introduced to save the memory and improve performance for Integer type objects handling. Integer objects are cached internally and reused via the same referenced objects.
+
+- This is applicable for Integer values in the range between –128 to +127.
+This Integer caching works only on auto-boxing. Integer objects will not be cached when they are built using the constructor.
+- This is based on the assumption that these small values occur much more often than other ints and therefore it makes sense to avoid the overhead of having different objects for every instance 
+
+
 ## String Pool
 - ### Strings are stored in a separate memory pool in permGen space(<Java 1.7) or main heap(>=Java1.8) called string pool. Each string you create is cached/interned if it is created using string literal.
   ```java
@@ -1652,12 +1663,29 @@ ArrayList arr = new CopyOnWriteArrayList();
 ``` 
 
 # Serialization
+- Java serialization enables writing Java objects to file system for permanent storage or on network to transfer to other applications. Serialization in Java is achieved with Serializable interface.
+- writeObject
+- readObject
+- writeReplace
+- readResolve
+
+## serialVersionUID
+- The serialVersionUID is a universal version identifier for a Serializable class. Deserialization uses this number to ensure that a loaded class corresponds exactly to a serialized object. If no match is found, then an InvalidClassException is thrown.
 
 # New IO
 
 # Reflection
+- You almost would never need to use it
+- But as soon as, you are told to deal with classes which you don’t know at time of writing the code, and you must write code in too general way such that it can handle any class type then you will need reflection to do the job.
 
-### Diamond Problem and how Java deals with it, (also how dart mixins work)
+## real examples of Reflection
+- Code analyzer tools
+- Eclipse (Other IDEs) auto completion of method names
+- Marshalling and unmarshalling XML (or JSON) to/from java beans code.
+- Spring Framework for creating the beans
+  - DI framework actually heavily uses reflection for injecting these bean dependencies.
+- Parsing annotations by ORMs like hibernate entity
+- Junit Testcases
 
 ### JSR-330
 

@@ -1624,6 +1624,7 @@ public:
 - Now find the gcd of the lengths of the both strings, the GCD gives the length of the largest number which when repeated can form both the numbers. That is what the defination of GCD is. Now just return the substring from 0 to gcd.
 [Personal Solution](https://leetcode.com/problems/greatest-common-divisor-of-strings/submissions/)
 
+### If S1 is a rotation of S2, then S2 is a substring of S1+S1.
 
 # Important Questions
 

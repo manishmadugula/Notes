@@ -1,7 +1,7 @@
 # Maven
 - See some videos about maven pom file.
 
-## POM File
+## POM File (Project Object Model)
 ### Parent
 ```xml
 <parent>
@@ -21,7 +21,59 @@
 - JDBC is a standard for connecting to a DB directly and running SQL against it 
 
 # JPA
+- Java Persistence API
 - JPA is a standard for Object Relational Mapping. The most famous JPA provider is Hibernate. 
+- JPA is an specification/interface and Hibernate is an implements of the JPA Specification
+
+## Entity Manager
+- Save the Entity to Database
+
+## Persistence Context
+- The persistence context is the first-level cache where all the entities are fetched from the database or saved to the database. It sits between our application and persistent storage.
+- An EntityManager instance is associated with a persistence context.
+- Flushing a Cache is the act of putting modified data back into the database.
+- A PersistenceContext is essentially a Cache. It also tends to have it's own non-shared database connection.
+### Persistence contexts are available in two types:
+- The default persistence context type is PersistenceContextType.TRANSACTION. To tell the EntityManager to use the transaction persistence context, we simply annotate it with @PersistenceContext
+#### Transaction-scoped persistence context
+- The transaction persistence context is bound to the transaction. As soon as the transaction finishes, the entities present in the persistence context will be flushed into persistent storage.
+####  Extended-Scoped Persistence Context
+- An EntityManager using an extended persistence context maintains the same persistence context for its entire lifecycle. Whether inside a transaction or not, all entities returned from the EntityManager are managed, and the EntityManager never creates two entity instances to represent the same persistent identity. Entities only become detached when you finally close the EntityManager (or when they are serialized).
+
+
+
+## Annotations
+
+@Entitiy
+- Store a Java bean to the table then declare the bean with the Entity Annotation.
+
+@Id
+- Declare primary key with Id Annotation
+
+@GeneratedValue
+- Declare the field decorated by this annotation to have generated value.
+
+@Transactional
+- Each method would be involved in a transaction if the class is declared with @Transactional annotation.
+- It is used to combine more than one writes on a database as a single atomic operation.
+- If you don't specify @Transactional, each DB call will be in a different transaction.
+```java
+@Repository
+@Transactional
+public class UserRepository {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public long insert(User user){
+        entityManager.persist(user);
+        return user.getId();
+    }
+}
+
+```
+
+
+@PersistenceContext
 
 # Apache commons
 - It has utility classes.
