@@ -378,6 +378,94 @@ public:
 
 - ## If you notice the difference is in for loop, in case of permutation you try out all the possibilities in each recursion, but in combinations you start from idx, and don't try out previously used values. ```int i=idx;i<coins.size();i++``` vs ```int i=0;i<nums.size();i++```
 
+## Buy Sell Stock Questions
+- Assume you have an array M, where each index i denotes the maximum profit that could have been made on day i.
+- The i'th day therefore cannot be buy day, since no point buying on the day if you want the max profit on that day.
+- It can be cooldown day, in which case the profit if current day i is cooldown day is ```M[i-1]```
+- If the current day is sell day, we need to find the buy day which will lead to max profit. We can loop over all the possible days from j= 0 to i-1 and try buying on that day and find maximum profit provided we are buying on jth day and selling on i'th day.
+  - Say for buy day = j we have the max profit, then ```max profit = prices[i] - prices[j] + profit_made_on_day_j-1```
+  - Now for profit on j-1th day
+    - If there is cooldown involved before buying another stock, the j-1th day can't be sellday or buy day, since jth day is buy day. so j-1th day is the cooldown day. From 3rd point above, if j-1th day is cooldown then the max profit that day is ```M[j-2]```, so profit_made_on_day_j-1 = ```M[j-2]```, you need to take care for day j=1 and 0, since the profit made on that day, if it is cool down day is 0.
+    - If there is transaction fees involved, then profit_made_on_day_j-1 = ```M[j-1]``` but there is fees which needs to be subtracted from profit giving, ```maxprofit = prices[i] - prices[j] + M[j-1] - fees```
+- Find the max of the above 2 cases, sellday and rest day.
+### Code O(N^2)
+#### Buy and sell stock with cooldown
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        if(prices.length==0) return 0;
+        int[] M = new int[prices.length];
+        M[0] = 0;
+        for(int i=1;i<prices.length;i++){
+            //You either sell or rest for max profit.
+            int sellprofit=0;
+            for(int j=0;j<i;j++){
+                sellprofit=Math.max(sellprofit,prices[i]-prices[j]+(j>2?M[j-2]:0));
+            }
+            M[i] = Math.max(M[i-1],sellprofit);
+        }
+        return M[prices.length-1];
+    }
+}
+```
+#### Buy and sell stock with transaction
+```java
+class Solution {
+    public int maxProfit(int[] prices, int fee) {
+        if(prices.length==0) return 0;
+        int[] M = new int[prices.length];
+        M[0]=0;
+        for(int i=1;i<prices.length;i++){
+            int sellprofit =0;
+            for(int j=0;j<i;j++){
+                sellprofit = Math.max(sellprofit,prices[i] - prices[j] + (j>0?M[j-1]:0)-fee);
+            }
+            M[i] = Math.max(sellprofit, M[i-1]);
+        }
+        return M[prices.length-1];
+    }
+}
+```
+### Code O(N)
+- If we observe the inner loop, we will see the inner loop is just the function of j ```(prices[i] (- prices[j] + M[j-1]))``` (Look at the way the brackets are arranged), which we can precalculate for each outer loop iteration, before it is used.(i.e at the end of the previous outer loop iteration and cache it in the diff variable) 
+
+#### Buy and sell stock with Transaction
+```java
+class Solution {
+    public int maxProfit(int[] prices, int fee) {
+        int[] M = new int[prices.length];
+        M[0]=0;
+        int diff = -prices[0];
+        for(int i=1;i<prices.length;i++){
+            int sellprofit = prices[i]+diff-fee;
+            M[i] = Math.max(sellprofit, M[i-1]);
+            //Calculated at the end for the next loop iteration.
+            diff = Math.max(diff,-prices[i]+M[i-1]);
+        }
+        return M[prices.length-1];
+    }
+}
+```
+
+#### Buy and sell stock with Cooldown
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        if(prices.length==0) return 0;
+        int[] M = new int[prices.length];
+        M[0] = 0;
+        int diff = -prices[0];
+        for(int i=1;i<prices.length;i++){
+            int sellprofit=prices[i]+diff;
+            M[i] = Math.max(M[i-1],sellprofit);
+
+            diff=Math.max(diff,-prices[i]+(i>2?M[i-2]:0));
+        }
+        return M[prices.length-1];
+    }
+}
+```
+
 ## For Questions involving counts
 - Combination Sum IV 
 - Knight Dialer 
@@ -2086,6 +2174,107 @@ public:
 
 ## Day 5
 - Spring Boot Tutorial
+
+## Day 6
+- https://leetcode.com/problems/last-substring-in-lexicographical-order/
+  - //Find the largest Character among all and find it's index this character for sure will be the first character of the last substring.
+  - //Compare for all indices after maxIdx which matches the same character as l, the 2 substrings, starting from maxIdx and with i, if maxIdx is bigger then we continue, else we update maxIdx, if while comparing we reached the end, the bigger substring is the ans.
+
+### Couldn't Solve Optimally
+- https://leetcode.com/problems/reaching-points/submissions/
+
+## Day 7
+- LRU Cache in JAVA
+  - For get
+    - Check if the key exists
+    - Get the key's value in memory
+    - Touch (i.e Remove the key and put the key and value)
+    - Return the value;
+
+  - For put
+    - Check if the map contains the key, if yes touch and return.
+    - If the map doesn't contain the key, then check if the size is equal to capacity, if yes, remove the key
+    - Insert the key and value.
+  - Can use LinkedHashMap for easy implementations
+
+    ```java
+    class LRUCache {
+    
+      LinkedHashMap<Integer, Integer> map;
+      int capacity;
+
+      public LRUCache(int capacity) {
+          map = new LinkedHashMap<>();
+          this.capacity = capacity;
+      }
+      
+      public int get(int key) {
+          if(!map.containsKey(key)) {
+              return -1;
+          }
+          Integer val = map.get(key);
+          map.remove(key);
+          map.put(key,val);
+          return val;
+      }
+      
+      public void put(int key, int value) {
+        if(map.containsKey(key)){
+              map.remove(key);
+              map.put(key,value);
+              return;
+          }
+          if(capacity == map.size()){
+              for(Integer k : map.keySet()){
+                  map.remove(k);
+                  break;
+              }
+          }
+          map.put(key,value);
+      }
+    }
+    ```
+  
+
+### Couldn't Solve Fast Enough
+- https://leetcode.com/problems/sort-colors/
+  - Keep 2 points start and end,
+  - if 0 is encountered swap with start and increment i and start.
+  - If 1 is encountered simply increment i;
+  - If 2 is encountered swap i with the end, and decrement end. (Don't increment i just yet, we need to see if the new item that was swapped with 2's new place).
+  ```java
+    class Solution {
+      
+      void swap(int i,int j, int[] nums){
+          int temp = nums[i];
+          nums[i] = nums[j];
+          nums[j] = temp;
+      }
+      
+      public void sortColors(int[] nums) {
+          int start =0;
+          int end = nums.length-1;
+          int i=0;
+          while(i<=end){
+              if(nums[i] == 0){
+                  swap(i,start,nums);
+                  start++;
+                  i++;
+              }
+              else if(nums[i] == 2){
+                  swap(i,end,nums);
+                  end--;
+              }
+              else{
+                  i++;
+              }
+          }
+      }
+  }
+   ```
+- ### https://leetcode.com/problems/h-index/
+  ### - Sort it in O(n), use counting sort, any number bigger than n can be replaced by n and the result won't change.
+  - Next use binary search to find the h-index.
 
 ## To-Do
 - Trajan's Algorithm for **https://leetcode.com/problems/critical-connections-in-a-network/**

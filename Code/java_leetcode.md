@@ -75,15 +75,56 @@ String x = new String(charArray);
 ## String to Int
 ```Integer.parseInt("123)```
 
-# Sorting an Array
+# Sorting
+## Sorting an Array
+```java
+int[] arrInt = {1,23,4,4,5,-1,63};
+Arrays.sort(arrInt);
+```
 
-# Sorting a Collection
+## Custom Sort an Array of primitives
+- Convert to Boxed
+- Then use Arrays.sort(arr,Comparator)
+```java
+Integer[] citations = Arrays.stream(cit).boxed().toArray(x->new Integer[x]);
+Arrays.sort(citations, (x,y)->(y-x));
+```
 
-# Reversing a Collection
+## Sorting a Collection
+```java
+List<Integer> list = new ArrayList<>(List.of(1,20,-124,24,1,2441,2,1,24,0));
+Collections.sort(list);
+```
+# Reversing
 
-# Searching an Array Binary Search
+## Reversing  a Collection
+```Collections.reverse(list);```
 
-# Searching a Collection Binary Search
+# Searching
+
+## Searching an Array
+```java
+int[] arr = {1,2,3,4,5,6,7,12,4,5352};
+ArrayList<Integer> arrayList = (ArrayList<Integer>) Arrays.stream(arr).boxed().collect(Collectors.toList());
+System.out.println(arrayList.indexOf(5));
+```
+
+## Searching a Sorted Array
+```java
+int[] arr1 = {1,2,3,4,5,6,124,1245,11241};
+System.out.println(Arrays.binarySearch(arr1,11241));
+```
+
+## Searching a Collection
+```java
+ArrayList<Integer> arrayList2 = new ArrayList<>(List.of(1,2,341,12,4,124,12242,24,2,31,1,1));
+System.out.println(arrayList2.indexOf(341));
+```
+
+## Searching a Sorted Collection
+```java
+System.out.println(Collections.binarySearch(arrayList2,125));
+```
 
 # Arrays
 - length : ```arr.length``` (It's a property not a method)
@@ -183,6 +224,23 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
 - Get a Key
   ```map.get(Key)```
 
+## equals, hashCode Contract
+- To have a object as key for HashMap or HashSet you need to override the equals and hashCode Implementation as below
+- Don't forget equals take an Object as the input.
+```java
+  @Override
+  public boolean equals(Object o){
+      Node other = (Node) o;
+      return this.x == other.x && this.y == other.y;
+  }
+
+  @Override
+  public int hashCode(){
+      return x*10+y;
+  }
+```
+    
+
 # HashSet in Java
 - Add in HashSet
   ```set.add(Obj)```
@@ -190,6 +248,34 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
   ```set.contains(Obj)```
 - Remove from HashSet
   ```set.remove(Obj)```
+
+# Map.Entry
+- Get Key
+  ```entry.getKey()```
+- Get Value
+  ```entry.getValue()```
+- Set Value
+  ```entry.setValue(Obj)```
+
+# TreeSet in JAVA
+## How to traverse
+- Use ```set.pollFirst()``` to get the first item and remove it.
+- Use ```set.first()``` to get the first item.
+- Use for each loop for iterating.
+
+## Custom Comparator
+- Look at Key Map Below.
+
+# TreeMap in JAVA
+## How to iterate
+- Same as map using KeySet/EntrySet.
+- Use ```map.pollFirstEntry()``` to get the first item and remove it.
+- Use ```map.firstEntry()``` to get the first Entry in the order set by comparator.
+## Custom Comparator
+- Simply provide a lambda function, since the TreeMap expects the Functional Interface i.e Comparator.
+```java
+TreeMap<Integer, String> map = new TreeMap<>((x,y)->y-x);
+```
 
 # Priority Queue in JAVA
 - Add in Priority Queue
@@ -202,6 +288,21 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
   ```pq.remove(Obj)```
 - Decrease key operation
   - First remove the old Obj and insert the updated value.
+
+# LinkedHashMap for LRU Cache
+- Add an entry
+  ```map.put(key,val)```  -> O(1)
+- Remove an entry
+  ```map.remove(key)```  -> O(1)
+- Get first entry  -> O(1)
+  ```java
+  for(Integer k : map.keySet()){
+    map.remove(k);
+    break;
+  }
+  ```
+- Get the val  -> O(1)
+  ```map.get(key)```
 
 # String
 - ### Remove all occurrences of char from string
@@ -258,6 +359,49 @@ str.contains(substring);
 
 
 # String Builder
+
+# For Custom Objects
+## Implement To String
+```java
+@Override
+public String toString(){
+  return "String Representation"
+}
+```
+
+## HashCode
+- Returns an int.
+```java
+@Override
+public int hashCode() {
+    return super.hashCode();
+}
+```
+
+## Equals
+- Remember equals takes an Object, you need to type cast inside.
+```java
+@Override
+public boolean equals(Object o){
+    Node other = (Node) o;
+    return this.x == other.x && this.y == other.y;
+}
+```
+
+## Implement the Comparable Interface
+- Remember to implement the Comparable<T>, don't use raw types.
+- Remember compareTo returns an int.
+```java
+public class Node implements Comparable<Node>{
+
+@Override
+public int compareTo(Node other){
+  return this.x - other.x;
+}
+
+}
+```
+
 
 # Random in JAVA
 
