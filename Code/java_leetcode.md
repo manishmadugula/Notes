@@ -12,7 +12,7 @@
   - To convert arrays to streams, use ```Arrays.stream(arr)```
 - Opposite of ```boxed()``` is ```mapToInt(i->i)```
 - ### ```toArray()``` can be used to convert List/Stream to Array. The toArray List/Stream requires a generator Function when dealing with Objects like Integer ```(Integer[])arrayList2.toArray(Integer[]::new);```
-  - The Above method reference can also be replaced by a lambda ```value -> new Integer[value]```
+  - The Above method reference can also be replaced by a lambda ```size -> new Integer[size]```
 - ```Arrays.asList(arr)``` can be Used to convert ArrayList to Object Array, but keep in mind you still need to call the constructor of ArrayList
 ## Convert from Primitive Arrays to ArrayList (IMPORTANT)
 ```java

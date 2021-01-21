@@ -1293,6 +1293,7 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
 - Minimum cost for acquiring all coins with k extra coins allowed with every coin 
 - Random number generator in arbitrary probability distribution fashion
 - [Link](https://www.geeksforgeeks.org/prefix-sum-array-implementation-applications-competitive-programming/)
+- https://leetcode.com/problems/subarray-sum-equals-k/
 
 # Index manipulation techniques to solve questions like:
 - See if you can use array indexes to find the missing number.
@@ -1301,6 +1302,7 @@ Ex : ```{10, 20, 10, -5, 15}``` then prefix Sum array becomes : ``` {10,30,40,35
 
 ## Applications
 - Find the smallest positive number missing from an unsorted array (Duplicate and non negative numbers exist in the array) [Link](https://leetcode.com/problems/first-missing-positive/)
+
 
 # Union-Find Disjoint Sets
 - Used to model disjoint sets 

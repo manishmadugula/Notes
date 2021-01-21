@@ -16,9 +16,6 @@
   - It tries to auto configure a lot of stuff.
 - Provides embedded server, health checks, security metrics etc.
 
-
-
-
 # Inversion of Control In Spring
 - One of the main features of the Spring framework is the IoC (Inversion of Control) container. The Spring IoC container is responsible for managing the objects of an application. It uses dependency injection to achieve inversion of control.
 - The interfaces BeanFactory and ApplicationContext represent the Spring IoC container. Here, BeanFactory is the root interface for accessing the Spring container. It provides basic functionalities for managing beans.
@@ -77,7 +74,10 @@
 
 ## Types of DI
 ### Constructor Injection
-- Constructed object is immutable and returned to the client in a fully initialized state.
+- Constructed object is immutable and returned to the client in a fully initialized state. Once the dependencies are set they cannot be changed.
+- For mandatory dependencies or when aiming for immutability, use constructor injection
+-  You do not need any mocking library or a Spring context in unit tests. You can create an object that you want to test with the new keyword. Such tests are always faster because they not rely on the reflection mechanism.
+- People are more reluctant to add more dependencies to a constructor than via fields. 
 - Higher chance to have circular dependencies, so-called chicken-and-egg scenario.
 ```java
 @Autowired
@@ -90,6 +90,11 @@ public DependentService(Service1 service1,
 ### Property Injection/ Field Injection
 - Easy to use, no constructors or setters required
 - No immutability — the same as for setter injection.
+- Avoid field injection in most cases
+- Works through reflection
+- Your classes cannot be instantiated (for example in unit tests) without reflection. You need the DI container to instantiate them, which makes your tests more like integration tests
+- Your real dependencies are hidden from the outside and are not reflected in your interface (either constructors or methods)
+- It is really easy to have like ten dependencies. If you were using constructor injection, you would have a constructor with ten arguments, which would signal that something is fishy. But you can add injected fields using field injection indefinitely. Having too many dependencies is a red flag that the class usually does more than one thing, and that it may violate the Single Responsibility Principle.
 ```java
 @Autowired
 private Service1 service1;
@@ -97,7 +102,7 @@ private Service1 service1;
 ### Method Injection/ Setter Injection
 - Flexibility in dependency resolution or object reconfiguration, it can be done anytime. Plus, this freedom solves the circular dependency issue of constructor injection.
 - Null checks are required, because dependencies may not be set at the moment.
-
+- For optional or changeable dependencies, use setter injection
 
 ```java
 @Autowired
@@ -182,6 +187,12 @@ public class SwaggerConfig {
 @Repository
 - Component which interacts with DB.
 
+@Resource
+
+@Injection
+
+@ConfigurationProperties
+
 ## Spring Boot Annotations
 @SpringBootApplication
 - ComponentScan runs in same package
@@ -220,7 +231,7 @@ public class SwaggerConfig {
 -
 - Default Scope is Singleton
 
-
+## Disposible Bean
 
 ## Dispatcher Servlet vs Request Dispatcher
 ### Dispatcher Servlet
@@ -432,6 +443,40 @@ PersonV2 getPersonVersion2ContentNegotation(){
 }
 ```
 
+# Spring CLOUD
+- Provides a range of solution for configuration management, service discovery, circuit breakers, intelligent routing, control bus, one time token, global locks, leader election, distributed sessions, cluster state, microproxy.
+
+## Microservices
+- RESTFUL
+- Small well chosen deployable units with well defined bounded contexts.
+- Cloud Enabled, scale well
+- Decoupled so can swap various components and not affect the entire system if contracts are respected.
+- Adaption of new technologies easily
+- Dynamic Scaling and cost efficiency
+- Faster Release Cycles
+
+### Challenges
+- Choosing Bounded Contexts
+- Service Discovery (Eureka)
+- Configuration Management (Spring Cloud Configuration Server)
+  - We have multiple microservices and multiple instances in each environments and multiple environments, so lots of configurations
+- Dynamic Scale up and scale down. (Ribbon Load Balancing)
+- Visibility 
+  - Monitoring the microservices (Netflix API Gateway)
+  - Centralized logging (Zipkin Distributed Tracing)
+  - Debugging
+- Cascading Failures/ Fault Tolerance (Hystrix and Resilence4j)
+
+## Dynamic Port in the response
+- Spring provides Environment Bean, which can extract environment variables.
+
+## Run multiple instances of the same service in intelliJ/Eclipse
+- Add a duplicate configuration and in the VM Properties provide ```-Dserver.port=some_custom_port``` and so on.
+
+
+## Call another microservice from inside one microservice
+- REST Template.
+
 # Important Jars
 - spring-boot-starter-web
   - Starter for building web, including RESTful, applications using Spring MVC. Uses Tomcat as the default embedded container
@@ -464,6 +509,22 @@ PersonV2 getPersonVersion2ContentNegotation(){
 - ServletUriComponentBUILDER
 - ResponseEntity
 - ResponseEntityExceptionHandler
+- ControllerAdvice
+- Delayed Writing
+- Persistent Context
+- Lazy Loading with and without transaction
+- Keep SQL Log Open
+- Criteria RP
+- Spring DATA JPA
+  - Ease of CRUD
+  - Query Derivation
+  - Annotated Query
+  - Paging Pagetable
+  - Slice vs Page
+  - Projections
+  - Proxy being returned
+  - Query By example
+  - Example Interface
 
 # Old Notes
 - Lifecycle hooks vs constructor

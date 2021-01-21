@@ -10,7 +10,6 @@
   - On demand provisioning
   - Context bound and data separation
 
-
 ## Challenges - Dependency
 ### Intra Service communications
 - Network Latency
@@ -750,6 +749,26 @@ Kibana is an open-source data visualization and exploration tool for reviewing l
 ## GET Request
 - Not to be used for sending passwords, because GET ideally doesn't have a body and the URL is not encrypted so passwords will be visible to anyone snooping.
 
+## POST Request
+- 
+
+## Richardson Maturity Model
+- First level -> Expose SOAP Services like REST 
+- Second level -> Using URI to locate resources
+- Third level -> Second Level + Using REST Verbs
+- Fourth level -> Third Level +Using HATEOS
+
+## Best Practises
+- Consumer First
+- Great Documentations : Swagger
+- Best use of HTTP (Verbs)
+- Proper Response Status
+ ![](res/response-status.jpg)
+- No secure info should be in URI
+- Use plurals Prefer /users/1 to /user/1
+- Use noun for resources
+  - For exceptions, use consistent approach
+
 ## REST vs SOAP vs HTTP
 ### REST
 - REST is an architectural style. (Standardized URL Scheme)
@@ -791,6 +810,16 @@ soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
 
 </soap:Envelope>
 ```
+
+# Git
+
+## Git Hooks
+- Git has a way to fire off custom scripts when certain important actions occur.
+- There are two groups of these hooks: client-side and server-side. Client-side hooks are triggered by operations such as committing and merging, while server-side hooks run on network operations such as receiving pushed commits.
+- They let you customize Git's internal behavior and trigger customizable actions at key points in the development lifecycle.
+
+# 12 Factor App
+![](res/12_factor_app.jpg)
 
 
 # Check these algorithms
