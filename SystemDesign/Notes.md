@@ -821,6 +821,14 @@ soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
 # 12 Factor App
 ![](res/12_factor_app.jpg)
 
+# Strangler Pattern to Migrate to Microservices
+- Initially, all application traffic is routed to the legacy application.
+- Once the new component is built, you can test your new functionality in parallel against the existing monolithic code.
+- Both the monolith and the newly built component need to be functional for a period of time. Sometimes the transitional phase can last for an extended duration.
+- When the new component has been incrementally developed and tested, you can get rid of the legacy monolithic application.
+- If there are components which are better suited for the cloud and have scalability requirements, then start with one of those components.
+- If there is a component which has good test coverage and less technical debt associated with it, starting with this component can give teams a lot of confidence during the migration process.
+- If there is a component which has frequent business requirements and hence needs to be deployed a lot more regularly, you can start with that component. 
 
 # Check these algorithms
 - Count Min Sketch
