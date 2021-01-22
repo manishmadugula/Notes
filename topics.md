@@ -79,3 +79,13 @@
 
 # Articles
 - https://medium.com/@yashgirdhar/11-companies-55-interviews-9-offers-including-google-and-amazon-heres-what-i-have-to-share-293852c1c98f
+
+## Yashigirdhar Notes
+- https://hpbn.co/ (Networking 101)
+- https://github.com/yashasvigirdhar/Interview-Preparation/blob/master/java/Java.md (JAVA Notes)
+- https://www.google.com/search?q=Why+collections+don%E2%80%99t+allow+primitives&oq=Why+collections+don%E2%80%99t+allow+primitives&aqs=chrome..69i57&sourceid=chrome&ie=UTF-8
+- https://www.google.com/search?q=How+enums+work&oq=How+enums+work&aqs=chrome..69i57&sourceid=chrome&ie=UTF-8
+- https://www.google.com/search?q=How+can+you+break+Singleton+pattern+in+java&oq=How+can+you+break+Singleton+pattern+in+java&aqs=chrome..69i57&sourceid=chrome&ie=UTF-8
+- https://www.google.com/search?q=Fail-fast+iterators&oq=Fail-fast+iterators&aqs=chrome..69i57&sourceid=chrome&ie=UTF-8
+- https://www.themuse.com/advice/star-interview-method
+- https://medium.com/@yashgirdhar/intuition-behind-largest-subsequence-problems-3f82c8b4ba41

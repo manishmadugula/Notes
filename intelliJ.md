@@ -2,7 +2,9 @@
 - **Alt + 1 : Open project's pane**
 - Alt + 4 : Open run pane
 - Alt + 5 : Open debug pane
--  **Shift + Esc (While a pane is opened) : To close all panes**
+-  **Shift + Esc (While a pane is opened) : To close the panes**
+-  **Ctrl + Shift + F12 : To hide all the panes** 
+   -  or use the Quick Search Double Shift and hide all windows
 
 
 # Refactor

@@ -64,6 +64,7 @@ New-To-do
   - Algoexpert vids
   - educative-io lessons
   - Salary Negotitations
+  - STAR
 
 To-Do
 - DS Algo (6 months)

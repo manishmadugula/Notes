@@ -12,14 +12,18 @@
 ```
 - maven reads the parent POM from your local repository (or proxies like nexus) and creates an 'effective POM' by merging the information from parent and module POM.
 -  reason to use a parent is that you have a central place to store information about versions of artifacts, compiler-settings etc. that should be used in all modules.
+### Scope
+- Affects if the dependency is added to final executable, say test scope is not included in final build.
+```<scope>test</scope>```
 
-# JUnit
-- See how to write test cases in JUnit.
-- Test driven code is writing testcase first and then write the code to pass those test cases.
+### Surefire Pligin
+- Maven will run the test at the end of the build
 
 # Testing
 
 ## Test Driven Design
+- Test driven code is writing testcase first and then write the code to pass those test cases.
+- You stub a method and then you pass the actual use cases for each test and then you see the red bar.
 ![](res/tdd.jpg)
 
 ## White,Black and Grey box Testing
@@ -87,6 +91,333 @@ Partially Knowledge of the internal working structure is required.
 - Stubs don't fail your tests, mock can.
 - a dummy piece of code, that you VERIFY is called correctly as part of the test.
 
+# JUnit 5
+
+## Why we need testing framework?
+- Runs the test (without the main)
+- Verifies the result using lot of Assert and Verify methods
+- Alerts the user if something is wrong
+- JUnit can also act as a runner which runs using one test command. Not recommended a hack
+
+## Why JUnit 5? What was wrong with JUnit 4
+- More than 10 year olds
+- Need to be updated for Java 8
+- Need to be updated for new testing features.
+- Monolithic Jar architecture.
+- Bugs Piled up
+
+## Junit Architecture
+
+### Jupiter  (Jupiter API)
+- Primary API used in JUnit5
+- 5th Planet in solar system
+### Platform (Jupiter Engine)
+- Has the core functionality of JUnit5, the actual test engine.
+
+### Vintage
+- API used for older JUnit tests. To run the existing tests.
+
+### Extension
+- Provide your own extension and use the platform to run your test.
+
+### Advantages of this architecture
+- don't need all modules at once, if you only want to use new api just import jupiter and platform.
+
+## @Test
+- Used to tell JUnit the method is a test method and tells it to run it.
+```java
+@Test
+public void sampleMethodTestSuccessful(){
+System.out.println("Initializing Tests");
+Mockito.when(simpleDependency.getNameById("2")).thenReturn("Manish");
+Mockito.when(simpleDependency.getAddressForName("Manish")).thenReturn("MVV Ozone");
+assertEquals(new User("anish","MVV Ozone"),sampleService.sampleMethod("2"),"The User fetched is wrong");
+}
+```
+
+## @RepeatedTest
+- Might be useful for race condition testing (intemittent issues).
+- The test will be repeated mulitple times.
+```@RepeatedTest(4)```
+- when a test has some randomness.
+- ping as a repeated test
+
+## @Order
+- This is antipattern
+- The methods will run one after the other based on order.
+
+### Steps
+- Create an instance of the class, maybe using dependency injection
+- Setup Inputs
+- Run the code you want to test
+- Verify that the result is expected.
+
+## Assertion
+- We don't want to use if and do System.out.println, instead we use JUnit's way of telling user something wrong has happened.
+- The following are the methods used for this assertion
+- In all the below methods, we can pass a string as an argument to tell the reason of failure.
+### assertEquals
+- Compares the expected value with the returned value
+- ### It is good practise to add message with assertion
+```java
+assertEquals(new User("anish","MVV Ozone"),sampleService.sampleMethod("2"),
+"The User fetched is wrong");
+
+```
+
+### assertArrayEquals
+- Compares the value inside the array
+
+### assertIterableEquals
+- Compares the value that the iterable spits out.
+
+### assertFalse
+- Asserts if the condition is passed or not and takes a messages as a parameter
+
+### assertTrue
+- same as above for true.
+
+### assertNotEquals
+
+### assertNull
+
+### assertNotNull
+
+### fail
+- Simply fails the test no matter what happens, if the execution reaches this line.
+- You can use fail to fail the test where you don't want the execution path to reach.
+
+### assertAll
+- Runs a bunch of assertion at once.
+- new to JUnit 5, because we can use Lambdas
+```java
+assertAll(
+    ()->assertEquals(3,mathUtils.multiply(3,1)),
+    ()->assertEquals(2,mathUtils.multiply(2,1)),
+    ()->assertEquals(1,mathUtils.multiply(1,1)),
+    ()->assertEquals(2,mathUtils.multiply(2,1)),
+    ()->assertEquals(4,mathUtils.multiply(4,1)),
+);
+```
+- Kind of like an OR for the Assert.
+
+### assertThrows(ExceptionType, Executable)
+
+## Test Life Cycle
+- JUnit manages the lifecycle of the Test Classes.
+- JUnit gives us hooks to run code before and after the test has run.
+- JUnit creates a new class instance for each test run if initialized 
+- ### JUnit 5 creates a new instance of the test class for every test method run. This makes each test independent of the order in which other tests ran (else other test would have modified the state).
+
+### Hooks
+#### @BeforeAll
+- Runs before any test ran
+- Method has to be static, since these methods run before any instance of Test class is created.
+#### @AfterAll
+- Runs after all test ran
+- Method has to be static, same reason as above.
+```java
+@AfterEach
+void cleanUp(){
+    ...
+}
+```
+
+#### @BeforeEach
+- Runs before every test
+```java
+@BeforeEach
+void init(){
+    
+}
+```
+#### @AfterEach
+- Runs after every test
+
+## Annotation for Scaling
+
+### @DisplayName
+- To have a plain english description of each test rather than identifying test by method name.
+- Good coding convention
+```@DisplayName("Sample Method Test")```
+
+### @Disabled
+- In Test Driven Development, your work in progress will fail so in order to build the project just disable the method.
+
+## Conditional Execution
+- Similar to disabled but only on certain environments.
+### @EnabledOnOs(OS.LINUX)
+### @EnabledOnJRE(JRE.JAVA_11)
+### @EnabledIfEnvironmentVariable
+
+## Nested Test Classes 
+- Use @Nested Annotation
+- Useful for grouping tests, within the Test class. 
+```java
+class MathTest{
+    @Nested
+    class AddTest{
+        ...
+    }
+}
+```
+- You can use display name in combination with nested class to provide readable english sentences to say what the test describes
+```java
+@DisplayName("Math Utils Test")
+class MathTest{
+    
+    @Nested
+    @DisplayName("add method : ")
+    class AddTest{
+        
+        @Test
+        @DisplayName("when adding 2 positive number")
+        void testAddPositive(){
+            assertEquals(-2, mathUtils.add(-1,-1),"should return the right sum");
+        }
+    }
+}
+```
+
+## Assumption
+- Programmatic control for enabling and disabling tests
+```java
+@Test
+public void sampleTest(){
+    assumeTrue(isServerUp());
+    //Won't run if the server is down.
+}
+```
+## JUnit 5 Dependency Injection
+### TestInfo
+- Gives information about the test.
+### TestReporter
+- Lets you log the information into the test report
+
+## Extras
+
+### @Tag
+- Lets the runner (Eclipse, Maven) to include the test with tags or exclude the test with tag.
+
+
+# Mockito
+- Useful when we want to mock the classes/methods we don't want to test.
+- We create a dummy response for the mocked object
+
+## @MockBean
+- Let us define the bean as the dummy/ mocked bean
+- It allows to add Mockito mocks in a Spring ApplicationContext.
+
+## @SpyBean
+- You can choose which methods give dummy response and which methods will give actual response
+- Somewhere in between Mock and Autowired
+![](res/mockito_spy_mock.jpg)
+
+## @InjectMocks
+- creates an instance of the class and injects the mocks that are created with the @Mock (or @Spy) annotations into this instance.
+
+## When thenReturn
+- Let's us return dummy response
+```java
+Mockito.when(simpleDependency.getNameById("2"))
+.thenReturn("Manish");
+```
+
+## Matching Arguments
+### AdditionalMatchers
+- Let us limit the returned dummy to specific arguments
+- gt (greater than), find,not,lt, leq,geq etc,
+```java
+Mockito.when(service.someMethod(AdditionalMatchers.gt(4)))
+.thenReturn("Some Return val");
+```
+### Mockito.anyString() and Mockito.any(Type.class)
+```java
+Mockito.when(service.someMethod(Mockito.any(Integer.clas)))
+.thenReturn("Some Val");
+``` 
+
+## Verify 
+- Allows us to verify if some interaction has been done or not and other use cases.
+- The below code verifies if someDummyMethod has been called twice, else test fails
+```java
+Mockito.verify(someDummyClass, Mockito.times(2))
+.someDummyMethod();
+```
+
+### Usecases
+#### verify simple invocation on mock
+```verify(mockedList).size();```
+#### verify number of interactions with mock
+```verify(mockedList, times(1)).size();```
+#### verify no interaction with the whole mock occurred
+```verifyZeroInteractions(mockedList);```
+#### verify no interaction with a specific method occurred
+```verify(mockedList, times(0)).size();```
+#### verify order of interactions : Using InOrder
+```java
+InOrder inOrder = Mockito.inOrder(mockedList);
+inOrder.verify(mockedList).size();
+inOrder.verify(mockedList).add("a parameter");
+inOrder.verify(mockedList).clear();
+```
+#### verify an interaction has occurred at least certain number of times
+```verify(mockedList, atLeast(1)).clear();```
+#### verify interaction with exact argument
+```verify(mockedList).add("test");```
+#### verify interaction with flexible/any argument
+```verify(mockedList).add(anyString());```
+- Can also use AdditionalMatcher here like in when.
+#### verify interaction using argument capture
+- ArgumentCaptor allows us to capture an argument passed to a method in order to inspect it. 
+```java
+ArgumentCaptor<List> argumentCaptor = ArgumentCaptor.forClass(List.class);
+verify(mockedList).addAll(argumentCaptor.capture());
+List<String> capturedArgument = argumentCaptor.<List<String>> getValue();
+assertEquals(true, capturedArgument.hasItem("someElement"));
+```
+
+# Spring Test Framework
+
+## @ContextConfiguration (GENERAL WAY)
+- Don't load up the entire spring application(all the classes) in test run, just ones I require.
+- You need @EnableWith(SpringExtention.class) annotation too.
+
+```java
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {SampleService.class})
+public class SampleServiceTest {
+
+    @Autowired
+    private SampleService sampleService;
+
+    @MockBean
+    private SimpleDependency simpleDependency;
+
+    @Test
+    @DisplayName("Sample Method Test")
+    public void sampleMethodTestSuccessful(){
+        System.out.println("Initializing Tests");
+        Mockito.when(simpleDependency.getNameById("2")).thenReturn("Manish");
+        Mockito.when(simpleDependency.getAddressForName("Manish")).thenReturn("AP");
+        assertEquals(new User("Manish","AP"),sampleService.sampleMethod("2"),"The User fetched is wrong");
+    }
+    @Test
+    public void divideByZeroTestException(){
+        Mockito.when(simpleDependency.getNameById("2")).thenReturn("Manish");
+        Mockito.when(simpleDependency.getAddressForName("Manish")).thenReturn("MVV Ozone");
+        assertThrows(ArithmeticException.class,()->sampleService.divide(1,0), "Divide by zero didn't throw exception");
+    }
+}
+
+```
+## @SpringBootTest
+- Will load up the entire spring application before running the test.
+- Creates all the beans in the application
+- Has @EnableWith(SpringExtention.class) inside it.
+
+## @WebMvcTest
+-  for testing the controller layer and you need to provide remaining dependencies required using Mock Objects.
 
 # JDBC
 - JDBC is a standard for connecting to a DB directly and running SQL against it 
