@@ -58,6 +58,8 @@ Partially Knowledge of the internal working structure is required.
 - top level modules are tested with lower level modules at the same time lower modules are integrated with top modules and tested as a system.
 
 ## Unit Testing
+- See JUnit 5
+
 
 ## Smoke Testing
 - Smoke Testing is a software testing process that determines whether the deployed software build is stable or not. Smoke testing is a confirmation for QA team to proceed with further software testing. It consists of a minimal set of tests run on each build to test software functionalities. Smoke testing is also known as "Build Verification Testing" or “Confidence Testing.”
@@ -90,6 +92,14 @@ Partially Knowledge of the internal working structure is required.
 - A mock is something that as part of your test you have to setup with your expectations. A mock is not setup in a predetermined way so you have code that does it in your test. Mocks in a way are determined at runtime since the code that sets the expectations has to run before they do anything.
 - Stubs don't fail your tests, mock can.
 - a dummy piece of code, that you VERIFY is called correctly as part of the test.
+
+## Integration Test
+- Too many mocks go for integration tests
+- Mocking hides bugs since the mock might not be in sync with real class
+- Use H2 for unit testing with compatibility model
+- Test containers in @Before All
+### MockRestServiceServer
+- Used to mock real server
 
 # JUnit 5
 
@@ -288,6 +298,7 @@ public void sampleTest(){
     //Won't run if the server is down.
 }
 ```
+- Assumethat is useful in case of rate limited requests in api for integration test
 ## JUnit 5 Dependency Injection
 ### TestInfo
 - Gives information about the test.
@@ -411,13 +422,31 @@ public class SampleServiceTest {
 }
 
 ```
+
+## Context Caching
+- Spring Test provides a mechanism to cache an already started application context and reuse it for subsequent tests. 
 ## @SpringBootTest
 - Will load up the entire spring application before running the test.
 - Creates all the beans in the application
 - Has @EnableWith(SpringExtention.class) inside it.
 
-## @WebMvcTest
+
+## Testing Slice
+- Spring Boot offers great support to test different slices (web, database, etc.) of your application.
+- This allows you to write tests for specific parts of your application in isolation without bootstrapping the whole Spring Context. 
+- Technically this is achieved by creating a Spring Context with only a subset of beans by applying only specific auto-configurations.
+
+### @WebMvcTest
 -  for testing the controller layer and you need to provide remaining dependencies required using Mock Objects.
+-  @Controller, @ControllerAdvice, @JsonComponent, Converter, Filter, WebMvcConfigurer
+
+### @DataJpaTest
+-  you can test any JPA related parts of your application
+-  @Repository, EntityManager, TestEntityManager, DataSource
+
+### @JdbcTest
+- JdbcTemplate, DataSource
+
 
 # JDBC
 - JDBC is a standard for connecting to a DB directly and running SQL against it 

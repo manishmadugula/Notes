@@ -1029,6 +1029,26 @@ PersonV2 getPersonVersion2ContentNegotation(){
 }
 ```
 
+## Logging
+- Use SLF4J as a Facade so your library can be independent of any actual library which is used.
+- Logback is slightly more popular
+- But Log4J2 has better features like Lazy loading messages with lamdas and Async logging.
+- Proper logging framework lets you assign categories to logs, decide where the log goes(file, console, database, mail etc) so they are better than System.out.println
+- Spring Boot uses LogBack.
+- Lets you add additional patterns before and after the log like timing information etc.
+### SF4J
+- Default loglevel is info, any thing below info doesn't show by default
+- The logging levels used are ERROR, WARN, INFO, DEBUG, TRACE
+- LoggerFactory to get the actual Logger.
+#### Parameterized logging
+- You can use placeholder as below
+  ```java
+  Logger logger = LoggerFactory.getLogger(SomeRandomClass.class)
+
+  //we can then call logger as follows
+  logger.info("At the age of {} ramu got his first job as a {} at {}", age, designation, company);
+  ```
+
 # Spring CLOUD
 - Provides a range of solution for configuration management, service discovery, circuit breakers, intelligent routing, control bus, one time token, global locks, leader election, distributed sessions, cluster state, microproxy.
 
@@ -1053,15 +1073,267 @@ PersonV2 getPersonVersion2ContentNegotation(){
   - Debugging
 - Cascading Failures/ Fault Tolerance (Hystrix and Resilence4j)
 
+## Good practises
+### Configuration-
+- setup application name and server.port
+
 ## Dynamic Port in the response
 - Spring provides Environment Bean, which can extract environment variables.
+
+## Configuration
+- Use Spring Cloud Configuration Server
+- Spring Cloud Configuration Client in all the microservices and there is one Spring Cloud Configuration Server
+
+### Spring Cloud Configuration Server
+- Spring Cloud Configuration Server has the location of a git repository with all the configurations : service.properties, service-dev.properties, service-qa.properties etc for each environment.
+- It also has @EnableConfigServer annotation along with maven dependency
 
 ## Run multiple instances of the same service in intelliJ/Eclipse
 - Add a duplicate configuration and in the VM Properties provide ```-Dserver.port=some_custom_port``` and so on.
 
+### Spring Cloud Configuration Client
+- There is a Spring Component in each microservice which holds all the configuraiton information it gets from the config server.
+- Sample Configuration File in Client
+  ```java
+    import org.springframework.boot.context.properties.ConfigurationProperties;
+    import org.springframework.stereotype.Component;
+
+    @Component
+    @ConfigurationProperties("limits-service")
+    public class Configuration {
+      private int minimum;
+      private int maximum;
+
+      public int getMinimum() {
+        return minimum;
+      }
+
+      public void setMinimum(int minimum) {
+        this.minimum = minimum;
+      }
+
+      public int getMaximum() {
+        return maximum;
+      }
+
+      public void setMaximum(int maximum) {
+        this.maximum = maximum;
+      }
+
+    }
+  ```
+- This component is then injected wherever the configuration has to be used.
 
 ## Call another microservice from inside one microservice
-- REST Template.
+
+### Using RestTemplate
+- The RestTemplate class is designed on the same principles as the many other Spring Template classes (e.g., JdbcTemplate, JmsTemplate ), providing a simplified approach with default behaviors for performing complex tasks.
+```java
+private static void getEmployees()
+{
+    final String uri = "http://localhost:8080/springrestexample/employees";
+    //TODO: Autowire the RestTemplate in all the examples
+    RestTemplate restTemplate = new RestTemplate();
+    String result = restTemplate.getForObject(uri, String.class);
+    System.out.println(result);
+}
+```
+
+#### GET
+- getForObject() : returns the representation found in the response as given class type.
+- getForEntity() : returns the response as ResponseEntity. (See post example)
+```java
+private static void getEmployeeById()
+{
+    final String uri = "http://localhost:8080/springrestexample/employees/{id}";
+    RestTemplate restTemplate = new RestTemplate();
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("id", "1");
+    EmployeeVO result = restTemplate.getForObject(uri, EmployeeVO.class, params);
+    //Use the result
+}
+```
+
+#### POST 
+- postForObject(url, request, classType)
+- postForEntity(url, request, responseType) 
+- postForLocation(url, request, responseType) (returns the value of the Location header.)
+```java
+private static void createEmployee()
+{
+    final String uri = "http://localhost:8080/springrestexample/employees";
+    RestTemplate restTemplate = new RestTemplate();
+    EmployeeVO newEmployee = new EmployeeVO(-1, "Adam", "Gilly", "test@email.com");
+    EmployeeVO result = restTemplate.postForObject( uri, newEmployee, EmployeeVO.class);
+    System.out.println(result);
+}
+```
+
+#### PUT API
+- put(url, request, params)
+
+#### DELETE API
+- delete(url, params)
+
+
+
+### Feign Client (Preferred Way)
+- Declarative rest client
+- Feign is a declarative web service client. It makes writing web service clients easier. To use Feign create an interface and annotate it. 
+#### Steps to include
+- Add @EnableFeignClients in the main application which annotates @SpringBootApplication
+- Implement the FeignRestClient Interface
+  ```java
+  @FeignClient(name="stores", url="/stores") // Name is used to create a Ribbon load Balancer
+  public interface StoreClient {
+      @RequestMapping(method = RequestMethod.GET, value = "/stores")
+      List<Store> getStores();
+
+      @RequestMapping(method = RequestMethod.POST, value = "/stores/{storeId}", consumes = "application/json")
+      Store update(@PathVariable("storeId") Long storeId, Store store);
+  }
+  ```
+### WebClient 
+- Asynchronous Alternative to RestTemplate
+
+## Service Registry
+- All the microservices will register themselves with the Naming Server or the Service Registry.
+- We use Eureka Server and Client for Service Discovery
+
+### Eureka Server
+- Add @EnableEurekaServer
+
+### Eureka Client
+- Just add Eureka Client Dependency and configure the naming server url.
+
+## Loadbalancing from various microservices
+
+### Client Side Load Balancing
+- Feign Client has integration with Eureka so it will just start working and perform load balancing.
+- Previously ribbon was being used, but now feign uses spring cloud load balancer to implement client side load balancing.
+
+### Server Side Load Balancing
+- Use API Gateway.
+
+## API Gateway
+- To perform cross cutting concerns like:
+  - Server Load Balancing
+  - Security
+  - Monitoring/Metrics
+  - Resilency
+  - Authentication
+  - Authorization
+  - Logging
+  - Rate Limiting
+
+- Recommended version for API Gateway is now Spring Cloud API Gateway
+- In older version of Spring cloud, Zuul was being used
+
+### Spring Cloud API Gateway
+- Uses Eureka to discover services and register eureka server url in application.properties file.
+- You can then call the Cloud API Gateway directly and get access to the internal microservices
+- Used on top of Spring Web Flux.
+- ```www.dev.apps.company.com/name_of_service/rest_of_url```
+  - Here ```www.dev.apps.company.com``` can point to the api gateway and the route to target server can be calculated by API Gateway using the Eureka Server.
+  - Make sure the name_of_service is same as the application name registered in Eureka Server.
+#### Routing
+- Custom Route Mapping can also be configured in the API Gateway, and the header and security information can be added before moving the request forward.
+- You can match request based on any request attribute, header, pathvariable, query parameters etc.
+- This is done using the RouteLocatorBuilder.
+```java
+@Configuration
+public class ApiGatewayConfiguration {
+	
+	@Bean
+	public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
+		return builder.routes()
+				.route(p -> p.path("/get")
+						.filters(f -> f
+								.addRequestHeader("MyHeader", "MyURI")
+								.addRequestParameter("Param", "MyValue"))
+						.uri("http://httpbin.org:80"))
+				.route(p -> p.path("/currency-exchange/**")
+						.uri("lb://currency-exchange"))
+				.route(p -> p.path("/currency-conversion/**")
+						.uri("lb://currency-conversion"))
+				.route(p -> p.path("/currency-conversion-feign/**")
+						.uri("lb://currency-conversion"))
+				.route(p -> p.path("/currency-conversion-new/**")
+						.filters(f -> f.rewritePath(
+								"/currency-conversion-new/(?<segment>.*)", 
+								"/currency-conversion-feign/${segment}"))
+						.uri("lb://currency-conversion"))
+				.build();
+	}
+```
+- As you can see ```.uri("lb://currency-exchange"))``` lb stands for talk to eureka server and load balance on the servers returned.
+
+#### Filters
+- You can add logging using filter and chaining filters.
+- Also authentication can be implemented using the filters.
+- You can also add filters on the response which is recieved.
+
+## Resilency in Microservices
+- How to deal with cascading failures.
+### resilience4j
+- Inspired by Hystrix
+- Supports Java 8 unlike Hystrix 
+
+### Retry Response
+#### @Retry
+- It is added in the REST API, incase the current controller API fails then retry.
+
+#### Fallback Response
+- In case of even after the retry, we can return a fallback response
+- Fallback method should take one Exception argument.
+
+#### Exponential Backoff
+- We can configure the interval before retry which increases each time.
+
+
+### Circuit Breaker Pattern
+- If lot of api calls fail you can return the response without even calling the controller method.
+- The circuit breaker has 3 states
+  - Open (Service is down Reject all requests)
+  - Closed (Service is up so all services are accepted)
+  - Half Open (Test if a service is up, some services are accepted)
+- The circuit breaker opens if failure rate is above a certain percentage
+- Any call above a specific time is treated as slow, if a certain percentage of requests are slow then also the circuit opens.
+- If the Circuit is open, circuit breaker will wait a certain time and go to half open state.
+
+```java
+@RestController
+public class CircuitBreakerController {
+	
+	private Logger logger = 
+				LoggerFactory.getLogger(CircuitBreakerController.class);
+	
+	@GetMapping("/sample-api")
+	@Retry(name = "sample-api", fallbackMethod = "hardcodedResponse")
+	@CircuitBreaker(name = "default", fallbackMethod = "hardcodedResponse")
+	public String sampleApi() {
+		return "sample-api";
+	}
+	
+	public String hardcodedResponse(Exception ex) {
+		return "fallback-response";
+	}
+}
+```
+
+
+### Rate Limiting
+- Only allow a specific amount of calls to this API at a certain period of time(Refresh period) ```@RateLimiter(name="default")```
+- Configure the properties of Rate Limiting in application.properties.
+
+### Bulkhead Pattern
+- Max Concurrent Calls to the API is configured using BulkHead Annotation, specific limits per API can also be configured.
+
+## Distributed Tracing
+- We use Zipkin Server to push all the tracing information to a database and also analyze the logs.
+- Sleuth is used to provide a unique trace id which can be traced across multiple microservice for a single request.
+- A rabbit MQ can exisit between microservices and zipkin server, in case zipkin server goes down. 
+
 
 # Important Jars
 - spring-boot-starter-web
