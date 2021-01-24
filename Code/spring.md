@@ -90,11 +90,20 @@
 
 ## Types of DI
 ### Constructor Injection
-- Constructed object is immutable and returned to the client in a fully initialized state. Once the dependencies are set they cannot be changed.
-- For mandatory dependencies or when aiming for immutability, use constructor injection
+
+#### Readability
+- Constructors visually stand separate from methods.
+#### Immutability (State cannot be modified after creation)
+- Supports immutability.
+#### State Safety ()
+- In most cases all the injections are state safe since spring handles their creation, but if the object is created using new say, in a test framework there will be problems in other forms of injection
+- Constructor Injection is state safe i.e The object is instantiated to a full state or is not instantiated at all.
 -  You do not need any mocking library or a Spring context in unit tests. You can create an object that you want to test with the new keyword. Such tests are always faster because they not rely on the reflection mechanism.
+#### Too Many Instance Fields (Actually an Advantage)
 - People are more reluctant to add more dependencies to a constructor than via fields. 
+#### Circulary Dependency
 - Higher chance to have circular dependencies, so-called chicken-and-egg scenario.
+#### Usage
 ```java
 @Autowired
 public DependentService(Service1 service1, 
@@ -104,21 +113,37 @@ public DependentService(Service1 service1,
 }
 ```
 ### Property Injection/ Field Injection
-- Easy to use, no constructors or setters required
-- No immutability — the same as for setter injection.
 - Avoid field injection in most cases
-- Works through reflection
-- Your classes cannot be instantiated (for example in unit tests) without reflection. You need the DI container to instantiate them, which makes your tests more like integration tests
+#### Readability
+- Less boilerplate code. Focus is on business logic.
+- Easy to use, no constructors or setters required
+
+#### Immutablity
+- No immutability — the same as for setter injection.
+#### State Safety
+-  There is no valid way to set state of the object. Only option is to use Reflection to set the private fields. (for example in unit tests)
+- You need the DI container to instantiate them, which makes your tests more like integration tests harder
 - Your real dependencies are hidden from the outside and are not reflected in your interface (either constructors or methods)
+#### Too Many Instance Fields 
 - It is really easy to have like ten dependencies. If you were using constructor injection, you would have a constructor with ten arguments, which would signal that something is fishy. But you can add injected fields using field injection indefinitely. Having too many dependencies is a red flag that the class usually does more than one thing, and that it may violate the Single Responsibility Principle.
+#### Usage
 ```java
 @Autowired
 private Service1 service1;
 ```
 ### Method Injection/ Setter Injection
-- Flexibility in dependency resolution or object reconfiguration, it can be done anytime. Plus, this freedom solves the circular dependency issue of constructor injection.
-- Null checks are required, because dependencies may not be set at the moment.
 - For optional or changeable dependencies, use setter injection
+#### Readability
+- Worst for readability, Takes away focus form business methods.
+#### Immutability
+- No immutability.
+#### State Safety
+- Consumer uses no-argument constructor. And possibility miss calling one of the setters or call same setter twice with different value (copy-paste bugs)
+- Null checks are required, because dependencies may not be set at the moment.
+#### Circular Dependency Problem (Not there)
+- Flexibility in dependency resolution or object reconfiguration, it can be done anytime. Plus, this freedom solves the circular dependency issue of constructor injection.
+
+
 
 ```java
 @Autowired
@@ -396,8 +421,13 @@ public String showOrderDetails(@RequestParam("id") String orderId,
 ### @JsonIgnore
 
 ### @Resource
+- @Resource means get me a known resource by name. 
+- Sort of like @Qualifier + @Autowired
+- Part of JSR, useful if you want to use something else in future.
 
 ### @Injection
+- Similar to @Autowired 
+- Part of JSR
 
 ### @ConfigurationProperties
 
@@ -481,10 +511,67 @@ public class BeanClass {
 
 ## Bean Lifecycle Methods/Hooks
 ![](res/bean_lifecycle.jpg)
+### Steps
+- Within IoC container, a spring bean is created using class constructor.
+- Now the dependency injection is performed using setter method.
+- Now the IoC container calls BeanPostProcessor.postProcessBeforeInitialization on the bean.
+- Now the method annotated with @PostConstruct is called.
+- After @PostConstruct, the method InitializingBean.afterPropertiesSet() is called
+- Now the method specified by init-method attribute of bean in XML configuration is called.
+- And then BeanPostProcessor.postProcessAfterInitialization() is called. It can also be used to apply wrapper on original bean.
+- Now the bean instance is ready to be used. Perform the task using the bean.
+- Now when the ApplicationContext shuts down such as by using registerShutdownHook() then the method annotated with @PreDestroy is called.
+- After that DisposableBean.destroy() method is called on the bean.
+- Now the method specified by destroy-method attribute of bean in XML configuration is called.
+- Before garbage collection, finalize() method of Object is called.
+
 - The custom method can not accept any arguments. The method should be no-arg.
 - For "prototype" scoped beans, Spring does not call the destroy method.
 
-### Programmatic Approach
+### BeanPostProcessor (Before and After Initialization)
+- Will be defined for all the registered beans, not just a specific bean, for every type of bean.
+- Not part of the bean itself, another class
+- Useful to implement AOP/Transaction etc.
+- Take the bean and name of the bean as input
+- Spring expects you to return the object back 
+```java
+@Component
+public class CustomBeanPostProcessor implements BeanPostProcessor 
+{
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException 
+    {
+        System.out.println("Called postProcessBeforeInitialization() for :" + beanName);
+        return bean;
+    }
+     
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException 
+    {
+        System.out.println("Called postProcessAfterInitialization() for :" + beanName);
+        return bean;
+    }
+}
+```
+
+### PreConstruct and PreDestroy
+```java
+public class DemoBean 
+{
+    @PostConstruct
+    public void customInit() 
+    {
+        System.out.println("Method customInit() invoked...");
+    }
+     
+    @PreDestroy
+    public void customDestroy() 
+    {
+        System.out.println("Method customDestroy() invoked...");
+    }
+}
+```
+
+### DisposableBean and InitializingBean Interfaces
+- Not recommended, use @PreDestroy and @PreConstruct Instead
 - we need to implement our bean with two interfaces namely InitializingBean, DisposableBean
 - will have to override afterPropertiesSet() and destroy() method.
 ```java
@@ -832,6 +919,12 @@ public Object myAroundAdviceForGetters(ProceedingJoinPoint pJP){
 
 # REST USING SPRING BOOT
 
+## Response Entitiy Object
+- ResponseEntity represents the whole HTTP response: status code, headers, and body
+- we specify the response status programmatically
+- we can set HTTP headers
+- provides two nested builder interfaces: HeadersBuilder and its subinterface, BodyBuilder. Therefore, we can access their capabilities through the static methods of ResponseEntity.
+
 ## Return a JSON Object
 - Automatically handled by jackson json
 - ### The returned Object has to be a valid Spring Bean, i.e with public setters and getters else there will be exception
@@ -868,6 +961,73 @@ public User getUser(@PathVariable Integer id){
 }
 ```
 
+### Consistent Exception Format across all services.
+- For Proper exception Handling we need to ensure
+  - We have proper custom exceptions per error (which extend the runtime exception) with proper response code
+  - We have consistent structure for each exception
+  - We have a global exception handler class/controller which is shared across the controllers.
+#### First Step : Defining consistent Exception Structure
+- Create a class with all the information you want say timestamp, details and exception title.
+- This class will be the standard for all the exception across all the services.
+- This structure should also be independent of the language used.
+```java
+public class ExceptionResponse {
+    private Date timestamp;
+    private String message;
+    private String details;
+
+    public ExceptionResponse(Date timestamp, String message, String details) {
+        this.timestamp = timestamp;
+        this.message = message;
+        this.details = details;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+}
+```
+#### Second Step : Defining the Handler
+##### @ControllerAdvice
+- Applies the Class that is exposed to all the controllers.
+- Specialization of @Component for classes that declare @ExceptionHandler, @InitBinder, or @ModelAttribute methods to be shared across multiple @Controller classes.
+##### ResponseEntityExceptionHandler
+
+- A convenient base class for @ControllerAdvice classes that wish to provide centralized exception handling across all @RequestMapping methods through @ExceptionHandler methods.
+- Have custom Handler methods per exception for proper response status 400, 403,404, 500 etc.
+```java
+@ControllerAdvice
+@RestController
+public class CustomizedResponseEntityExceptionHandler
+    extends ResponseEntityExceptionHandler {
+
+    //The below annotation means apply for all the exceptions
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) throws Exception {
+        //Takes an exception and returns the instance of our specific bean i.e Exception Response defined above
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),request.getDescription(false));
+        return new ResponseEntity(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //Customize the response per exception
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFoundException(Exception ex, WebRequest request) throws Exception {
+        //Takes an exception and returns the instance of our specific bean i.e Exception Response defined above
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),request.getDescription(false));
+        return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+
 ## Validation in Spring Boot
 - Use @Valid annotation
 ```java
@@ -880,6 +1040,11 @@ private String name;
 
 @Past
 private Date birthDate;
+
+@NotEmpty(message = "email must not be empty")
+@Email(message = "email should be a valid email")
+private String email;
+
 ```
 - Following are the various constraints
 
@@ -1196,6 +1361,50 @@ private static void createEmployee()
 ### WebClient 
 - Asynchronous Alternative to RestTemplate
 
+## Distributed Logging
+![](res/distributed_logging.png)
+### Elastic Search
+- Elasticsearch is an open-source, RESTful, distributed search and analytics engine built on Apache Lucene.
+
+### LogStash
+- Logstash is an open-source data ingestion tool that allows you to collect data from a variety of sources, transform it, and send it to your desired destination.
+- Process logs from logstash and move to elastic search, it is a dataprocessing pipeline. 
+
+### Kibana
+- Kibana is an open-source data visualization and exploration tool for reviewing logs and events.
+- Dashboard and log visualization
+- Can be also integrated with Zipkin for tracing requests.
+- Similar to Datadog
+
+## Distributed Tracing
+### Sleuth
+- Sleuth is used to provide a unique trace id which can be traced across multiple microservice for a single request.
+- SpanId and ParentId also are generated to find out the calling tree in one trace
+### Zipkin
+- User interface to look at the data (traceid,spanid,parentid) generated by the sleuth/zipkinclient
+- It allows us to visualize and trace the request through various microservices like a tree and see how much time each microservice took, something that is not that apparent with Kibana
+- ![](res/zipkin.jpg)
+- We use Zipkin Server to push all the tracing information to a database and also analyze the logs.
+- Every microservice has a zipkin-client which pushes information to zipkin server. (spring-cloud-sleuth-zipkin)
+- A rabbit MQ can exisit between microservices and zipkin server, in case zipkin server goes down. 
+
+
+## Distributed Metrics
+### Monitoring Spring Boot Apps with Micrometer, Prometheus, and Grafana
+- we will use Micrometer to reformat the metrics data provided by Spring Boot Actuator and expose it in a new endpoint. This data will then be regularly pulled and stored by Prometheus, which is a time-series database. Ultimately, we will use Grafana to visualize this information with a user-friendly dashboard.
+#### Micrometer
+- Exposes the metrics from our application
+- Like SLF4J for Metrics i.e a vendor-neutral data provider
+
+#### Prometheus
+- Stores our metric data
+- It is a time-series database that stores our metric data by pulling it (using a built-in data scraper) periodically over HTTP. 
+- Prometheus has its own query language called PromQL.
+
+#### Grafana
+- Visualizes our data in graphs
+- While Prometheus does provide some crude visualization, Grafana offers a rich UI where you can build up custom graphs quickly and create a dashboard out of many graphs in no time. 
+
 ## Service Registry
 - All the microservices will register themselves with the Naming Server or the Service Registry.
 - We use Eureka Server and Client for Service Discovery
@@ -1329,10 +1538,6 @@ public class CircuitBreakerController {
 ### Bulkhead Pattern
 - Max Concurrent Calls to the API is configured using BulkHead Annotation, specific limits per API can also be configured.
 
-## Distributed Tracing
-- We use Zipkin Server to push all the tracing information to a database and also analyze the logs.
-- Sleuth is used to provide a unique trace id which can be traced across multiple microservice for a single request.
-- A rabbit MQ can exisit between microservices and zipkin server, in case zipkin server goes down. 
 
 
 # Important Jars

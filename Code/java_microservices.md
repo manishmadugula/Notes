@@ -43,6 +43,9 @@ Partially Knowledge of the internal working structure is required.
 ## Integration Testing
 - It focuses mainly on the interfaces & flow of data/information between the modules. Here priority is to be given for the integrating links rather than the unit functions which are already tested.
 
+## End to End Testing
+- Use selenium, which automates browser.
+
 ### Approaches 
 #### Big Bang Testing
 - all the components or modules are integrated together at once and then tested as a unit.
@@ -92,6 +95,8 @@ Partially Knowledge of the internal working structure is required.
 - A mock is something that as part of your test you have to setup with your expectations. A mock is not setup in a predetermined way so you have code that does it in your test. Mocks in a way are determined at runtime since the code that sets the expectations has to run before they do anything.
 - Stubs don't fail your tests, mock can.
 - a dummy piece of code, that you VERIFY is called correctly as part of the test.
+
+
 
 ## Integration Test
 - Too many mocks go for integration tests
