@@ -1542,6 +1542,21 @@ public:
 - Update O(1)
 - Update O(n)
 
+
+# Linked List
+## Memory Efficient Linked List
+- Use XOR 
+
+## Find Intersection Point in the linked List
+### Hash Table Implementation
+### 2 Pointer Implementation (IMPORTANT)
+- Maintain two pointers pApA and pBpB initialized at the head of A and B, respectively. Then let them both traverse through the lists, one node at a time.
+- When pApA reaches the end of a list, then redirect it to the head of B (yes, B, that's right.); similarly when pBpB reaches the end of a list, redirect it the head of A.
+- If at any point pApA meets pBpB, then pApA/pBpB is the intersection node.
+- To see why the above trick would work, consider the following two lists: A = {1,3,5,7,9,11} and B = {2,4,9,11}, which are intersected at node '9'. Since B.length (=4) < A.length (=6), pBpB would reach the end of the merged list first, because pBpB traverses exactly 2 nodes less than pApA does. By redirecting pBpB to head A, and pApA to head B, we now ask pBpB to travel exactly 2 more nodes than pApA would. So in the second iteration, they are guaranteed to reach the intersection node at the same time.
+- If two lists have intersection, then their last nodes must be the same one. So when pApA/pBpB reaches the end of a list, record the last element of A/B respectively. If the two last elements are not the same one, then the two lists have no intersections.
+
+
 # String
 
 ## KMP
@@ -1589,12 +1604,15 @@ class Solution {
          int i = 1;//lps[0] == 0, see above
          while(i<str.length()){
              if(str[i] == str[len]){
+
+                //Important Step
                  len++;
                  arr[i] = len;
                  i++;
              }
              else{
                  if(len == 0){
+                   //Important Step
                     arr[i] = 0;
                     i++;
                  }
@@ -1706,10 +1724,20 @@ public:
 
 
 ### Given 2 substring find if they are divisible.
+#### See the easiest Solution approach below
+#### Alternative approach
 - Check the length of 2 string, and see if the lenght are divisible.
 - If yes then check content (Use mod of the smaller string iterator while comparing to avoid forming new string).
 
 ### Given 2 string, find the largest common substring of these 2 strings which when repeated forms both the strings. (Also check first if it possible to do that)
+#### Easiest Solution
+- A much easier solution than described above is to just check if S1 and S2 have the same divisor (S1+S2 == S2+S1), if yes they have the same divisor and if that is the case then we can form such a string, all we need to do is find the gcd of the 2 strings, and that is the largest substring which when repeated forms both the strings
+```c++
+(s1 + s2 == s2 + s1)  
+  ? s1.substr(0, gcd(size(s1), size(s2)))
+	: "";
+```
+#### Alternative Solution
 - To prove that such a substring exists, find the smallest substring of the 2 strings which when divided forms the larger string. If the smallest substring returned by both are same then it is possible
 - Now find the gcd of the lengths of the both strings, the GCD gives the length of the largest number which when repeated can form both the numbers. That is what the defination of GCD is. Now just return the substring from 0 to gcd.
 [Personal Solution](https://leetcode.com/problems/greatest-common-divisor-of-strings/submissions/)
@@ -2278,8 +2306,70 @@ public:
   ### - Sort it in O(n), use counting sort, any number bigger than n can be replaced by n and the result won't change.
   - Next use binary search to find the h-index.
 
+
+## Day 8
+- Solved previous goldman questions
+  - https://www.geeksforgeeks.org/find-next-greater-number-set-digits/
+    - Just have a look, somewhat tricky
+  - https://www.geeksforgeeks.org/design-a-stack-that-supports-getmin-in-o1-time-and-o1-extra-space/
+    - (2*minEle – y)
+    - Stack doesn’t hold actual value of an element if it is minimum so far.
+    - Actual minimum element is always stored in minEle
+  - https://www.geeksforgeeks.org/count-pairs-in-an-array-whose-absolute-difference-is-divisible-by-k/ 
+    - Just mod all of them and figure out the frequency
+  - https://www.geeksforgeeks.org/maximum-sum-path-across-two-arrays/ 
+    - Kind of like merge sort, find the sum of elements between 2 equal elements of the array.
+  - https://www.geeksforgeeks.org/minimum-number-operation-required-convert-number-x-y/ 
+    - Simple BFS
+  - https://www.geeksforgeeks.org/given-an-array-of-numbers-arrange-the-numbers-to-form-the-biggest-number/
+    - Custom sorting method assuming it as string
+  - https://www.geeksforgeeks.org/find-local-minima-array/
+    - Use binary search
+  - Deque
+    - addFirst(), addLast(), removeFirst(), removeLast(), peekFirst(), peekLast(), size()
+    - Generics
+  - https://www.geeksforgeeks.org/find-number-of-positional-elements/
+    - store the maximum and minimum of every row and column and then check for the required condition.
+  - https://www.geeksforgeeks.org/goldman-sachs-interview-experience-4-yrs-experienced/
+    - See encode, decode problem
+  - https://www.geeksforgeeks.org/find-a-tour-that-visits-all-stations/
+    - IMPORTANT Question
+    - Use a queue, or make the array itself as a queue, popFirst if the petrol becomes negative.
+  - Given a set of pairs which represent a game between two teams in a tournament and corresponding winner of each pair, find the result of a query where we give two teams and we have to find a winner between them
+    - a directed graph. We can build a directed graph using the tournament data. If we can find a path between T1 to T2, T1 is the winner. If the same happens for T2 to T1, T2 is the winner. If no path is found, then data is inadequate.
+  - https://leetcode.com/problems/longest-word-in-dictionary-through-deleting/
+    - Sort by length desc and lexicographic asc, and test if subsequence.
+  - https://leetcode.com/problems/container-with-most-water/solution/
+    - Two pointer approach, reject the smaller of the 2 lines on each iteration start at max width i.e i=0 and j=length-1;
+  - https://leetcode.com/problems/fraction-to-recurring-decimal/
+    - First compute the integral value, then compute the fractional value
+  - https://leetcode.com/problems/3sum/submissions/
+    - Tricky to solve if duplicates are involved.
+    - Sort the array first
+### Josephus Problem
+  - ```J(n,k) = (J(n-1,k)+k)%n```
+### Tree Problems
+#### Level Order Traversal
+#### Left View
+  - Keep in mind not same as left boundary
+  - https://www.geeksforgeeks.org/print-left-view-binary-tree/
+  - Use level order traversal
+#### Boundary Traversal
+  - https://www.youtube.com/watch?v=uemjIijtu2I
+  - Left boundary + leaf + right Boundary
+  - Remove extra items in all the above 3
+
+
+
+
 ## To-Do
 - Trajan's Algorithm for **https://leetcode.com/problems/critical-connections-in-a-network/**
+- https://www.geeksforgeeks.org/goldman-sachs-interview-experience-software-engineer-experienced/ (JAVA portion)
+- https://www.geeksforgeeks.org/goldman-sachs-interview-experience-1yr-experienced-2019/
+- Josephus Problem
+- https://www.geeksforgeeks.org/kth-smallest-element-in-bst-using-o1-extra-space/
+- https://leetcode.com/problems/fraction-to-recurring-decimal/
+- https://leetcode.com/problems/reaching-points/
 
 # Similar Questions
 

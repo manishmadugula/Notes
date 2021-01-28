@@ -110,9 +110,17 @@ System.out.println(arrayList.indexOf(5));
 ```
 
 ## Searching a Sorted Array
+- If the value is in the array, then the index of the value is returned.
 ```java
 int[] arr1 = {1,2,3,4,5,6,124,1245,11241};
 System.out.println(Arrays.binarySearch(arr1,11241));
+```
+- If the value is not in the array, a bitwise not of the insertion point is returned.
+- Insertion Point is the index where the item would have been located if it was part of the sorted array.
+```java
+Integer[] arr = {0,1,2,3,5,6,7,8,9,10};
+Integer bitWiseNotInsertionPoint = Arrays.binarySearch(arr,4); // returns -5
+Integer insertionPoint = ~bitWiseNotInsertionPoint;// return 4
 ```
 
 ## Searching a Collection
@@ -248,6 +256,12 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
   ```set.contains(Obj)```
 - Remove from HashSet
   ```set.remove(Obj)```
+- Intersection with another set
+  ```set1.retainAll(set2)```
+- Union with another set
+  ```set1.addAll(set2)```
+- Difference with another set
+  ```set1.removeAll(set2)```
 
 # Map.Entry
 - Get Key
@@ -406,6 +420,10 @@ public int compareTo(Node other){
 # Random in JAVA
 
 # Math in JAVA
+- Be very careful when dealing with division in java
+- Always use Doubles wherever possible to avoid issues
+- say n=3, and doing Math.ceil(n/2) would give 1 since n/2 = 1 and ceil 1 is 1, so to make sure the inside value is a double use ```Math.ceil((double)n/2.0)``` 
+
 
 # Graph Problems in JAVA
 

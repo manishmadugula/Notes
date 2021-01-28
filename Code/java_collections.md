@@ -115,13 +115,23 @@ var stringArray = myCollection.toArray(new String[0]);//Java compiler will autom
 - To sort complex objects, override compareTo method in the class defination.
 
 #### Collections.binarySearch(```List<T>``` list, T key):
-  - index of the search key, if it is contained in the list; otherwise, (-(insertion point) - 1).
+  - returns index of the search key, if it is contained in the list;
+  - The object type of collection should implement the ```Comparable<T>``` interface(Make sure it is generic and not raw type).
+
+  - If the value is not in the array, a bitwise not of the insertion point is returned.
+  - Note that this guarantees that the return value will be >= 0 if and only if the key is found. 
+  - Insertion Point is the index where the item would have been located if it was part of the sorted array.
+  ```java
+  Integer[] arr = {0,1,2,3,5,6,7,8,9,10};
+  Integer bitWiseNotInsertionPoint = Arrays.binarySearch(arr,4); // returns -5
+  Integer insertionPoint = ~bitWiseNotInsertionPoint;// return 4
+  //If greater than all. then also same logic holds.
+  Integer bitWiseNotInsertionPoint = Arrays.binarySearch(arr,11); // returns -11
+  Integer insertionPoint = ~bitWiseNotInsertionPoint;// return 10
+  ```
   - The insertion point is defined as the point at which the key would be inserted into the list:
     - the index of the first element greater than the key,
     - or list.size(), if all elements in the list are less than the specified key.
-  - Note that this guarantees that the return value will be >= 0 if and only if the key is found. 
-- The object type of collection should implement the ```Comparable<T>``` interface(Make sure it is generic and not raw type).
-
 
 #### Collections.reverse(```List<T>``` list)
 

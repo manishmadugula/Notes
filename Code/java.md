@@ -715,7 +715,86 @@ class Student{
 - **In Java, Abstraction is supported using interface and abstract class while Encapsulation is supported using access modifiers e.g. public, private and protected getters and setters.**
 
 ## Polymorphism
+### V.V.V Important Polymorphism doesn't work with member variables:
+- The polymorphic behaviour of the java language works with methods and not member variables: they designed the language to bind member variables at compile time.
+- https://stackoverflow.com/questions/15513467/polymorphism-with-instance-variables
+```java
+public class Main {
+    public static void main(String[] args) {
+        A a = new B();
+        System.out.println(a.temp); // Will print : 10 (Not 20)
+        a.print();  //Will print "In Class B".
+        System.out.println(a.getTemp()) // prints 10, will call the super classes getTemp method and thus will refer to A.temp not B.temp.
+        //
+ 
+
+    }
+}
+
+class A {
+    int temp = 10;
+    public int getTemp(){
+      return temp;
+    }
+    public void print()
+    {
+        System.out.println("In Class A");
+    }
+}
+class B extends A {
+    int temp = 20;
+    public void print()
+    {
+        System.out.println("In Class B");
+    }
+}
+```
+- However if we override the same getTemp method the subclasses temp would be referred. (B.temp)
+```java
+public class Main {
+    public static void main(String[] args) {
+        A a = new B();
+        System.out.println(a.temp);
+        a.print();
+        System.out.println(a.getTemp()); // Will now return 20.
+    }
+}
+
+class A {
+    int temp = 10;
+    public int getTemp(){
+      return temp;
+    }
+    public void print()
+    {
+        System.out.println("In Class A");
+    }
+}
+class B extends A {
+    int temp = 20;
+    @Override
+    public int getTemp(){
+      return temp;
+    }
+    public void print()
+    {
+        System.out.println("In Class B");
+    }
+}
+```
+- What is essentially happening is on inheriting A, 2 temp variables are being created
+```java
+class B{
+  int A.temp=10;
+  int B.temp=20;
+}
+```
+- In the scope of B, A.temp is hidden(the superclass field of the same name is hidden), but can be referred using super.temp.
+- If we don't override getTemp in B, the scope remains the super class, so super class's temp variable is called in the getTemp method.
+
 ### Method Overriding
+
+
   - same name and parameters but super class method overriden by sub class.
   - Fancy names
     - Run time polymorphism. which method to call is decided by JVM at run-time. 
