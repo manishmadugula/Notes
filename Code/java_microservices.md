@@ -63,6 +63,8 @@ Partially Knowledge of the internal working structure is required.
 ## Unit Testing
 - See JUnit 5
 
+## Contract Testing
+- Open source tool PACT is used for test API Contracts.
 
 ## Smoke Testing
 - Smoke Testing is a software testing process that determines whether the deployed software build is stable or not. Smoke testing is a confirmation for QA team to proceed with further software testing. It consists of a minimal set of tests run on each build to test software functionalities. Smoke testing is also known as "Build Verification Testing" or “Confidence Testing.”
@@ -456,6 +458,454 @@ public class SampleServiceTest {
 # JDBC
 - JDBC is a standard for connecting to a DB directly and running SQL against it 
 
+# Hibernate
+- It is an ORM Tool which implements JPA
+- Minimizes the amount of SQL and JDBC code we have to write.
+- Hibernate is another layer of abstraction on top of JDBC.
+
+## Hibernate Properties to configure
+- ```driver_class : com.mysql.cj.jdbc.Driver```
+- ```url : jdbc:mysql://localhost:3306/...```
+- ```pool_size : 1```
+- ```dialect : org.hibernate.dialect.MySQLDialect```
+- ```username : ```
+- ```password : ```
+- ```show_sql : true```
+- ```current_session_context_class : thread```
+## Session Factory
+- Reads hibernate config file, and creates session objects.
+- It is a heavy object, created only once.
+## Session
+- Wraps a JDBC Connection
+- Created using session factory
+- main object used to save and retrieve objects
+- short lived
+### save(Object)
+- save into the database
+### get(Class, primaryKey)
+- Class : which class has to be fetched
+
+### update in hibernate
+- there is no explicit update, 
+  - just begin transaction
+  - fetch the required object using get
+  - modify using setters
+  - commit the transaction
+```java
+int studentId=1;
+Student myStudent = session.get(Student.class,studentId);
+myStudent.setFirstName("Scooby");
+session.getTransaction().commit();
+```
+- If multiple updates are required, we can use the createQuery
+```java
+session.createQuery(
+    "update Student set email='foo@gmail.com'")
+    .executeUpdate();
+```
+
+### delete(Object)
+```java
+int studentId=1;
+Student myStudent = session.get(Student.class,studentId);
+session.delete(myStudent);
+session.getTransaction().commit();
+```
+#### Using createQuery
+- No need to fetch in this case. 
+- Useful if heavy object
+```java
+session.createQuery("delete from Student where id=2").executeUpdate();
+```
+
+### createQuery(HQL)
+- Returns a query object
+#### HQL
+- Similar to sql but deals with java objects and fields and also consice.
+```java
+List<Student> students = session.createQuery(
+                            "from Student s where s.lastName='Doe'"+
+                            " OR s.firstName='Daffy'")
+                            .getResultList();
+```
+
+### beginTransaction
+- Starts the DB transaction
+
+### getTransaction
+- Returns the transaction object
+
+#### commit
+- Commits the transaction
+
+#### rollback
+- Roll back the transaction
+
+
+## Query Object
+- Interface used to control query execution.
+### Methods
+#### getResultList()
+- Execute a SELECT query and return the query results as an untyped List.
+#### getSingleResult()
+- Execute a SELECT query that returns a single untyped result.
+#### executeUpdate()
+- Execute an update or delete statement.
+
+## Datasource
+
+## Annotations
+### @Entity
+- Store a Java bean to the table then declare the bean with the Entity Annotation.
+### @Table
+- Maps the Java class to the database table
+- If Java class name is same as the database table, we don't need an explicit name parameter, else ```@Table(name="student")```
+### @Column
+- Maps the Java field to the table column.
+### @Id
+- Current field represents primary key.  
+#### Natural Key
+- Columns which are unique due to business logic, like say networkId or say emailId in the Users Table.
+- This column is a good candidate for primary_key
+- We need to provide this value.
+
+#### Surrogate Key
+- If you don't have a field that can be natural primary key, we can just assign a surrogate key whose entire purpose is being a primary key with no business use.
+- This value need not be provided, it can be generated.
+
+### @GeneratedValue(strategy=GenerationType.IDENTITY)
+- Default strategy for generating the primary key is Identity.
+- Other generation strategies
+  ![](res/hibernate_generation_types.jpg)
+- Custom generation is also possible
+  - Create an implementation of IdentifierGenerator Interface
+  - Override the generate method
+  - Make sure generator generates unique value in a multithreaded, multicontainer environment.
+### @Temporal(TemporalType.DATE)  
+- Annotation for storing dates
+```java
+@Column(name="date_of_birth")
+@Temporal(TemporalType.DATE)
+private Date dateOfBirth;
+```
+
+### @JoinColumn(name="foreign_key")
+- For OneToOne Mapping and ManyToOne mapping, the foreign_key refers to source table's foreign key.
+- For OneToMany Mapping, the foreign key refers to the target table's foreign key.
+- [Link](https://www.udemy.com/course/spring-hibernate-tutorial/learn/lecture/8164036#overview) : Udemy Lecture : 244 for spring-hibernate-tutorial.
+- In other words, the entity with the @JoinColumn attribute needs to have the foreign_key column in it's own table if the mapping is OneToOne or ManyToOne. If it is OneToMany the foreign_key column should be in the target table.
+
+### @Transient
+- Ignore the field.
+
+### @Lob
+- This is a large object, which cannot be fitted on a 255 char value.
+
+```java
+@Lob
+private String journals;
+```
+
+## Entity LifeCycle
+- There are 3 stages in hibernate lifecycle
+
+![](res/hibernate_licycle.jpg)
+### Transient state
+- The transient state is the initial state of an object.
+- Here, an object is not associated with the Session. So, the transient state is not related to any database
+- The transient objects exist in the heap memory. They are independent of Hibernate. 
+```java
+Employee e=new Employee(); 
+//Here, object enters in the transient state.  
+```
+### Persistent State
+- As soon as the object associated with the Session, it entered in the persistent state.
+- Here, each object represents the row of the database table.
+- So, modifications in the data make changes in the database.
+- Following methods move object in persistent state
+    ```java
+    session.save(e);  
+    session.persist(e);  
+    session.update(e);  
+    session.saveOrUpdate(e);  
+    session.lock(e);  
+    session.merge(e);  
+    ```
+### Detached State
+- Once we either close the session or clear its cache, then the object entered into the detached state.
+- As an object is no more associated with the Session, modifications in the data don't affect any changes in the database.
+- However, the detached object still has a representation in the database. This is the distinction with transient state.
+- To associate the detached object with the new hibernate session, use any of these methods - load(), merge(), refresh(), update() or save() on a new session with the reference of the detached object.
+- To move an object to detached state use :
+    ```java
+    session.close();  
+    session.clear();  
+    session.detach(e);  
+    session.evict(e);  
+    ```
+
+## Cascade Types
+![](res/cascade_types.jpg)
+
+```java
+@OneToOne(cascade={CascadeType.DETACH,
+                    CascadeType.MERGE,
+                    CascadeType.PERSIST})
+```
+- By default no operations are cascaded.
+
+## Advanced Mappings
+- Let us use the following example to define our relationship
+  ![](res/hibernate_tutorial_example.jpg)
+### One to One Mapping
+- This relationship can be created using Primary key-Unique foreign key constraints. (Notice the Unique keyword).
+#### Unidirectional
+- Say there is a instructors entity and an instructor's details entity, there is a one to one unidirectional mapping between them i.e instructor knows about instructor detail's but not vice versa.
+- We can use instructor_detail_id column of the instructors table to define a foreign key relationship in our table with the instructor_details table.
+- To do the same in our Hibernate Model, we can define the @OneToOne Annotation as follows
+- The @JoinColumn annotation combined with a @OneToOne mapping indicates that a given column in the instructor entity refers to a primary key in the instructorDetails entity:
+```java
+@Entity
+@Table(name="instructor")
+public class Instructor{
+    ...
+    ...
+    @OneToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name="instructor_detail_id") //foreign key of the current table pointing to target table's row
+    private InstructorDetail instructorDetail;
+}
+```
+#### Bidirectional
+- Say in above example, we need to fetch the instructor from instructor_details, we use a bidirectional mapping
+  - First we need to add a new field Instructor in the InstructorDetails class and generate getters and setters.
+  - Add the OneToOne annotation, and use mappedBy to denote the field in the instructor which is used to map the InstructorDetails Object
+  - mappedBy tells the following
+    - Look at the instructorDetails property in the Instructor class
+    - In this field, use the @JoinColumn information to help find the associated instructor.
+    - the value of mappedBy is the name of the association-mapping attribute on the owning side. 
+  ```java
+    @Entity
+    @Table(name="instructor_details")
+    public class InstructorDetails{
+        ...
+        ...
+        //The mappedBy parameter denotes 
+        //the name of the field in Instructor class
+        // which is used to denote the InstructorDetails Object. 
+        @OneToOneMapping(mappedBy="instructorDetails",
+         cascade =CascadeType.ALL)
+        private Instructor instructor;
+
+        ...
+    }
+  ```
+- In InstructorDetails class Cascade ALL signifies deleting instructorDetails should delete the instructor (Not what might be required in the usecase, but we only might want cascade in one direction).
+- Note in case we delete instructor details and not delete instructor, then along with updating the CascadeType in instructorDetails to not be ALL, we also need to break the link between instructor object and the instructor details object, by explicitly making the instructorDetails field of the instructor object to null. Else there will be exception.  
+
+### One to Many Mapping
+- This type of relationship can be created using Primary key-Foreign key relationship in the database.
+
+#### Bidirectional Mapping
+- Say there is a Instructor class and a Course class and we need to get Instructor for a Course and all the Courses taught by the instructor, this is a use case for bidirectional OneToMany mapping (or ManyToOne for the course)
+```java
+@Entity
+@Table(name="course")
+public class Course{
+    ...
+    ...
+@ManyToOne(cascade={CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST})
+@JoinColumn("instructor_id") //foreign key of the current table pointing to target table's row
+private Instructor instructor
+}
+```
+```java
+@Entity
+@Table(name="instructor")
+public class Instructor{
+    ...
+    ...
+    @OneToMany(mappedBy="instructor",cascade={CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST})
+    private List<Course> courses;
+}
+```
+- We also need to on creation and deletion set and remove the fields of the Instructor and Course Objects in java code.
+```java
+instructor.addCourse(tempCourse);
+tempCourse.setInstructor(instructor)
+```
+
+#### Unidirectional Mapping
+- Say we have a oneToMany relationship between Course and reviews, reviews have course_id as a foreign key.
+- Notice in the below case, the @JoinColumn points to the foreign key in the target table as opposed to the source table in case of the OneToOne Mapping and ManyToOne mapping
+- 
+```java
+@Entity
+@Table(name="course")
+public class Course{
+    ...
+    ...
+@ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+@JoinColumn("course_id")//Foreign key of the target table pointing to current table's row
+private List<Review> reviews
+}
+```
+
+
+### Many to Many Mapping
+- This kind of Relationship, allows a junction or bridging or join table as a connection for the two tables.
+- The joining table has foreign keys for both the tables to define mapping relationship. The combination of these 2 keys will be the new primary key for the joining table.
+- Say there is a many to many relationship between course and a student.
+- @JoinTable annotation is used to tell hibernate how to use the joining table and what are the joinColumn and inverseJoinColumn to map the relationship between course and a student.
+#### SQL for Joining Table
+- Notice the course_id and student_id is a composite primary key.
+- There are 2 foreign keys course_id and student_id.
+```sql
+CREATE TABLE `course_student` (
+  `course_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  
+  PRIMARY KEY (`course_id`,`student_id`),
+  
+  KEY `FK_STUDENT_idx` (`student_id`),
+  
+  CONSTRAINT `FK_COURSE_05` FOREIGN KEY (`course_id`) 
+  REFERENCES `course` (`id`) 
+  ON DELETE NO ACTION ON UPDATE NO ACTION,
+  
+  CONSTRAINT `FK_STUDENT` FOREIGN KEY (`student_id`) 
+  REFERENCES `student` (`id`) 
+  ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+```
+
+#### Code for Course Table
+```java
+@Entity
+@Table(name="course")
+public class Course{
+    ...
+    ...
+@ManyToMany(cascade={ascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST},fetch=FetchType.LAZY)
+@JoinTable(
+    name="course_student",//Name of the Joining table
+    joinColumns=@JoinColumn(name="course_id"),//refers to the current entity's 
+                                                //key in the joining table.
+    inverseJoinColumns=@JoinColumn(name="student_id")//refers to the enttiy in
+                                                    //the inverse of the relationship i.e the student.)
+private List<Student> students;
+}
+```
+
+#### Code for the Student Table
+```java
+@Entity
+@Table(name="student")
+public class Student{
+    ...
+    ...
+@ManyToMany(cascade={CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST},fetch=FetchType.LAZY)
+@JoinTable(
+    name="course_student",
+    joinColumns=@JoinColumn(name="student_id"),
+    inverseJoinColumns=@JoinColumn(name="course_id")
+)
+private List<Course> courses;
+}
+```
+
+
+
+## Eager Loading vs Lazy Loading
+- Eager will load all the instructor and courses at once
+- Lazy will load on request. This is the preferred practise. Load dependent entities on demand.
+
+### Lazy Loading
+- Lazy loading requires a hibernate session, if the session is closed, hibernate throws an error.
+- Retrieve lazy data using session.get on original entity and call the getter methods on it.
+- Or you can also use HQL to get the courses at a later time i.e Lazily load in another session.
+#### HQL approach
+```java
+session = factory.getCurrentSession();
+session.beginTransaction();
+// get courses for a given instructor
+Query<Course> query = session.createQuery(
+            "select c from Course c" +
+            "where c.instructor.id=:theInstructorId"
+            ,Course.class);
+            
+query.setParameter("theInstructorId", theId);
+
+List<Course> tempCourses = query.getResultList();
+
+System.out.println("tempCourses: " + tempCourses);
+```
+
+### Default Fetch Types
+![](res/defaultt_fetch_types.jpg)
+### Overiding default fetch types
+```java
+@ManyToOne(fetch=FetchType.LAZY)
+```
+
+## Inheritance 
+- @Inheritance is used to tell hibernate to use a inheritance strategy to use to deal with inheritance. This annotation has to be decorated in the super class
+    ```java
+    @Entity
+    @Table(name="vehicle")
+    @Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+    public class Vehicle{
+        ....
+    }
+    ```
+
+### Single Table Strategy
+- By default hibernate creates one common table if there is inheritance between objects and has a DTYPE column added to denote the subtype of the object.
+- All the fields in all the subclasses (steeringwheel, steeringhandle) will be added to the same table.
+- DTYPE is discriminator column.
+![](res/hibernate_inheritance.jpg)
+- The distriminator column is also configurable
+    ```java
+    @Inheritance
+    @DiscriminatorColumn(
+        name="VEHICLE_TYPE",//Custom name for DTYPE
+    )
+    ```
+- The discriminator value is also configurable
+    ```java
+    @DistriminatorValue("Bike")
+    public class TwoWheeler{
+        ....
+    }
+    ```
+
+### Table per class strategy
+- In this strategy, hibernate will generate the columns of the parent class in the child tables.
+- The annotation of the parent fields is also inherited in the child tables.
+- This is normalized form. So more elegant way.
+    ```java
+    @Entity
+    @Table(name="vehicle")
+    @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+    public class Vehicle{
+        ....
+    }
+    ```
+
+#### Problem with having 2 different tables to deal with subclasses without using @Inheritance
+- You won't be able to use polymorphism. Say you have user class and vehicle class, you won't be at run time able to choose between 2 wheeler or 4 wheeler.
+- Using @Inheritance however 
+
+### Joined Strategy 
+- Have specific properties in another table, and common fields in the same table.
+- You can join the 2 tables to get all the information.
+
+## Migrations in Hibernate
+When working with JPA and Hibernate, you have two options to manage the underlying database schema:
+
+- You can encapsulate schema changes in migration scripts and use a tool, like Flyway, to apply the migration scripts upon starting the application.
+- You can generate or update the database schema from the JPA and Hibernate entity mappings using the hbm2ddl.auto tool.
+
+
 # JPA
 - Java Persistence API
 - JPA is a standard for Object Relational Mapping. The most famous JPA provider is Hibernate. 
@@ -538,6 +988,8 @@ public class UserRepository {
 - Services, Entities, Domain Model, Repositories, Factories are made popular by domain driven design
 - DDD focuses on defining the vocabulary in that language: actors, entities, operations, ... An important part of DDD is also that the ubiquitous language can be clearly seen in the code, too, not only in communication between the implementor and the domain expert. So an extreme view of DDD is quite static: it describes the finished system as a whole.
 
+# Consumer Driven Contract (CDC)
+- Consumer defines the API Contracts
 
 ## 2 Types of tools
 

@@ -4,11 +4,19 @@
 - Side Car Pattern (Envoy/Istio)
 
 ## Benifits of Microservices
+- Smaller surface area for impact/change
 - Faster Delivery, frequent releases with less risk
 - If designed properly a single microservice cannot crash entire systems
 - Scaling independently
 - Well defined teams and responsibilities
 - Polygot services, with own persisitence.
+- Separation of concerns
+- Horizontal Scaling
+- Workload Partitioning
+- Automated operations
+- On demand provisioning
+- Context bound and data separation
+
 
 ## What are responsibilities of Reverse Proxy/ Service Mesh (Side Car Pattern)
 - Distributed Tracing/Logging

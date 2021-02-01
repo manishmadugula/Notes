@@ -746,6 +746,8 @@ Logstash is an open-source data ingestion tool that allows you to collect data f
 Kibana is an open-source data visualization and exploration tool for reviewing logs and events. Kibana offers easy-to-use, interactive charts, pre-built aggregations and filters, and geospatial support and making it the preferred choice for visualizing data stored in Elasticsearch. 
 
 # REST
+- A way to build your APIs that follow the rest specification, The rest specification involves treating a resource as a URI and having an endpoint to a resources and having a bunch of verbs that tell what operations you can do on that resource.
+- Constraints : Client–server architecture, Statelessness,Cacheability,Uniform interface
 ## GET Request
 - Not to be used for sending passwords, because GET ideally doesn't have a body and the URL is not encrypted so passwords will be visible to anyone snooping.
 

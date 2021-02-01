@@ -879,6 +879,27 @@ CREATE TABLE orders
 ```
 
 
+## Handling Duplicates
+- To prevent multiple records with the same first and last name values from being created in this table, add a PRIMARY KEY to its definition. 
+```sql
+CREATE TABLE person_tbl (
+   first_name CHAR(20) NOT NULL,
+   last_name CHAR(20) NOT NULL,
+   sex CHAR(10),
+   PRIMARY KEY (last_name, first_name)
+);
+```
+- Another way to enforce uniqueness is to add a UNIQUE index rather than a PRIMARY KEY to a table.
+```java
+CREATE TABLE person_tbl (
+   first_name CHAR(20) NOT NULL,
+   last_name CHAR(20) NOT NULL,
+   sex CHAR(10)
+   UNIQUE (last_name, first_name)
+);
+
+```
+
 # ALTER TABLE
 ```sql
 ALTER TABLE customers
@@ -887,6 +908,77 @@ ALTER TABLE customers
   MODIFY COLUMN first_name VARCHAR(55) DEFAULT ''
   DROP points;
 ```
+
+# Enforcing relationship in Databases
+
+## ONE to ONE relationship 
+- This relationship can be created using **Primary key-Unique foreign key constraints**.
+- For instance a Country can only have one UN Representative, and also a UN Representative can only represent one Country.
+```java
+CREATE TABLE Country
+(
+  Pk_Country_Id INT IDENTITY PRIMARY KEY,
+  Name VARCHAR(100),
+  Officiallang VARCHAR(100),
+  Size INT(11),
+);
+
+CREATE TABLE UNrepresentative
+(
+  Pk_UNrepresentative_Id INT PRIMARY KEY,
+  Name VARCHAR(100),
+  Gender VARCHAR(100),
+  Fk_Country_Id INT UNIQUE FOREIGN KEY REFERENCES Country(Pk_Country_Id)
+);
+```
+
+## ONE TO MANY relationship
+- This is where a row from one table can have multiple matching rows in another table this relationship is defined as a one to many relationship.
+- This type of relationship can be created using Primary key-Foreign key relationship.
+```java
+CREATE TABLE Car
+(
+Pk_Car_Id INT PRIMARY KEY,
+Brand VARCHAR(100),
+Model VARCHAR(100)
+);
+CREATE TABLE Engineer
+(
+Pk_Engineer_Id INT PRIMARY KEY,
+FullName VARCHAR(100),
+MobileNo CHAR(11),
+Fk_Car_Id INT FOREIGN KEY REFERENCES Car(Pk_Car_Id)
+);
+```
+
+## Many to Many Relationship (M:M)
+- A row from one table can have multiple matching rows in another table, and a row in the other table can also have multiple matching rows in the first table this relationship is defined as a many to many relationship. 
+
+### Bridging Table
+- This type of relationship can be created using a third table called “Junction table” or “Bridging table”. This Junction or Bridging table can be assumed as a place where attributes of the relationships between two lists of entities are stored.
+
+
+  ```java
+  CREATE TABLE Student(
+  StudentID INT(10) PRIMARY KEY,
+  Name VARCHAR(100),
+  );
+  CREATE TABLE Class(
+  ClassID INT(10) PRIMARY KEY,
+  Course VARCHAR(100),
+  );
+  CREATE TABLE StudentClassRelation(
+  StudentID INT(15) NOT NULL,
+  ClassID INT(14) NOT NULL,
+  FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
+  FOREIGN KEY (ClassID) REFERENCES Class(ClassID),
+  UNIQUE (StudentID, ClassID)
+  );
+  ```
+
+
+## reference
+- https://medium.com/@emekadc/how-to-implement-one-to-one-one-to-many-and-many-to-many-relationships-when-designing-a-database-9da2de684710
 
 # CHARACTER SET
 - all various characters (utf32 etc.... chinese etc).

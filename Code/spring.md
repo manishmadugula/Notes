@@ -1215,7 +1215,7 @@ PersonV2 getPersonVersion2ContentNegotation(){
   ```
 
 # Spring CLOUD
-- Provides a range of solution for configuration management, service discovery, circuit breakers, intelligent routing, control bus, one time token, global locks, leader election, distributed sessions, cluster state, microproxy.
+- Provides a range of solution for configuration management, service discovery, circuit breakers, intelligent routing, control bus, one time token, global locks, leader election, distributed sessions, cluster state, microproxy and other cross cutting concerns. 
 
 ## Microservices
 - RESTFUL
@@ -1572,7 +1572,6 @@ public class CircuitBreakerController {
 - ServletUriComponentBUILDER
 - ResponseEntity
 - ResponseEntityExceptionHandler
-- ControllerAdvice
 - Delayed Writing
 - Persistent Context
 - Lazy Loading with and without transaction
@@ -1594,14 +1593,10 @@ public class CircuitBreakerController {
 - Hibernate/JPA
   - JPA Interceptor
   - Propagation Level in transaction
-- AOP
 - Important Spring Annotations
   - Resource
-  - RequestParam
   - Injection
 - Datasource
-- Exception Handling in Spring
-- Design Patterns used in Spring
 
 # Old Notes
 - Lifecycle hooks vs constructor
