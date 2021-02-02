@@ -19,6 +19,9 @@
 ### Surefire Pligin
 - Maven will run the test at the end of the build
 
+### JIB Plugin-
+- Jib is a Maven plugin for building Docker and OCI images for your Java applications.
+
 # Testing
 
 ## Test Driven Design
@@ -654,7 +657,7 @@ Employee e=new Employee();
 ```
 - By default no operations are cascaded.
 
-## Advanced Mappings
+## Mappings in Hibernate
 - Let us use the following example to define our relationship
   ![](res/hibernate_tutorial_example.jpg)
 ### One to One Mapping
@@ -812,12 +815,128 @@ public class Student{
 private List<Course> courses;
 }
 ```
+## Advanced Mappings
+### Value Types vs Entity Types
+- Both these are used for composition, they are not primitives
+- Entity types can exist independent of the object containing it's reference unlike Value type. Entity has a meaning on its own
+- An entity has a table of it's own
+- See below on Domain Driven Design for more reference.
 
+### Mapping Entity Objects
+- An entity has a table of it's own
+- Use one of the mapping above.
+
+### Mapping Value Objects in Hibernate
+
+- Separate Columns for fields in Value objects in the original object's table.
+![](res/hibernate_value_object.jpg)
+- We can do that using the @Embeddable annotation in the address class
+
+    ```java
+    @Embeddable
+    public class Address{
+        public String state;
+        public String city;
+        public String pincode;
+        ///Getters and Setters and constr....
+    }
+
+    @Entity
+    public class User{
+
+        @Embedded //Optional annotation
+        public Address address;
+    }
+    ```
+
+#### If primary key is an embedded object(Composite Primary Key)
+- You cannot use @Embedded or even @Id for such primary key.
+- In such cases you use ```@EmbeddedId``` annotation instead of @Id or @Embeddable.
+
+#### Custom names in embedded object
+##### Add Column annotation in the embeddable object
+```java
+    @Embeddable
+    public class Address{
+        @Column(name="street_name")
+        public String state;
+        @Column(name="city_name")
+        public String city;
+        public String pincode;
+        ///Getters and Setters and constr....
+    }
+```
+##### Having multiple names in multiple contexts
+- Say we need to have a home address and office address as part of UserDetails.
+- The street_name, might cause conflict issues since there are 2 address objects. So we need to override the name in the UserDetails.
+```java
+    @Embeddable
+    public class Address{
+        @Column(name="street_name")
+        public String street_name;
+        @Column(name="city_name")
+        public String city;
+        @Column("pincode")
+        public String pincode;
+        ///Getters and Setters and constr....
+    }
+
+    @Entity
+    public class UserDetails{
+
+        @Embedded
+        @AttributeOverrides({
+            @AttributeOverride(name="street",column =@Column(name="HOME_STREET_ADDRESS")),
+            @AttributeOverride(name="city",column =@Column(name="HOME_CITY")),
+            @AttributeOverride(name="pincode",column =@Column(name="HOME_PINCODE")),
+        })
+        public Address homeAddress;
+
+        @Embedded
+        @AttributeOverrides({
+            @AttributeOverride(name="street",column =@Column(name="OFFICE_STREET_ADDRESS")),
+            @AttributeOverride(name="city",column =@Column(name="OFFICE_CITY")),
+            @AttributeOverride(name="pincode",column =@Column(name="OFFICE_PINCODE")),
+        })
+        public Address officeAddress;
+    }
+```
+- The @AttributeOverride says take the field called "name" in the Address object and the @Column annotation to it.
+
+### Mapping Set
+- @ElementCollection is used to tell the hibernate we are dealing with iterables.
+- In this case a new table will be created with foreign key on the original table.
+```java
+public class UserDetails{
+    @ElementCollection
+    private Set<Address> listOfAddresses = new HashSet<>();
+}
+```
+- This concept of new table and original table is similar to the oneToMany Mapping. So concepts like JoinTable and JoinColumn is valid here
+
+#### Tweaking the name of the JoinTable and JoinColumn for the Embedded Collection
+```java
+@JoinTable(name="user_address",
+    joinColumns=@JoinColumn(name="user_id")
+)
+private Set<Address> listOfAddresses = new HashSet<>();
+```
+- This will name the new table defined for the collection and the name of the foreign key/joinColumn.
+
+### Mapping a List
+```java
+```
+
+### Mapping a Map
 
 
 ## Eager Loading vs Lazy Loading
 - Eager will load all the instructor and courses at once
 - Lazy will load on request. This is the preferred practise. Load dependent entities on demand.
+
+### Internals of Fetching
+- Hibernate uses Proxy Objects for the original table(subclasses of original objects) to make sure the fetch is lazy in some cases, only when get is called on the proxy object then we use session object to make a call to db and lazyily fetch the value. The value is not fetched during the construction.
+- ![](res/hibernate_proxy_objetc.jpg)
 
 ### Lazy Loading
 - Lazy loading requires a hibernate session, if the session is closed, hibernate throws an error.
@@ -842,10 +961,15 @@ System.out.println("tempCourses: " + tempCourses);
 
 ### Default Fetch Types
 ![](res/defaultt_fetch_types.jpg)
+- Default fetch for Collections
+- Default fetch for Embeddables
 ### Overiding default fetch types
 ```java
 @ManyToOne(fetch=FetchType.LAZY)
 ```
+### Extra lazy fetch collection.
+
+
 
 ## Inheritance 
 - @Inheritance is used to tell hibernate to use a inheritance strategy to use to deal with inheritance. This annotation has to be decorated in the super class
@@ -1026,7 +1150,7 @@ public class UserRepository {
 - The heirarchy of Request Handler, Controller to Service Layer and Finally to Repository Layer.
 - Everything is organised and well design, reusable components.
 
-#### Value Objects
+#### Value Types
 - Don't use primitive in your code.
 - Value enforces ubiqutous language.
 - Easily Validate/Limits inside the value itself.

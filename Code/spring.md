@@ -1253,8 +1253,7 @@ PersonV2 getPersonVersion2ContentNegotation(){
 - Spring Cloud Configuration Server has the location of a git repository with all the configurations : service.properties, service-dev.properties, service-qa.properties etc for each environment.
 - It also has @EnableConfigServer annotation along with maven dependency
 
-## Run multiple instances of the same service in intelliJ/Eclipse
-- Add a duplicate configuration and in the VM Properties provide ```-Dserver.port=some_custom_port``` and so on.
+
 
 ### Spring Cloud Configuration Client
 - There is a Spring Component in each microservice which holds all the configuraiton information it gets from the config server.
@@ -1288,6 +1287,13 @@ PersonV2 getPersonVersion2ContentNegotation(){
     }
   ```
 - This component is then injected wherever the configuration has to be used.
+## Cloud Bus
+- Using cloud bus you can push configuration changes to the system without restart. 
+- Spring Cloud Bus links nodes of a distributed system with a lightweight message broker. This can then be used to broadcast state changes (e.g. configuration changes) or other management instructions.
+
+## Run multiple instances of the same service in intelliJ/Eclipse
+- Add a duplicate configuration and in the VM Properties provide ```-Dserver.port=some_custom_port``` and so on.
+
 
 ## Call another microservice from inside one microservice
 

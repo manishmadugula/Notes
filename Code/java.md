@@ -1500,6 +1500,25 @@ You can configure the gc to use in the flag passed.
 - You can print details of gc using ```-Xloggc:gc.log```.
 - jvisualvm
 
+# Design Patterns used in JAVA
+## Singleton
+- java.lang.Runtime#getRuntime()
+
+## Prototype
+- Clone method
+
+## Decorator
+- InputStream, OutputStream
+
+## Observer
+- EventListener
+
+## Strategy
+- Comparator
+
+## Flyweight
+- is used with some values of Byte, Short, Integer, Long and String.
+
 # String
 
 - Backed by character array.
