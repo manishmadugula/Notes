@@ -904,6 +904,7 @@ private List<Course> courses;
 - The @AttributeOverride says take the field called "name" in the Address object and the @Column annotation to it.
 
 ### Mapping Set
+- ![](res/hibernate_collections.jpg)
 - @ElementCollection is used to tell the hibernate we are dealing with iterables.
 - In this case a new table will be created with foreign key on the original table.
 ```java
@@ -913,21 +914,70 @@ public class UserDetails{
 }
 ```
 - This concept of new table and original table is similar to the oneToMany Mapping. So concepts like JoinTable and JoinColumn is valid here
+- The @ElementCollection is different from @OneToMany in the following way, we cannot independently query objects in @ElementCollection since they are value objects (no id). We also cannot use Cascading strategies for elementcollection, they are always persisted, merged, deleted etc with the parent object. 
 
 #### Tweaking the name of the JoinTable and JoinColumn for the Embedded Collection
 ```java
+@ElementCollection
 @JoinTable(name="user_address",
     joinColumns=@JoinColumn(name="user_id")
 )
 private Set<Address> listOfAddresses = new HashSet<>();
 ```
 - This will name the new table defined for the collection and the name of the foreign key/joinColumn.
+- We can also use @CollectionTable annotation instead of @JoinTable. 
+- In case we are dealing with primitives we can do the following to change the name
+- ![](res/hibernate_set_primitive.jpg)
+    ```java
+    @ElementCollection
+    @JoinTable(name="images",
+        joinColumns=@JoinColumn(name="user_id")
+    )
+    @Column(name="file_name")
+    private Set<String> images = new HashSet<>();
+    ```
 
 ### Mapping a List
+- Use case : When order/index is important, also queue datastructure.
+- Retrieve or manipulate in order.
+- Duplicates are okay.
+- ```@OrderColumn``` is used to denote hibernate we are dealing with Indexed Collection.
 ```java
+@Entity
+@Table(name="student")
+public class Student {
+	@ElementCollection
+	@OrderColumn(name="image_index")
+	@JoinTable(name="image", //defaults to student_images
+					joinColumns = @JoinColumn(name="student_id"))
+	@Column(name="file_name") //defaults to images
+	private List<String> images = new ArrayList<>();
+}
 ```
 
 ### Mapping a Map
+- Same as List, just instead of ```@OrderColumn``` there is a ```@MapKeyColumn```.
+```java
+	@ElementCollection
+	@CollectionTable(name="imagedi")
+	@MapKeyColumn(name="file_name")
+	@Column(name="image_desc")//name of the value column.
+	private Map<String, String> imagesDictionary = new HashMap<>();
+```
+
+### Mapping an Enum
+- Just need to use the ```@Enumerated``` annotation which takes EnumType as a parameter, it can be either ```EnumType.String``` or ```EnumType.ordinal```.
+ ```java
+@Enumerated(EnumType.STRING)
+@Column(name="status")
+private StudentStatus studentStatus = StudentStatus.ACTIVE;
+ ```
+
+### Mapping a Sorted Sets
+- ```@OrderBy("key_to_order_by ASC|DESC")```// Default is ASC
+
+### Mapping a Sorted Map
+
 
 
 ## Eager Loading vs Lazy Loading
@@ -1023,12 +1073,126 @@ System.out.println("tempCourses: " + tempCourses);
 - Have specific properties in another table, and common fields in the same table.
 - You can join the 2 tables to get all the information.
 
+### MappedSuperclass Strategy
+- Similar to table per class
+- Inheritance doesn't exist in database
+- No superclass table.
+- In super class use @MappedSuperClass annotation
+```java
+@MappedSuperClass
+public class User{
+    ....
+}
+
+@Entity
+public class Student extends User{
+    //....
+}
+
+@Entity
+public class Instructor extends User{
+    //....
+}
+```
+
+## HQL
+
+## Named Queries
+
+## Criteria API
+### Criteria
+### Restrictions
+### Projections
+### Query By Example
+
+## Caching
+### First Level of Cache
+- Session or entityManager is the first level cache.
+- Multiple updates in one session will mostly lead to a single update call to db.
+- Calling 2nd get in a session might be fetched from the first level cache itself.
+### Second Level of Cache
+- Anything that happens in session doesn't stay for a long time. So if the session is closed you need to go again to db.
+- This is why we need a second level cache.
+- We configure the second level cache in the configuration by providing the cache provider
+```xml
+<property name="cache.use_second_level_cache">true</property>
+<property name="cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+```
+
+#### @Cachable
+- Not all the entities by default are cached. The way we do that is by using the annotation ```@Cachable```
+```java
+@Entity
+@Cachable
+@Table(name="user_details")
+public class UserDetails{
+    ....
+}
+```
+#### Caching Strategy
+- Tells how to deal with the entity, if it is read only or it can be modified.
+- READ_ONLY : The entity is read-only, no need to track the updates.
+- READ_WRITE : The entity is mutable, need to update the cache on updating entity.
+- NON_STRICT_READ_WRITE : Eventually Consistent
+- TRANSACTIONAL : Cache is only valid in a transaction, strictest of all.
+```java
+@Entity
+@Cachable
+@Cache(usage=CacheConcurrencyStrategy.READ_ONLY)
+@Table(name="user_details")
+public class UserDetails{
+    .....
+}
+```
+#### Second Level Cache across sessions in one application
+
+#### Second Level Cache across different application
+
+#### Second Level Cache across clusters
+### Query Cache
+- results from Explicit HQL Queries aren't cached by the second level cache, we need a separate cache for queries known as the queryCache
+```java
+Query query = session.createQuery("from UserDetails user where user.userId = 1");
+session.close();
+....
+session2.beginTransaction();
+Query query = session2.createQuery("from UserDetails user where user.userId = 1");
+//The above without query cache and only second level cache will generate 2 db calls.
+```
+- To create a query cache you need to enable it in the configuration. 
+- Just like second level cache, query cache also needs a provider, we can use the same cache provider.
+```java
+<property name="cache.use_query_cache">true</property>
+<property name="cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+```
+- Just like we needed to enable second level caching per entity, we also need to enable query caching per query.
+```java
+Query query = session.createQuery("from UserDetails user where user.userId = 1");
+query.setCachable(true); // tells hibernate to store in query cache.
+
+session.close();
+....
+session2.beginTransaction();
+Query query2 = session2.createQuery("from UserDetails user where user.userId = 1");
+query2.setCachable(true); // also tells hibernate to look for the result of this query in query cache.
+```
+- setCachable performs 2 roles. If the query cache doesn't have the value then go to db and store in cache, if there is value in cache just fetch from there.
 ## Migrations in Hibernate
 When working with JPA and Hibernate, you have two options to manage the underlying database schema:
 
 - You can encapsulate schema changes in migration scripts and use a tool, like Flyway, to apply the migration scripts upon starting the application.
 - You can generate or update the database schema from the JPA and Hibernate entity mappings using the hbm2ddl.auto tool.
 
+## Hibernate HBM2DDL
+- Don't use in production, use liquibase or flyway and run actual sql scripts to modify database schema.
+- Useful in dev and testing.
+- We specify the auto configuration of database schema using the following property
+```java
+<property name=hibernate.hbm2ddl.auto>create-only</property>
+```
+### Other values
+- create-drop is useful for unit testing.
+![](res/hbm2ddl.jpg)
 
 # JPA
 - Java Persistence API

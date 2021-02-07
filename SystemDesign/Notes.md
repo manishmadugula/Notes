@@ -832,6 +832,39 @@ soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
 - If there is a component which has good test coverage and less technical debt associated with it, starting with this component can give teams a lot of confidence during the migration process.
 - If there is a component which has frequent business requirements and hence needs to be deployed a lot more regularly, you can start with that component. 
 
+# GRPC
+- Universal RPC Framework.
+- HTTP/2
+- protocol buffers
+- Machine readable API Contracts.
+- timeout is supported.
+- logging and monitoring
+## Existing Protocols
+- People didn't like the exisiting protocols over raw tcp( like redis etc).
+#### Request Response
+- SOAP
+- REST
+- GRAPHQL
+- SSE (Server sending information to client)
+### Bidirectional
+- WebSockets (Do anything you want)
+## Why GRPC
+
+### Problem with client libraries
+- Any communication protocol needs client libraries for language of choice. In between microservices you need to fill the models of the response, so you need that information.
+- Maintenance of client libraries. HTTP/1.1, HTTP/2, new features, security etc. Say server is upgraded by no one is updating the client libraries for various languages you will be in a problem/security risk.
+![](res/why_rest_sucks_grpc.jpg)
+### How GRPC Solves by standardization
+- Client Libraries : One library for all popular languages.
+- HTTP/2 (hidden at present http/2, later might change to http/3)
+- Protocol Buffers rather than json. So more efficients. So language agnostic.
+
+## GRPC Modes
+- Unary RPC (Request Response: Synchronous)
+- Server streaming RPC (Client makes one request and expects a flood of request comes back). GA Project.
+- Client streaming RPC (Client makes a flood of request like uploading a huge file). 
+- Bidirectional streaming RPC (Like websocket used in gaming)
+
 # Check these algorithms
 - Count Min Sketch
 - Consistent Hashing

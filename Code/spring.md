@@ -929,7 +929,7 @@ public Object myAroundAdviceForGetters(ProceedingJoinPoint pJP){
 - Automatically handled by jackson json
 - ### The returned Object has to be a valid Spring Bean, i.e with public setters and getters else there will be exception
 
-## Submit Query Parameters in Spring Boot
+## Submit Url Parameters in Spring Boot
 - You need to use ```@PathVariable``` annotation.
 - Your route should also have the variable with same name, else you will get error in the response.
 ```java
@@ -1295,7 +1295,7 @@ PersonV2 getPersonVersion2ContentNegotation(){
 - Add a duplicate configuration and in the VM Properties provide ```-Dserver.port=some_custom_port``` and so on.
 
 
-## Call another microservice from inside one microservice
+## Call another microservice from inside one microservice REST
 
 ### Using RestTemplate
 - The RestTemplate class is designed on the same principles as the many other Spring Template classes (e.g., JdbcTemplate, JmsTemplate ), providing a simplified approach with default behaviors for performing complex tasks.
@@ -1366,6 +1366,83 @@ private static void createEmployee()
   ```
 ### WebClient 
 - Asynchronous Alternative to RestTemplate
+
+## Using Spring Kafka
+- We can use spring kafka to produce and consume messages to the topic
+### Producer
+#### Configuration
+- The below configuration is used to tell kafka that our topic will be a string and the message will be of type JSON.
+- To be a producer, we need to configure the ProducerFactory.
+- We need to provide configuration to topic type, message type and the kafka broker server url.
+```java
+@Configuration
+public class KakfaConfiguration {
+    @Bean
+    public ProducerFactory<String, User> producerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+    @Bean
+    public KafkaTemplate<String, User> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+}
+```
+#### KafkaTemplate
+- Then once the kafka Template is configured, we can use it in the controller class, by autowiring kafkaTemplate.
+  ```java
+  kafkaTemplate.send(TOPIC, new User(name, "Technology", 12000L));
+  ```
+### Consumer
+#### Configuration
+- Similar to Producer example, we need to configure the ConsumerFactory in case of Consumer Example. One difference is we also have to tell the KafkaConsumerFactory what object to deserialize key and message to. (String.class and User.class)
+- Instead of KafkaTemplate in case of Producer, here we use ConcurrentKafkaListenerContainerFactory to consume the event handler.
+- This ContainerFactory will produce the Listeners wherever they are required to be injected.
+- We also need to use @EnableKafka annotation to tell spring to look for KafkaListeners.
+```java
+@EnableKafka
+@Configuration
+public class KafkaConfiguration {
+   @Bean
+    public ConsumerFactory<String, User> userConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "group_json");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
+                new JsonDeserializer<>(User.class));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, User> userKafkaListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, User> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userConsumerFactory());
+        return factory;
+    }
+}
+```
+#### Kafka Listeners / Event Handlers
+- Here we can configure our listener and provide our own custom listener in the containerFactory parameter of @KafkaListener annotation.
+- We also provide the groupId and topicId.
+- The consumer configuration ensures we directly get the deserialized object in our listener method.
+- We can have multiple listeners on the same topic using multiple group_id and also multiple listeners on multiple topics with different containerFactory.
+```java
+@Service
+public class KafkaConsumer {
+
+    @KafkaListener(topics = "Kafka_Example_json", group = "group_json",
+            containerFactory = "userKafkaListenerFactory")
+    public void consumeJson(User user) {
+        System.out.println("Consumed JSON Message: " + user);
+    }
+}
+```
+
 
 ## Distributed Logging
 ![](res/distributed_logging.png)
@@ -1545,6 +1622,84 @@ public class CircuitBreakerController {
 - Max Concurrent Calls to the API is configured using BulkHead Annotation, specific limits per API can also be configured.
 
 
+# Spring Security
+
+## JWT Token
+### Problem it solves
+- In http apis, the servers are stateless, no interaction regarding the previous API calls is saved.
+- So now say a user logs in with his username and password, for every request after the login, the client has to send the authentication information to the server. This is tedious if the user has to login for every request. So there are 2 approaches to solve this problem.
+### Session Token approach (REFERENCE TOKEN)
+- On logging in, send a session token back to the user. 
+- **This token acts as a reference token.** It is used to refer to data stored in server (REDIS CACHE) about the user information.
+- The cache contains the information related to the user and also a session id corresponding to each user data.
+- Client then saves this token in cookie.
+- On each API Call the client sends the session id to the server, which checks the cache to get the data for the user corresponding to this session.
+- These are secure because all the user data is with the server itself.
+- ![](res/session_token.jpg)
+#### Problem with session token
+- Redis becomes single point of failure.
+### JWT Token approach (VALUE TOKEN)
+- Unlike the session token, JWT Token is the value token.
+- All the information related to the user is stored in the token itself.
+- On authentication of user(say by password), the JWT is calculated on the server and sent back to the client/user for further interaction with the server without the need of logging in.
+- JWT comes into picture only when authentication is complete and is used while we try to authorize the user.
+- The JWT is passed on header ```Authorization : Bearer JWT```
+- Also to prevent malicious data, the Token is signed by the server. So also secure.
+- The server doesn't have to remember anything.
+- JWT can also be stored in the cookie and sent on every request.
+- The value in JWT is not encrypted, but the authenticity of the value is valid. Just like certificates.
+- JWT Token shouldn't contain anything sensitive, just enough information to tell the server who the client is.
+- If someone gets hold of JWT, then they can use the JWT to impersonate you, so always use HTTPs connection.
+- Need to add expiration time to payload, since if someone gets hold of JWT, the JWT should expire after some time. This is one of the disadvatages of JWT, unlike Session Token which expire on logout. JWT invalidation need to be handled.
+- A much robust way to handle stolen JWT, is just have a invalid JWT list.
+#### Disadvantges
+- Hard to invalidate if stolen.
+- All the data in payload is public.
+### JWT Structure
+- The JWT has 3 different parts separated by period.
+- All these different parts are encoded by base64 (For convinience).
+- ![](res/jwt_2.jpg)
+#### Header
+- Algorithm with which the token was signed.
+#### Payload
+- The actual value which is stored in JWT
+#### Signature
+- Used to make sure that the payload is not meddled with.
+- The way this value is calculated is by using the algorithm(specified in header) to sign.
+- When someone authenticates, the payload and header is calculated and a private key is appended to this header and payload. This entire concatenated string is hashed with the algorithm.
+- ```signature = Base64Encode(SHA256(base64Encode(header)+base64Encode(payload)+256bit_private_key))```
+- Modifying the payload, makes the signature different, which is calculated in the server.
+- As long as the private_key is secure no one can successfully meddle the payload and be undetected. 
+
+# OAuth2 (Open Authorization)
+- OAuth is used to grant authorization. It is a step after authentication.
+![](res/oauth_terminology.jpg)
+## Terminology
+### Resource
+- The information that needs to be accessed. This is protected. The OAuth is used to allow access to that resource.
+### Resource Owner
+- An entity capable of granting access to the protected Resource.
+### Resource Server
+- The server hosting the protected resources
+
+### Authorization Server
+- Coupled with resource server, (can be separate or the one and same with resource server), which is responsible for granting authorization to the client.
+- The server issuing access tokens to the client, which identifies all the permissions client has access to.
+### Client
+- The application which needs access to the protected resource, with resource owner's authorization.
+- This terminology is somewhat confusing.
+
+## OAuth Flows
+
+### Authorization Code Flow
+
+### Implicit Flow
+- For javascript apps where security isn't the main concern.
+### Client Credentials Flow
+- For authorization between microservices
+
+# OpenId
+- OAuth for Authentication.
 
 # Important Jars
 - spring-boot-starter-web

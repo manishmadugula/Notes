@@ -90,6 +90,62 @@ Head of Line blocking (in HTTP/1.1 terms) is often referring to the fact that ea
 - MQTT doesn’t support transactions and allows some basic acknowledgments.
 - Both RabbitMQ and MQTT are popular and widely used in the industry. You would prefer RabbitMQ when there is a requirement for complex routing, but you would prefer MQTT if you are building an IOT application. 
 
+# Kafka
+
+## Components
+- All the components are connected using TCP connection, bidirectional.
+### Kafka Broker
+- Manages all the messages, ensures durability of messages.
+### Kafka Producer
+- Produces messages on topic.
+- Producer can choose to recieve acknowledgement of data writes:
+- ![](res/kafka_pr_1.jpg)
+### Kafka Consumer
+- Consumes the messages on topic.
+- Consumer polls for message, not a push model. (Unlike Rabbit MQ where message is pushed to consumer).
+### Topics
+- Logical partitions where we write the data. Write message to topicA or topicB
+- All the messages are append only, no delete.
+- Appending is extreamly fast, since we go to the end, and we always knows where the end is and write to it, no fragmentations.
+- Any insert/update is inserted to append only commitlog.
+- Fetching the latest message from a topic is very fast, since we append sequentially. So fast writing is a benifit for kafka.
+![](res/kafka_topic.jpg)
+
+### Kafka Partitions
+- Topics can grow large, so we perform sharding.
+- This however introduces complexity to the producer and consumer, producer has to figure out which partition to write to and consumer where to read from.
+- On writing to a topic, the information about partiiton and position is returned to the producer.
+- The partition maintains the order in which data was inserted and once the record is published to the topic.
+-  It maintains a flag called 'offsets,' which uniquely identifies each record within the partition.
+- The offset is controlled by the consuming applications. Using offset, consumers might backtrace to older offsets and reprocess the records if needed.
+- ![](res/kakfa_partition.jpg)
+
+### Consumer Group
+- Were invented to perform parallel processing on partitions.
+- Removes the awareness of partitions from consumers and also helps us to perform parallel consumption of data from multiple partitions.
+- Each partition is only consumed by only consumer(thread safety). But a single consumer can consume multiple partition.
+- Initially the consumer 1 was responsible for both the partitions.
+- ![](res/kafka_cg_1.jpg)  
+- Once the consumer 2 was added the parition rebalances and we can perform parallel processing without race conditions, because they have independent partiitons.
+- ![](res/kafka_cg_2.jpg)
+- In the above case, another consumer cannot join the same consumer group, since there are no more partitions.
+- A single consumer group system acts like a queue. Since a single partition is only guaranteed to be read once for each message in it by a single consumer.
+- Multiple consumer group system would act like a pubsub.
+
+## Queue vs PubSub
+- Kafka can do both using consumer group.
+### Queue
+- Publish once and consumes it once, no one else can consumes it, once it is consumed.
+### PubSub
+- Publish once and consumed by multiple consumers.
+- Like youtube, one service can be compress service, multiple codec convert service, copyright service etc on the same raw video.
+
+## Distributed System
+- Say we have multiple kakfa brokers, with leader and follower at partition level, it is important to note that leader follower concept is at partition level not broker level because even if the whole broker went down, we don't loose all the data.
+- You can control the replication using replication factor.
+- Zookeper is responsible to store the information regarding which broker is leader for what partition and which is follower.
+- Producer can write to any broker and the brokers gossip between each other and they will coordinate to write to the correct broker.
+- ![](res/kafka_zk_1.jpg)
 
 # Kafka vs Messages Queue
 ## Pros

@@ -31,8 +31,7 @@ for (int i = 1; i < 50; i += 2)
 # JAVA is call by Value
 - Just that references are passed by Value, we don't deal with actual Objects.
 
-# Default Package
-- If no package declaration is specified for 2 classes, they cannot access each other method unless the method is public.
+
 
 # Varargs
 - It is short-form for variable-length arguments. A method that takes a variable number of arguments is a varargs method.
@@ -1332,6 +1331,18 @@ Collections.sort(customerList, new EmailComparator());
 [Link for video](https://www.youtube.com/watch?v=ZBJ0u9MaKtM&t=2s)
 ![JVM](res/JVM_java.PNG)
 ## Class Loader
+- The Java ClassLoader is a part of the Java Runtime Environment that dynamically loads Java classes into the Java Virtual Machine. 
+- Java classes aren’t loaded into memory all at once, but when required by an application, at which point class loader is called by the JRE, these class loaders load classes into memory dynamically.
+- Not all classes are loaded by a single ClassLoader. Depending on the type of class and the path of class, the ClassLoader that loads that particular class is decided. 
+- ```ClassLoader getClassLoader()``` : This method returns the class loader for this class. 
+### BootStrap ClassLoader
+- A Bootstrap Classloader is a Machine code which kickstarts the operation when the JVM calls it. It is not a java class. Its job is to load the first pure Java ClassLoader. Bootstrap ClassLoader loads classes from the location rt.jar.
+- rt = Run Time. It contains all the java runtime libraries. (Essential)
+### Extension ClassLoader:
+- The Extension ClassLoader is a child of Bootstrap ClassLoader and loads the extensions of core java classes from the respective JDK Extension library. It loads files from jre/lib/ext directory or any other directory pointed by the system property java.ext.dirs.
+
+### Application/System ClassLoader
+-  An Application ClassLoader is also known as a System ClassLoader. It loads the Application type classes found in the environment variable CLASSPATH, -classpath or -cp command line option. The Application ClassLoader is a child class of Extension ClassLoader.
 
 ![Class-Loader](res/class_loader_java.PNG)
 
@@ -1343,10 +1354,18 @@ Collections.sort(customerList, new EmailComparator());
 - (Shared - Not Thread Safe)
 - class/static variables
 - byte code
-- class level constant pool
+- class level constant pool/Runtime Constant Pool
 - ?reflection uses this area.
 - #### Moved to metaspace in java 8, native OS Memory, as much memory/virtual memory as there is available for operating system.
 - before java 8 -> (64 MB - Default) change using -XX:MaxPermSize, if low perm size you get java.lang.OutOfMemoryError:PermGen
+
+
+#### PermGen vs MetaSpace
+- Metaspace by default auto increases its size (up to what the underlying OS provides), while PermGen always has a fixed maximum size. You can set a fixed maximum for Metaspace with JVM parameters, but you cannot make PermGen auto-increase.
+
+#### Runtime Constant Pool
+A class file keeps all its symbolic references in one place, the constant pool. Each class file has a constant pool, and each class or interface loaded by the Java virtual machine has an internal version of its constant pool called the runtime constant pool . The runtime constant pool is an implementation-specific data structure that maps to the constant pool in the class file. Thus, after a type is initially loaded, all the symbolic references from the type reside in the type's runtime constant pool.
+[Link](https://blog.jamesdbloom.com/JVMInternals.html#constant_pool)
 
 ### Heap (Shared - Not Thread Safe)
 - (Shared - Not Thread Safe)
@@ -1494,6 +1513,7 @@ You can configure the gc to use in the flag passed.
 ## Finalize Method.
 - This method is called when the object is garbage collected.
 - But it is not recommended to put dbconnection.close kind of the important methods. Since the object can stay in heap for a long time and the dbconnection will be consuming the memory till that time. So better to remove expensive resources once you know you no longer need it.
+- You can instead use try-with autoclose idiom to close the dbconnections, make sure your object that needs to be autoclosed on going out of scope implements the **java.lang.AutoCloseable.**
 - If you recreate the object during finalizer. The object is recreated and is not garbage collected, to avoid permanent object persistence there is a contract which says an object's finalizer can only be run once.
 
 ## Debug GC
@@ -1759,6 +1779,78 @@ ArrayList arr = new CopyOnWriteArrayList();
     ...
   }
 ``` 
+
+# Path vs ClassPath vs SourcePath
+## ClassPath
+- The CLASSPATH variable is one way to tell applications, including the JDK tools, where to look for user classes. (Classes that are part of the JRE, JDK platform, and extensions should be defined through other means, such as the bootstrap class path or the extensions directory.)
+
+## SourcePath
+- The sourcepath is the path to the sources you are compiling.
+
+## Path
+- Used to tell operating system where to find the binaries, like javac and java etc.
+
+
+
+# Packages In Java
+- Package in Java is a mechanism to encapsulate a group of classes, sub packages and interfaces. 
+  - Preventing naming conflicts.
+  - Making searching/locating and usage of classes, interfaces, enumerations and annotations easier
+  - Providing controlled access
+  - Data encapsulation
+- We can access public classes in another (named) package using: package-name.class-name
+
+## Default Package
+- If no package is specified, the classes in the file goes into a special unnamed package (the same unnamed package for all files).
+- If no package declaration is specified for 2 classes, they cannot access each other method unless the method is public.
+- Package statement must be first statement in the program even before the import statement.
+
+
+## Built-in Packages
+-  java.lang: Contains language support classes(e.g classed which defines primitive data types, math operations). This package is automatically imported.
+-  java.io: Contains classed for supporting input / output operations.
+-  ava.util: Contains utility classes which implement data structures like Linked List, Dictionary and support ; for Date / Time operations.
+-  
+## User-defined packages
+```java
+package myPackage;
+
+public class MyClass
+{
+    public void getNames(String s)
+    {        
+        System.out.println(s);        
+    }
+}
+```
+
+# Importing
+- Sub packages are not imported if you perform * on the package.
+## Useful libraries to import.
+```java
+import java.math.*;
+import java.util.*;
+import java.lang.*;
+import java.util.regex.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
+import java.util.function.*;
+```
+
+## Static import in Java
+- static import is a feature that expands the capabilities of import keyword. It is used to import static member of a class.
+-  We all know that static member are referred in association with its class name outside the class. Using static import, it is possible to refer to the static member directly without its class name.
+```java
+import static java.lang.Math.*;
+public class Test
+{
+    public static void main(String[] args)
+    {
+        System.out.println(sqrt(144)); // No need for Math.sqrt(144)
+    }
+}
+```
+- Similarly, if we import the ```import static java.lang.System.*``` then we can do ```out.println("Hellow")``` instead of ```System.out.println```.
 
 # Serialization
 - Java serialization enables writing Java objects to file system for permanent storage or on network to transfer to other applications. Serialization in Java is achieved with Serializable interface.

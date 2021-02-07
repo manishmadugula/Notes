@@ -1,3 +1,14 @@
+# Fix your imports
+```java
+import java.math.*;
+import java.util.*;
+import java.lang.*;
+import java.util.regex.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
+import java.util.function.*;
+```
+
 # To print for debugging in Java
 - Override the toString.
 - ### To print Arrays just use 

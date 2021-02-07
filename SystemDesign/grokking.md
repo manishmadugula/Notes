@@ -81,6 +81,25 @@ CREATE TABLE chat_messages (
 ```
 - The above approach however doesn't allow the user to delete the message, since delete in one user's view will delete it in other's view too. You can have flags to deal with this issue. ```visible_one and visible_two```
 
+# Google Docs
+- Use a queue to make sure the changes from various users come one after the other, each change to the server has a version number.
+- Based one the version in the PUT request and the version of the doc in the server, you can perform operational transform. 
+- All operations are either insert and delete.
+- All user's cursor should be communicated using websockets. Version history, error messages.
+- An append only change log, can be used to go back to versions.
+- Markdown to persist the formatted text in the database. 
+- Data is denormalized, document based storage.
+
+# Google Search
+## Crawler
+## Page Rank
+## Index
+
+# TikTok
+- CDN, News feed(Same with instagram push pull)
+- S3, Meta data use SQL
+
+
 # To Read
 - https://instagram-engineering.com/handling-growth-with-postgres-5-tips-from-instagram-d5d7e7ffdfcb
 - https://instagram-engineering.com/search-architecture-eeb34a936d3a
