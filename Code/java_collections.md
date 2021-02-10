@@ -387,7 +387,13 @@ map.get(c1.getEmail()) // will return the c1 object.
   }
   //Causes Exception, won't cause exception in case of EnumMap.
   ```
-
+- Fail Safe vs Fail Fast Iterator ([Link](https://www.baeldung.com/java-fail-safe-vs-fail-fast-iterator))
+  - Collections maintain an internal counter called modCount. Each time an item is added or removed from the Collection, this counter gets incremented.
+  - When iterating, on each next() call, the current value of modCount gets compared with the initial value. If there's a mismatch, it throws ConcurrentModificationException which aborts the entire operation.
+  - Fail-Safe iterators favor lack of failures over the inconvenience of exception handling.
+  - Those iterators create a clone of the actual Collection and iterate over it. If any modification happens after the iterator is created, the copy still remains untouched. Hence, these Iterators continue looping over the Collection even if it's modified.
+  - The Fail-Safe Iterators have a few disadvantages, though. One disadvantage is that the Iterator isn't guaranteed to return updated data from the Collection, as it's working on the clone instead of the actual Collection. (Weakly Consistent)
+  - Another disadvantage is the overhead of creating a copy of the Collection, both regarding time and memory.
 ## WeakHashMap
 - Elements in weak hashmap can be reclaimed by the garbage collector. The weak hashmap has the weak reference to the object, and if there are no other strong reference to the object then garbage collector will destroy that item.
 - Uses in case of lookup/cache. As the lifetime of cache entries are determined by external refernces to the key.

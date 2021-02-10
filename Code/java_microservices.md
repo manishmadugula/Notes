@@ -1096,13 +1096,24 @@ public class Instructor extends User{
 ```
 
 ## HQL
+- Use JPQL Instead
 
 ## Named Queries
+- Simply a way to reuse queries
+## Named Native Queries
+
 
 ## Criteria API
+- The Criteria API is a predefined API used to define queries for entities. It is the alternative way of defining a JPQL query. These queries are type-safe, and portable and easy to modify by changing the syntax.
 ### Criteria
+- Tell's Hibernate we are creating a criteria, kind of like a where clause.
 ### Restrictions
+- Add restrictions to the criteria.
+```java
+Criteria criteria = session.createCriteria()
+```
 ### Projections
+- For aggregation functions
 ### Query By Example
 
 ## Caching
@@ -1201,8 +1212,22 @@ When working with JPA and Hibernate, you have two options to manage the underlyi
 
 ## Entity Manager
 - Save the Entity to Database
+```java
+ EntityManagerFactory emfactory = Persistence.createEntityManagerFactory( "Eclipselink_JPA" );
+EntityManager entitymanager = emfactory.createEntityManager( );
+entitymanager.getTransaction( ).begin( );
+//
+//entitymanager.remove( employee );
+
+entitymanager.getTransaction( ).commit( );
+```
+- To get ```Employee employee = entitymanager.find( Employee.class, 1201 );```
+- To post ```entitymanager.persist( employee );```
+- To update, simply get and the use setters and the commit transaction.
+- To delete ```entitymanager.remove( employee );```
 
 ## Persistence Context
+- Within the persistence context, the entity instances and their lifecycle are managed.
 - The persistence context is the first-level cache where all the entities are fetched from the database or saved to the database. It sits between our application and persistent storage.
 - An EntityManager instance is associated with a persistence context.
 - Flushing a Cache is the act of putting modified data back into the database.
@@ -1210,10 +1235,21 @@ When working with JPA and Hibernate, you have two options to manage the underlyi
 ### Persistence contexts are available in two types:
 - The default persistence context type is PersistenceContextType.TRANSACTION. To tell the EntityManager to use the transaction persistence context, we simply annotate it with @PersistenceContext
 #### Transaction-scoped persistence context
+- ```java
+    @PersistenceContext
+    private EntityManager entityManager;
+    ```
 - The transaction persistence context is bound to the transaction. As soon as the transaction finishes, the entities present in the persistence context will be flushed into persistent storage.
 ####  Extended-Scoped Persistence Context
+- ```@PersistenceContext(type = PersistenceContextType.EXTENDED)```
 - An EntityManager using an extended persistence context maintains the same persistence context for its entire lifecycle. Whether inside a transaction or not, all entities returned from the EntityManager are managed, and the EntityManager never creates two entity instances to represent the same persistent identity. Entities only become detached when you finally close the EntityManager (or when they are serialized).
 
+## JPQL 
+- SQL for JAVA Objects
+- ```Select UPPER(e.ename) from Employee e```
+- ```Select e from Employee e where e.salary Between 30000 and 40000```
+- ``` Query query = entitymanager.createQuery( "Select e " + "from Employee e " + "ORDER BY e.ename ASC" );```
+- See Hibernate Notes on how we can use query object. (getResultList, getSingleResult)
 
 
 ## Annotations

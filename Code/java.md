@@ -1577,6 +1577,7 @@ This Integer caching works only on auto-boxing. Integer objects will not be cach
   s1 == s2 //prints true.
   ```
 
+- ### One important distinction between ```String s1 = "Hello";``` and ```String s1 = new String("Hello")``` is that the former only creates a single object in string pool, where as the later creates 2 objects one in the heap and one in the string pool.
 ## Why Strings are immutable
 - To preserve the strings cached in string pool, it is restricted to modify the string since that same string object might be being used in multiple other places and changing it will lead to unexpected results.
 - By making it immutable, Strings are immutable.

@@ -53,3 +53,34 @@
 - Ctrl + W : To select the word under the cursor.
   - Press W again while holding to increase the scope of selection
   - pressing Shift+W(holding the ctrl) to decrease the scope of selection
+
+
+# Debugger
+## Basics
+- Step over
+- Step into
+- Force Step into (JAVA API code)
+- Step out
+- ### Evalutate Expression
+- ### Drop Frame 
+- Show Execution Point
+- Add Conditional Breakpoints
+- Add Watch
+  - Add to watches (In Source code)
+- Modify Value of variables to change the code execution.
+- Mute breakpoints
+- Resume
+- Run to cursor.
+- Jump to Source
+- Clicking on stacks to show varibles per scope.
+
+## Advanced
+- ### Setting breakpoint on a single lambda
+- ### Stream debugger (stream chain)
+- Selecting and disabling breakpoints
+- Grouping breakpoints.
+- Adding breakpoints for interface methods.
+- ### Field breakpoint (No need to add breakpoint in getters and setters).
+- ### Exception Breakpoint
+  - Pause the application before the breakpoint.
+- ### Memory View
