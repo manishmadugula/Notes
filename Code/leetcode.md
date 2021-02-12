@@ -2063,9 +2063,9 @@ public:
 
 - https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/
   - The first item in preorder is the root, find the root in inorder, stuff in left is left of the root and stuff in right is right of root. Use recursion to solve.
-  - Same logic can be used for postorder and inorder
+  - Same logic can be used for postorder and inorder (Just start from the last index of postorder rather than first in case of preorder)
   - You cannot construct a binary tree using just postorder and preorder (Unless the binary tree is a full binary tree).
-  - If you know the binary tree is a bst then you just need a postorder to construct.
+  - If you know the binary tree is a bst then you just need a postorder/preorder to construct. (inorder is just sort the postorder). Only inorder not possible.
   
 
 # Interview Preparation
@@ -2321,6 +2321,8 @@ public:
     - Kind of like merge sort, find the sum of elements between 2 equal elements of the array.
   - https://www.geeksforgeeks.org/minimum-number-operation-required-convert-number-x-y/ 
     - Simple BFS
+    - if the number becomes negative, don't push children in the queue.
+    - if the number is already visiited then skip.
   - https://www.geeksforgeeks.org/given-an-array-of-numbers-arrange-the-numbers-to-form-the-biggest-number/
     - Custom sorting method assuming it as string
   - https://www.geeksforgeeks.org/find-local-minima-array/
@@ -2343,6 +2345,7 @@ public:
     - Two pointer approach, reject the smaller of the 2 lines on each iteration start at max width i.e i=0 and j=length-1;
   - https://leetcode.com/problems/fraction-to-recurring-decimal/
     - First compute the integral value, then compute the fractional value
+    - While comparing the fractional value, simply use long division, keep a hashmap (remainder,remainderIndex), if you see the same remainder again then that part is recurring.
   - https://leetcode.com/problems/3sum/submissions/
     - Tricky to solve if duplicates are involved.
     - Sort the array first
@@ -2350,27 +2353,84 @@ public:
   - ```J(n,k) = (J(n-1,k)+k)%n```
 ### Tree Problems
 #### Level Order Traversal
+- Simple Queue solution.
 #### Left View
   - Keep in mind not same as left boundary
   - https://www.geeksforgeeks.org/print-left-view-binary-tree/
-  - Use level order traversal
+  - Use level order traversal, with 2 loops to avoid dual queue, can also use a null reference as a barrier
+  - simple 2 loops approach https://www.geeksforgeeks.org/print-left-view-binary-tree/
 #### Boundary Traversal
   - https://www.youtube.com/watch?v=uemjIijtu2I
   - Left boundary + leaf + right Boundary
   - Remove extra items in all the above 3
 
+## Day 9
 
+### Morris Tree Traversal
+- Iterative Inorder O(1) space (no stacks)
+- Find kth largest in bst in O(1) space.
+```java
+current = root;
+while(current != null){
+  if(current.left == null){
+    visit(current);
+    current = current.right;
+  }
+  else{
+    var predecessor = findPredecessor(current);
+    if(predessor.right == null){
+      //First time visited, no link formed
+      predessor.right = current;
+      current = current.left;
+    }
+    else{
+      //Already visited the left part, need to remove the connections
+      predessor.right = null;
+      visit(current);
+      current = current.right;
+    }
+  }
+}
+```
+- Code for findPredecessor is 
+```java
+Node k = current.left;
+while(k.right != null && k.right != current)
+  k = k.right;
+return k;
+```
 
+###  implements the Deque interface.
+- You need a doubly linked list.
+- https://www.geeksforgeeks.org/implementation-deque-using-doubly-linked-list/
+
+### Vertical Order
+- Use hashmap and also calculate Horizontal distance from root.
+- To preserve order use the same approach but with level order traversal
+- https://www.geeksforgeeks.org/print-a-binary-tree-in-vertical-order-set-3-using-level-order-traversal/?ref=rp
+
+### Spiral Level Order Traversal
+- Two stack approach
+- In One stack, when popping, push to other stack (left to right child) till this stack is empty
+- In Second stack, when popping push to other stack (right to left) till this stack is empty.
+- Keep doing till both are empty.
+- https://www.youtube.com/watch?v=YsLko6sSKh8
+
+## Day 10
+- https://www.geeksforgeeks.org/goldman-sachs-interview-experience-1yr-experienced-2019/
+  - Binary Search, asked during sigmoid
+- TO_DO https://www.geeksforgeeks.org/reduce-the-string-by-removing-k-consecutive-identical-characters/
+  - Stacks with frequency
+  - https://medium.com/algorithm-and-datastructure/candy-crush-remove-repeating-numbers-1020e3bddfb
+- https://leetcode.com/problems/remove-all-adjacent-duplicates-in-string-ii/
+- https://leetcode.com/discuss/interview-question/380650/Bloomberg-or-Phone-Screen-or-Candy-Crush-1D/343995
 
 ## To-Do
 - Trajan's Algorithm for **https://leetcode.com/problems/critical-connections-in-a-network/**
-- https://www.geeksforgeeks.org/goldman-sachs-interview-experience-software-engineer-experienced/ (JAVA portion)
-- https://www.geeksforgeeks.org/goldman-sachs-interview-experience-1yr-experienced-2019/
 - Josephus Problem
-- https://www.geeksforgeeks.org/kth-smallest-element-in-bst-using-o1-extra-space/
-- https://leetcode.com/problems/fraction-to-recurring-decimal/
 - https://leetcode.com/problems/reaching-points/
-
+- https://leetcode.com/problems/last-stone-weight-ii/discuss/294888/JavaC%2B%2BPython-Easy-Knapsacks-DP
+- https://leetcode.com/problems/shortest-subarray-with-sum-at-least-k/
 # Similar Questions
 
 ## Find a number

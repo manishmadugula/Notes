@@ -54,12 +54,81 @@ static void varargsExample(int firstParameter, String ... a){
 
 //in main
 varargsExample(1,"eh","3dsf","Ny","name", "Is", "Manish");
-
-
 ```
 
 # Equals vs == operator
 We can use == operators for reference comparison (address comparison) and .equals() method for content comparison. In simple words, == checks if both objects point to the same memory location whereas .equals() evaluates to the comparison of values in the objects.
+
+## Default Implementation
+- The above i.e equals(and therefore hashcode) is gonna return the content equality is true for most Java objects.
+- But by default it is not true, even if content is same, teh equals method will return false, because by default both equals and hashcode will do equality checks by reference.
+```java
+      Employee e1 = new Employee(1,"Manish");
+      Employee e2 = new Employee(1,"Manish");
+      System.out.println(e1==e2);
+      System.out.println(e1.equals(e2));
+      System.out.println(e1.hashCode());
+      System.out.println(e2.hashCode());
+
+      /*
+      false
+      false
+      488970385
+      1209271652
+      */
+
+```
+
+# Equals and HashCode Contract
+## Equals Contract
+- reflexive: an object must equal itself
+- symmetric: x.equals(y) must return the same result as y.equals(x)
+- transitive: if x.equals(y) and y.equals(z) then also x.equals(z)
+- consistent: the value of equals() should change only if a property that is contained in equals() changes (no randomness allowed)
+
+
+### Inheritance can violate the equals contract
+```java
+@Override
+public boolean equals(Object o) {
+    if (o == this)
+        return true;
+    if (!(o instanceof Money)) //This is the reason.
+        return false;
+    Money other = (Money)o;
+    boolean currencyCodeEquals = (this.currencyCode == null && other.currencyCode == null)
+      || (this.currencyCode != null && this.currencyCode.equals(other.currencyCode));
+    return this.amount == other.amount && currencyCodeEquals;
+}
+
+Money cash = new Money(42, "USD");
+WrongVoucher voucher = new WrongVoucher(42, "USD", "Amazon");
+
+voucher.equals(cash) => false // As expected.
+cash.equals(voucher) => true // That's wrong.
+```
+- That's why use composition over inheritance
+- Use getClass rather than instanceof for equality of type.
+```java
+    if (getClass() != o.getClass())
+    {
+        return false;
+    }
+```
+## HashCode Contract
+- if we override the equals() method, we also have to override hashCode().
+- the value of hashCode() may only change if a property that is in equals() changes
+- objects that are equal to each other must return the same hashCode
+- unequal objects may have the same hashCode
+
+## When Do We Override equals() and hashCode()
+- For entity classes – for objects having an intrinsic identity – the default implementation often makes sense.
+- for value objects, we usually prefer equality based on their properties. Thus want to override equals() and hashCode().
+
+## Implementation Helper/Libraries
+-  Google Guava have helper classes in order to simplify writing both methods.
+-  we can use the EqualsVerifier library for testing
+
 
 # Cloning in Java
 -  A clone is an exact copy of the original. It essentially means the ability to create an object with similar state as the original object.

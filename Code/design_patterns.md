@@ -302,6 +302,7 @@ maintaining  state in later case is nightmare and leads to subtle bugs.
 
 - How do you prevent for creating another instance of Singleton during serialization?
   [Link](https://javarevisited.blogspot.com/2011/03/10-interview-questions-on-singleton.html)
+  - By implementing readResolve and returning the singleton there.
 
 # Factory Method Pattern
 - Encapsulation the instantiation of Objects so that is uniform across code.

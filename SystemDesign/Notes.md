@@ -813,6 +813,11 @@ soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
 </soap:Envelope>
 ```
 
+### PATCH vs PUT
+- Patch is used if only a few instructions are communicated to tell the update.
+- Entire body is sent to update.
+- Using the PUT method consumes more bandwidth as compared to the PATCH method when only a few changes need to be applied to a resource.[citation needed] But when the PATCH method is used, it usually involves fetching the resource from the server, comparing the original and new files, creating and sending a diff file. On the server side, the server has to read the diff file and make the modifications. This involves a lot of overhead compared to the PUT method.[11] On the other hand, the PUT method requires a GET to be performed before the PUT and it is difficult to ensure that the resource is not modified between the GET and PUT requests.
+
 # Git
 
 ## Git Hooks
@@ -864,6 +869,11 @@ soap:encodingStyle="http://www.w3.org/2001/12/soap-encoding">
 - Server streaming RPC (Client makes one request and expects a flood of request comes back). GA Project.
 - Client streaming RPC (Client makes a flood of request like uploading a huge file). 
 - Bidirectional streaming RPC (Like websocket used in gaming)
+
+# Protocol Buffers
+- Schema auto generation for multiple languages
+- Compressed Payload
+- Auto creation of client libraries
 
 # Check these algorithms
 - Count Min Sketch

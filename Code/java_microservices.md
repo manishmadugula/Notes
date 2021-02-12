@@ -657,6 +657,10 @@ Employee e=new Employee();
 ```
 - By default no operations are cascaded.
 
+### Orphan Removal
+- On detaching say a review from the courses object in java code, the review should be deleted in DB.
+- https://www.baeldung.com/jpa-cascade-remove-vs-orphanremoval
+
 ## Mappings in Hibernate
 - Let us use the following example to define our relationship
   ![](res/hibernate_tutorial_example.jpg)

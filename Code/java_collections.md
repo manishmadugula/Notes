@@ -278,6 +278,26 @@ map.get(c1.getEmail()) // will return the c1 object.
   ### ```capacity = number of buckets * load factor```
 
 [Working of hashmap](https://www.geeksforgeeks.org/internal-working-of-hashmap-java/#:~:text=As%20HashMap%20also%20allows%20null,null%20will%20always%20be%200.&text=hashCode()%20method%20is%20used,of%20object%20in%20integer%20form.&text=In%20HashMap%2C%20hashCode()%20is,and%20therefore%20calculate%20the%20index.)
+
+### Treefy
+- What happens to treefy factor when we use HashMap? In this case, to convert LL into BST, we need some kind of comparison logic. Hence if the comparator/comparable is not implemented it will not convert LL into BST. But, there will not be any error.
+
+
+
+### Internals
+- Use generics for key and value.
+- Data structure to store entry objects is an array named table of type Entry.
+- We can not calculate the hash of the null Node, so the hashcode of null Node is taken as 0.
+- Note: put() method inserts the Node and returns the previous value if the Node with same Key already existed before. If it is being inserted for the first time then it returns null.
+- To check for equality of 2 nodes, both the hashcode and equals come into picture, as observable from the code above.
+To compare the 2 Nodes, it checks whether their hashcodes are equal, and whether their equals also returns true.
+So for any object to be treated as the key for the hashmap, we must override the hashcode and the equals method in that object, so that they can be checked against the equality efficiently.
+- While adding the new Node, we check if the current size of the Hashmap is more than the threshold value or not.
+- So if the size exceeds the threshold then resize the hashmap.
+- In resizing it, calculate the new capacity and copy all the Nodes to the new capacity hashmap.
+- Note: the new size of the HashMap is double the previous size.
+- https://anmolsehgal.medium.com/java-hashmap-internal-implementation-21597e1efec3
+
 ## HashTable (Deprecated)
 - HashTable doesn't accept null
   ```java

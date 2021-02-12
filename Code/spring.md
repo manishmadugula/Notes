@@ -364,6 +364,7 @@ public class SwaggerConfig {
 ### @Repository
 - This annotation is a specialization of the @Component annotation with similar use and functionality. It provides additional benefits specifically for DAOs.
 - Component which interacts with DB.
+- @Repository’s job is to catch persistence specific exceptions and rethrow them as one of Spring’s unified unchecked exception.
 
 ### @RestController
   - Tell Spring the current class is a rest controller
