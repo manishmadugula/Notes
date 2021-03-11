@@ -14,3 +14,15 @@
 - Pivot your answer, if your answer is wrong. now I realise the answer that I gave isn't going in the direction I was going.
 ## References
 - https://www.youtube.com/watch?v=gFNOJ5VLg5E
+
+
+# HR
+
+## If you have never been in the situation
+- I have never been in such a situation, but if I were, I would handle it as.....
+
+## Strengths in Technology
+- Backend, Weakness in Front End
+
+## Conflict Resolution
+- Stress as an excuse

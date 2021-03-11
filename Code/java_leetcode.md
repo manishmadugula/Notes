@@ -243,6 +243,14 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
 - Get a Key
   ```map.get(Key)```
 
+## No need to check containsKey
+- Use ```putIfAbsent(key,initVal);```
+```java
+  int key = 1;
+  map.putIfAbsent(key,0);
+  map.put(key,map.get(key)+1);
+```
+
 ## equals, hashCode Contract
 - To have a object as key for HashMap or HashSet you need to override the equals and hashCode Implementation as below
 - Don't forget equals take an Object as the input.

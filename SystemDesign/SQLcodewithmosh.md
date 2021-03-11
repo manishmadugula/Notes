@@ -675,6 +675,15 @@ generates one more column for total of both Cash and Credit Card.
   );
   ```
 
+## Subqueries are useful in examples where you need to fetch all subordinates of a manager/director and it is nested in a single query
+```sql
+SELECT * FROM employees WHERE manager_id=director_id 
+UNION
+SELECT * FROM employees WHERE manager_id IN (
+  SELECT * FROM employees WHERE manager_id=director_id 
+);
+```
+
 ## Subquery using IN Operator
 - Example of subquery returning a sequence of values
 ```sql
@@ -709,6 +718,9 @@ WHERE i.client_id IS NULL;
 ```
 
 - If performance is similar, you should choose the approach which is more readable.
+
+
+
 
 # Transaction
 

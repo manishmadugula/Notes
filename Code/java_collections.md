@@ -217,6 +217,13 @@ var stringArray = myCollection.toArray(new String[0]);//Java compiler will autom
 - Cost of find is constant no matter the size.
 - ```get(key)``` returns the value
 - ```put(key)``` insertst the key value pair in the Map.
+  - Put returns the previous value corresponding to the key, if it exists else will return null.
+- Put if absent (No need to perform containsKey) 
+  - ```java
+    int key = 1;
+    map.putIfAbsent(key,0);
+    map.put(key,map.get(key)+1);
+    ```
 
 ```java
 var c3 = new Customer("d", "f");
