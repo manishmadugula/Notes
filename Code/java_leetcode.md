@@ -9,6 +9,19 @@ import java.util.stream.*;
 import java.util.function.*;
 ```
 
+# Java Math
+
+- ```Integer x = Integer.MAX_VALUE;```
+- ```Integer y = Integer.MIN_VALUE;```
+- ```Math.max(x,y);```
+- ```Math.min(x,y);```
+- ```Math.abs(x);```
+- ```Math.log(y);```
+- ```Math.log10(x);```
+##  Log Base 2 
+  - $log_ab = log_{10}b / log_{10}a$
+  - ```logBaseTwo =  (int)(Math.log(N) / Math.log(2));```
+
 # To print for debugging in Java
 - Override the toString.
 - ### To print Arrays just use 
@@ -321,6 +334,26 @@ TreeMap<Integer, String> map = new TreeMap<>((x,y)->y-x);
   ```pq.remove(Obj)```
 - Decrease key operation
   - First remove the old Obj and insert the updated value.
+
+# Deque in JAVA
+- Add in Deque last
+  ```q.add(Obj)```, ```q.addLast(Obj)```
+- Add first in Deque
+  ```q.addFirst(Obj)```
+- Remove First
+  ```q.removeFirst()```
+- Remove Last
+  ```q.removeLast()```
+- Remove
+  ```q.remove(Obj)```
+- Poll First (Remove and return)
+  ```q.poll()```, ```q.pollFirst()```
+- Poll Last
+  ```q.pollLast()```
+- Peek First
+  ```q.peek()```, ```q.peekFirst()```
+- Peek Last
+  ```q.peekLast()```
 
 # LinkedHashMap for LRU Cache
 - Add an entry

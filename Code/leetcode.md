@@ -2425,6 +2425,150 @@ return k;
 - https://leetcode.com/problems/remove-all-adjacent-duplicates-in-string-ii/
 - https://leetcode.com/discuss/interview-question/380650/Bloomberg-or-Phone-Screen-or-Candy-Crush-1D/343995
 
+## Day 11 (Yugabyte, MMT)
+- https://codereview.stackexchange.com/questions/244468/enhanced-hashmap-add-a-number-to-all-keys-values
+  - Use offsetKey and offsetValue to keep track of the addToKey and addToValue.
+- MMT : Important Couldn't Solve optimally 
+  - https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/
+  - Monotonic Queue example
+  - Queue will always have useful elements, in descending sorted order.
+  - removeFromLast.
+  - ```java
+       private static int[]  solution(int[] arr,int k){
+        Deque<Node> q = new LinkedList<>();
+        List<Integer> ans = new ArrayList<>();
+        for(int i=0;i<k;i++){
+            while(q.size()!=0 && q.peekLast().value<=arr[i]){
+                q.pollLast();
+            }
+            q.add(new Node(arr[i], i));
+        }
+        ans.add(q.peek().value);
+
+        for(int i=k;i<arr.length;i++){
+            Node node = q.peek();
+            if(node.index==i-k){
+                q.poll();
+            }
+            while(q.size()!=0 && q.peekLast().value<=arr[i]){
+                q.pollLast();
+            }
+            q.add(new Node(arr[i],i));
+            ans.add(q.peek().value);
+        }
+        return ans.stream().mapToInt(x->x).toArray();
+    }
+    ```
+
+## Day 12 (VMWare)
+
+### LFU Cache
+- To implement LFU Cache, we need 2 Maps.
+  - One is a HashMap of (Key : (Value, Count))
+  - Second is a HashMap of (Count : LinkedHashSet<Key>)
+- The Second HashMap is used to keep track of the order of insertion of the keys, so that if there are multiple keys with same frequency the oldest of all is fetched in O(1) time.
+- Also using LinkedHashSet enables us to remove a key in O(1) time when we touch a key.
+- We also need to keep track of a min frequency state, and update it whereever necessary
+  - Just in one place i.e during touch : only if the current key has the frequency == min and the size of Linked Hash Set for that key is 0.
+- Touch operation :
+  - Update the count value in the First HashMap.
+  - Remove the key from the previous count's HashSet and insert into the new HashSet and update min if necessary.
+- GET Operation:
+  - Get the value, Touch and return the value.
+- PUT Operation:
+  - See if the key already exists, then simply update and touch.
+  - Else, check the capacity == size, then evict
+    - Fetch LinkedHashSet corresponding to the min frequency(this is where that state is used) and remove the first item from the LinkedHashSet as well as the First HashMap.
+    - No need to update min here, since we will make min=1 in the next step.
+  - Add the value to both hashMap and make min =1.
+```java
+class Pair{
+    public Integer value;
+    public Integer count;
+    
+    public Pair(int val, int cnt){
+        value =  val;
+        count = cnt;
+    }
+}
+
+class LFUCache {
+    
+    //Two datastructures. One keyMap and one countMap and need to maintain min state.
+    private HashMap<Integer, Pair> keyMap = new HashMap<>();
+    private HashMap<Integer, LinkedHashSet<Integer>> countMap = new HashMap<>();
+    private int min = -1;
+    private int capacity;
+    
+    public LFUCache(int capacity) {
+        this.capacity = capacity;    
+    }
+    
+    private void touch(int key){
+        Pair pair = keyMap.get(key);
+        countMap.get(pair.count).remove(key);
+        
+        //This is important step to keep in mind, only update the min if the current count == min.
+        if(pair.count == min && countMap.get(pair.count).size()==0)
+            min++;
+        
+        pair.count+=1;
+        
+        if(!countMap.containsKey(pair.count))
+            countMap.put(pair.count,new LinkedHashSet<>());
+        
+        countMap.get(pair.count).add(key);
+    }
+    
+    public int get(int key) {
+        
+        if(!keyMap.containsKey(key))return -1;
+        
+        Integer value = keyMap.get(key).value;
+
+        touch(key);
+        
+        return value;
+        
+    }
+    
+    public void put(int key, int value) {
+        
+        //check if it already exists?
+        if(keyMap.containsKey(key)){
+            Pair pair = keyMap.get(key);
+            pair.value = value;
+            touch(key);
+            return;
+        }
+        
+        //else check capacity is met?
+        if(keyMap.size()==capacity){
+            if(capacity == 0) return;
+            //evict
+            LinkedHashSet<Integer> hashSet = countMap.get(min);
+            
+            int keyToRemove=-1;
+            for(Integer i : hashSet){
+                keyToRemove=i;
+                break;
+            }
+
+            hashSet.remove(keyToRemove);
+            keyMap.remove(keyToRemove);
+        }
+        
+        //add it 
+        keyMap.put(key,new Pair(value,1));
+        min=1;
+        if(!countMap.containsKey(1))
+            countMap.put(1,new LinkedHashSet<>());
+        countMap.get(1).add(key);
+    }
+}
+```
+
+
 ## To-Do
 - Trajan's Algorithm for **https://leetcode.com/problems/critical-connections-in-a-network/**
 - Josephus Problem
