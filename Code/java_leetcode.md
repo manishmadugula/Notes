@@ -336,6 +336,7 @@ TreeMap<Integer, String> map = new TreeMap<>((x,y)->y-x);
   - First remove the old Obj and insert the updated value.
 
 # Deque in JAVA
+## IT is important to note there is no such thing as pop or top or even push in Deque.
 - Add in Deque last
   ```q.add(Obj)```, ```q.addLast(Obj)```
 - Add first in Deque

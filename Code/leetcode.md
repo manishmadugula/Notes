@@ -2430,9 +2430,11 @@ return k;
   - Use offsetKey and offsetValue to keep track of the addToKey and addToValue.
 - MMT : Important Couldn't Solve optimally 
   - https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/
+  - https://leetcode.com/problems/sliding-window-maximum/submissions/
   - Monotonic Queue example
   - Queue will always have useful elements, in descending sorted order.
   - removeFromLast.
+  - Amoritzed O(n) since each element is polled and added only once.
   - ```java
        private static int[]  solution(int[] arr,int k){
         Deque<Node> q = new LinkedList<>();

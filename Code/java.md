@@ -1480,41 +1480,51 @@ Suppose you are trying to load a dll, and calling a method inside that dll, we u
 - We cannot force gc to happen (but calling System.gc() might trigger it).
 - ```java.lang.outOfMemoryError``` heap space is full. Even with Garbage Collector you can have memory leaks.
 
-## Types of garbage collections
+## Tricolor Algorithm
+- DFS on the object tree and mark the objects to be sweeped by the GC. 
+- This algorithm is perfect and makes no mistakes but it is stop the world and scan everything algorithm
+
+## Ways to improve
+- Incrementally run garbage collection by breaking into multiple sections
+- Optimise the algorithm itself by reducing the amount of time gc runs.
+- Concurrency/Time Slices
+
+## Generational Hyposthesis
+- If an object survives till a particular amount of time it is expected to survive longer.
+- Old objects tend to stay around, new objects die quickly (like infant mortality).
+- ![](res/gc_generational_hypothesis.jpg)
+
+### GC Algorithm
+
+### 2 steps of garbage collections
 - There are 2 types of garbage collections, minor(eden space) and major(across the heap).
 - Both are stop the world garbage collection.
 
-## Based on hypothesis
+### Based on hypothesis
 - Most objects soon become unreachable.
 - Objects which are going to live an extending period of time usually don't refer to freshly created objects.
 
-## Terminology
-### Live Objects
-- Reachable objects
-### Dead Objects
-- Unreachable objects
-
-## Steps
-### Mark
+### Steps
+#### Mark
 - Garbage collector walks through object graph, and marks reachable object as reachable.
 
-### Sweep
+#### Sweep
 - unreachable objects are deleted.
 
-### Compaction
+#### Compaction
 - arrange everything in order, defragmentation. Make allocation contigious. Takes time.
 
-## Heap space division
+### Heap space division
 - Java garbage collectors are generational collectors.
 - Below is a diagram of heap.
 ![](res/generational_collectors.jpg)
-### Young Generation
+#### Young Generation
 - Place where objects are created initially.
 
-#### Eden Space
+##### Eden Space
 - The space where objects are created.
 
-#### Survivor Space
+##### Survivor Space
 - When eden space is full, a minor garbage collection kicks in and moves reachable objects from eden to survivor space.
 - There are 2 survivor space.
 - The below pic shows the state of the heap after the first cycle of minor gc.
@@ -1524,14 +1534,81 @@ Suppose you are trying to load a dll, and calling a method inside that dll, we u
 - The presence of 2 survivors spaces is to avoid an additional compaction step.
 - Similarly there is toggling/reordering of survivor spaces occurs in alternative minor gc cycle till a threshold is reached. At the end of that threshold all the survivor objects are moved to old/tenured generation.
 
-### Old/ Tenured Generation
+#### Old/ Tenured Generation
 - Objects which survives for a long time.
 - When old generation becomes almost full/reaches a threshold ```(-XX:MaxTenuringThreshold)``` we run major gc.
 - Will block the application execution and is very heavy operation.
 
+### Problem with generational hypothesis
+
+#### Old objects still need scanning
+- If you have objects in old region pointing to young guys, to mark/unmark a young object you need to scan all the old objects first.
+- You can't kill a child whose parent is alive so you need to check if the parent is alive even if it is in the tenured region.
+![](res/problem_with_gh.jpg)
+
+##### (CODE INJECTION WITH JIT) to solve the above problem
+- The JIT Compiler whenever sees an update/write like ```oldObject=young.a``` then it essentially marks that region as dirty by updating a card filter, similar to how bloom filter works. It does it by injecting code in the user thread while execution.
+- card table represents the portions of the old generation which are dirty.
+- Now we can only scan the region marked by the card table to see if these objects point to some object in the new generation and unmark it for sweep.
+- ![](res/gc_card_table.jpg)
+- This concept of JIT injecting code in the user thread is very important and crucial for a lot of GC algorithms.
+
+#### Problem in case of Caching
+- Generational Hypothesis doesn't work with Caches.
+- Records in the cache have an expiry time and (if using LRU), least recently used are kicked out the fastest.
+- Longer object stays, the higher chances of it being kicked out. 
+
+#### Nepotism
+- Say there is a queue/linked list and the objects 1,2 and 3 are in old generation and rest in young.
+- Now say the front of the queue is changed to point to 5, thus rendering 1,2,3,4 useless.
+- Now even if 4 is useless it is still not marked for sweeping since the useless and older object 3 is pointing to it. 3 won't be collected for gc till the major gc runs, till then 4 also exists.
+- This is called nepotism in garbage collection. 
+![](res/gc_nepotism.jpg)
+
+## Shenandoah 
+- Shenandoah is a new GC that was released as part of JDK 12.
+- Shenandoah’s key advance over G1 is to do more of its garbage collection cycle work concurrently with the application threads.
+-  G1 can evacuate its heap regions, that is, move objects, only when the application is paused, while Shenandoah can relocate objects concurrently with the application.
+-  To achieve the concurrent relocation, it uses what’s known as a Brooks pointer. This pointer is an additional field that each object in the Shenandoah heap has and which points back to the object itself.
+
+## ZGC
+- Similar to Shenandoah 
 
 
-## GC Types based on implementation.
+## Concurrent GC
+
+### Challenges with Concurrency.
+- Consider the tricolor algorithm, if we run this code concurrently with other user level threads, we might run into lost object problem, where a recently created object is not marked safe simply because the parent object was considered completely travelled (i.e black).
+- Here C is the parent of F, but it is completely travelled so marked white, so F is deemed unreachable and is thus marked for deletion. If C then tries to call F  there is NULL pointer exeception.
+![](res/lost_update_gc.jpg)
+- To deal with this problem we need to make sure when making references the object being referenced is always inserted to the stack which is part of the dfs in tricolor algorithm.
+- This is done by injecting a write barrier using JIT Compiler.
+- ![](res/JIT_injection.jpg)
+- In our example, when we create a reference from C to F, we mark F as grey and insert into stack.
+
+## G1GC Algorithm : Optimizing Memory Allocation/ Defragmentation.
+- To deal with memory fragmentation without defragmenting the entire memory. We need to divide the Memory into 2048 regions.
+- Likelyhood for a region to be picked up for GC is dependent on number of live objects. (1/ref_count). Less live object is less ref count and more garbage that's why this algorithm is called as garbage first garbage collector.
+- G1GC works at a regional level, it can compact few Survivor regions into a Old tenured region and also few eden and survivor region into new survivor region.
+- It is incremental
+![](res/g1gc.jpg)
+
+### Remembered Set
+- Similar logic like card table where pointer to old to young were noted to skip them from garbage collection.
+- Here we need something that tells us inter-region pointers.
+- ![](res/g1gc_remembered_set.jpg)
+
+### Problem with G1GC
+- Compaction is not concurrent.
+- Say, we want GC to concurrently compact while the user level thread is running, we would end up with lost updates, since the copy won't reflect the updates in the user level thread if copy happened before the update.
+- We need consistency on writes.
+
+## Islands of Isolation
+- An "island of isolation" describes one or more objects have NO references to them from active parts of an application.
+- Object A references object B. Object B references object A. Neither object A nor object B is referenced by any other object. That's an island of isolation.
+- All objects in island of isolation are eligible for garbage collection.
+
+## Older Notes : GC Types based on implementation.
 
 ### Performace of GC
 #### Latency
@@ -1573,7 +1650,7 @@ Based on the discussion above we should choose gc that is apt for us.
 - Divides the heap into small regions of memory, each of these region can be eden/survivor/tenured.
 - It dynamically selects a region to act as young generation in the next gc cycle, Regions with most unreachable places will be collected first
 
-![](res/gc_types.jpg)
+![](res/gc_types.jpg) 
 
 You can configure the gc to use in the flag passed.
 ![](res/gc_flags.jpg)
@@ -1588,6 +1665,9 @@ You can configure the gc to use in the flag passed.
 ## Debug GC
 - You can print details of gc using ```-Xloggc:gc.log```.
 - jvisualvm
+
+
+
 
 # Design Patterns used in JAVA
 ## Singleton
@@ -1671,6 +1751,19 @@ This Integer caching works only on auto-boxing. Integer objects will not be cach
 - ### endIndex is non inclusive
 - ### Pecular behavior of substring is that if startIndex/endIndex is too large it throws arrayIndexOutOfBounds Exception. But if the startIndex == length of string, it doesn't throw an exception just returns an empty string. 
 - Till Java 1.7, substring operation was a source of memory leak. The substring method was actually storing the reference of the original string and was using offset parameter in String to return substring.
+
+## Problem with java's substring and how JDK 7 fixed it. 
+- Asked in Goldman Sachs
+- https://www.geeksforgeeks.org/java-substring-method-memory-leak-issue-and-fix/
+
+
+
+## String Deduplication G1GC Java 8 Feature
+- Imagine you have a phone book, which contains people, which have a String firstName and a String lastName. And it happens that in your phone book, 100,000 people have the same firstName = "John".
+
+- Because you get the data from a database or a file those strings are not interned so your JVM memory contains the char array {'J', 'o', 'h', 'n'} 100 thousand times, one per John string. Each of these arrays takes, say, 20 bytes of memory so those 100k Johns take up 2 MB of memory.
+
+- With deduplication, the JVM will realise that "John" is duplicated many times and make all those John strings point to the same underlying char array, decreasing the memory usage from 2MB to 20 bytes.
 
 ## Regular Expressions
 

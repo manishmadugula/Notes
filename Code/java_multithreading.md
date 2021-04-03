@@ -119,6 +119,9 @@ See below
 ### Executor Framework
 See below
 
+### Synchronous/Asynchronous Java API
+- Using Completable futures
+
 ## Joining the thread (Not recommended way of doing things)
 - Used to make sure, that the current thread, which has spawned the child thread, waits for the completion of child thread.
 - Throws Interrupted Exception so enclose in try catch.
@@ -162,10 +165,42 @@ t1.run()//runs on the main thread itself
 t1.start()//creates a new thread and runs on it.
 ```
 
+## Thread States
+- There are 6 thread states in JAVA
+### NEW
+- A thread will be in this state before calling start() method.
+
+### RUNNABLE
+- A thread will be in this state after calling the start() method.
+
+### WAITING
+- A thread enters into WAITING state when it calls wait() or join() method on an object. Before entering into WAITING state, thread releases the lock of the object it holds. It will remain in WAITING state until any other thread calls either notify() or notifyAll() on the same object.
+- Once the other thread calls notify() or notifyAll() on the same object, one or all the threads which are WAITING for lock of that object will be notified. All the notified threads will not get the object lock immediately. They will get the object lock on a priority basis once the current thread releases the lock. Until that they will be in BLOCKED state.
+- The WAITING thread can be interrupted.
+
+### BLOCKED
+- A thread will be in BLOCKED state if it is waiting for other thread to release the lock it wants.
+- The BLOCKED thread can’t be interrupted.
+- Deadlocked threads will be in BLOCKED state.
+
+### (IMPORTANT) TIMED_WAITING
+- A thread will be in this state when thread is sleeping. i.e A thread will be in this state when sleep() or wait() with timeOut or join() with timeOut is called.
 
 
-# Synchronous/Asynchronous Java API
-- Using Completable futures
+### TERMINATED
+- A thread will be in this state once it finishes it’s execution.
+
+## Types of Thread
+
+### User Thread
+- User threads are created by the application (user) to perform some specific task. 
+- High priority thread
+- JVM will wait for user threads to finish their tasks. JVM will not exit until all user threads finish their tasks. 
+
+### Daemon Thread
+- Where as daemon threads are mostly created by the JVM to perform some background tasks like garbage collection.
+- JVM will not wait for daemon threads to finish their tasks. It will exit as soon as all user threads finish their tasks.
+
 
 # Java Memory Model (Hardware Perspective)
 ![](res/jmm_hardware.PNG)

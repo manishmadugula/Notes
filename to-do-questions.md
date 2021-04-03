@@ -43,21 +43,44 @@ Write a query to print the top two scores in each subject of the students table.
 - List of ratio given and need give the answer to m queries Example :Given list [ a:b = 3, c:d = 4, g:h = 10, b:c = 8 ]
 
 # Write
+## DS Algo
 - find a subarray such that difference between elements is less than k. (DP version)
 - Bracket Reversals
-- LCA
-- Chess knight
 - Matrix sorted search
-- https://leetcode.com/problems/rotate-image/
 - https://leetcode.com/problems/longest-valid-parentheses/discuss/14133/My-DP-O(n)-solution-without-using-stack
-- //Put returns the previous value
-- Request Parameter in Spring
-- Daemon Thread in garbage collector
-- Island of Isolation
-- Type ahead design discussion
-- Josephus problem solution
-- Monotonic Queue
-- Cyclic Barrier vs Count Down Latch
+- https://leetcode.com/problems/rotate-image/
 - https://leetcode.com/problems/next-greater-element-iii/discuss/101824/Simple-Java-solution-(4ms)-with-explanation.
 - LIS
 - https://www.geeksforgeeks.org/dynamic-programming-building-bridges/
+- Josephus problem solution
+- Monotonic Queue
+- LCA
+- Maxflow
+- Marriage Problem
+- Meet in the middle
+- Bipartite Graph
+- Matrix Rotate
+## Design LLD
+- Chess knight
+- Type ahead design discussion
+- How is authentication done in a monolith.
+- How is UI interacted with the Backend in windows application like parking lot.
+
+## Language Specific (JAVA/Spring)
+- Behavorial vs Structural Design Patterns
+- Request Parameter in Spring
+- Daemon Thread in garbage collector
+- Island of Isolation
+- String how Garbage Collector deals with
+- Cyclic Barrier vs Count Down Latch
+- How is JAVA Linked?
+
+
+# To-Do Intel
+- Concurrency Practise
+- Machine coding round
+- Spring Revision
+- Database Revision
+- Design Patterns Complete (Creational)
+- Bipartite Graph
+- Leetcode revise

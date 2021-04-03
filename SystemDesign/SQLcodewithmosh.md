@@ -858,6 +858,19 @@ FROM orders;
 - Benifits of having composite key approach is that you ensure your data can be consistent.
 - But everywhere where the table is related to some other table, more than a single column needs to be the foreign key.
 
+## Unique Key
+- A unique key is a set of one or more than one fields/columns of a table that uniquely identify a record in a database table.
+- You can say that it is little like primary key but it can accept only one null value and it cannot have duplicate values.
+- Difference between unique key and primary key is that primary key has to be non null.
+```sql
+CREATE TABLE person_tbl (
+   first_name CHAR(20) NOT NULL,
+   last_name CHAR(20) NOT NULL,
+   sex CHAR(10)
+   UNIQUE (last_name, first_name)
+);
+```
+
 ## Foreign Key Constraints
 - What to do if the parent table i.e the students table's id is updated or student is deleted, do we restrict this action or do we casade and delete the child too. This is what can be controlled in the foreign key constraints.
 
