@@ -314,16 +314,16 @@ Since the instance variables(frame) has not been declared volatile or the method
 
 - Monitor object can also be thought of as lock.
 - Monitor object can be passed in constructor and shared across multiple threads, such that only one thread can get access of monitor object's lock.
-- Java synchronised block are **RENTRANT**, meaning if a thread already has hold of a lock/monitor object, it is allowed to go into blocks which also needs the same monitor object. Execution doesn't stop when you reach b().
+- Java synchronised block are **reentrant**, meaning if a thread already has hold of a lock/monitor object, it is allowed to go into blocks which also needs the same monitor object. Execution doesn't stop when you reach b().
   ```java
-  public class RentrantExample{
+  public class reentrantExample{
 
       public synchronised static void a(){
           b();
       }
 
       public static void b(){
-          synchronised(RentrantExample.class){
+          synchronised(reentrantExample.class){
               ....
           }
       }
@@ -475,7 +475,7 @@ This time we don't know the intial value, so we set the initial value in the ser
 
 # Phasers
 
-# Rentrant Lock and Conditions
+# Reentrant Lock and Conditions
 
 We can use any object as a lock in synchronised block and use wait and notify inside the synchronised block to communicate between threads and notify the threads.
 ```java
@@ -515,9 +515,11 @@ We can use any object as a lock in synchronised block and use wait and notify in
     }
 ```
 
-We can also use specialized locks known as rentrant locks and Conditions class to do the exact same thing. Instead of calling wait and notify on the Object (Lock) itself, we call await and signal on Condition Object while using reentrant locks. These specialized locks enable us to place fairness policies and also have other features like tryLock etc.
+We can also use specialized locks known as reentrant locks and Conditions class to do the exact same thing. Instead of calling wait and notify on the Object (Lock) itself, we call await and signal on Condition Object while using reentrant locks. These specialized locks enable us to place fairness policies and also have other features like tryLock etc.
 
-## While using rentrant locks remember to unlock in the finally block.
+## While using reentrant locks remember to unlock in the finally block.
+## Remember to include java.util.concurrent.locks.* to use Reentrant Locks.
+## Also Remember reentrant locks have a double ee in between in case you want intelliJ to tell you.
 ## Also remember to lock outside the try block
 If we place lock() within the try clause and an unchecked
 exception occurs when lock() is invoked (such as OutofMemoryError): The
@@ -569,9 +571,9 @@ public class ReentrantLockExample {
 }
 ```
 
-- ### Rentrant Locks are called rentrant since they allow us to get a lock on the same lock object multiple times, you also need to call the unlock the same number of times. There is a method ```lock.getHeldCount()``` it will return the number of times the lock method was called. 
+- ### reentrant Locks are called reentrant since they allow us to get a lock on the same lock object multiple times, you also need to call the unlock the same number of times. There is a method ```lock.getHeldCount()``` it will return the number of times the lock method was called. 
 
-- Rentrant Locks(explicit lock) also allow locking and unlocking in any scopes in any order. Unlike using synchronised keyword(implicit lock)
+- reentrant Locks(explicit lock) also allow locking and unlocking in any scopes in any order. Unlike using synchronised keyword(implicit lock)
 
 ## Conditions
 - conditional variables are always linked to a lock.
@@ -580,14 +582,14 @@ public class ReentrantLockExample {
 - You can call ```lock.newCondition();``` multiple times on reentrant lock to get multiple condition variables.
 - uses cv1.await() and cv2.signal() instead of wait and notify.
   ```java
-  private Lock lock = new RentrantLock();
+  private Lock lock = new reentrantLock();
   private Condition cv1 = lock.newCondition();
   private Condition cv2 = lock.newCondition();
   ```
 
 ## DeadLock and tryLock
 
-**Rentrant locks have a method called tryLock**, which can be used to elegantly deal with deadlock situations. Say 2 threads T1 and T2 want to acquire 2 locks l1 and l2. A dead lock occurs when they try to acquire locks in different order than the other thread. T1 acquires l1 first and then l2, T2 acquires l2 first then l1. In such situation if l1 is acquired by T1 and l2 by T2 then the program is in state of deadlock. We can deal with deadlock by trying to acquire both locks together, if not don't acquire any. We do that using the tryLock method of rentrant locks as follows.
+**reentrant locks have a method called tryLock**, which can be used to elegantly deal with deadlock situations. Say 2 threads T1 and T2 want to acquire 2 locks l1 and l2. A dead lock occurs when they try to acquire locks in different order than the other thread. T1 acquires l1 first and then l2, T2 acquires l2 first then l1. In such situation if l1 is acquired by T1 and l2 by T2 then the program is in state of deadlock. We can deal with deadlock by trying to acquire both locks together, if not don't acquire any. We do that using the tryLock method of reentrant locks as follows.
 ### Look at the implementation of acquire locks, it is important. The While true part.
 
 ```java
@@ -674,7 +676,7 @@ else{
 - by default the lock is unfair.
 - When multiple threads try to access a lock, they are put into a wait queue.
 - If fairness is enabled, then the lock is acquired based on first come first served basis, the first thread is poped from the queue and is assigned the lock. 
-- ```Lock lock = new RentrantLock(true)``` you can enable fairness. Default value is false.
+- ```Lock lock = new reentrantLock(true)``` you can enable fairness. Default value is false.
 ### Barge-in
 - When the lock is released, if fairness is disabled(default value), a thread which has just tried to acquire the lock at this time might get the lock, even though threads arriving earlier are the queue so that **we can skip the pushing new thread into queue and popping old thread step** to gain some performance benifit. This however can lead to thread   starvation. 
 
@@ -752,7 +754,7 @@ Assume we have a buffer of size 1 (to make the example easy to follow). The foll
 - NO MORE THREADS TO CALL NOTIFY and THREE THREADS PERMANENTLY SUSPENDED
 
 SOLUTION: Replace notify with notifyAll in the producer/consumer code (above).
-### To solve the problem above, you can also have 2 different kind of conditions one for added(added.await/signal) and one for remove(remove.await/signal). It is possible by using rentrant locks and conditions class.
+### To solve the problem above, you can also have 2 different kind of conditions one for added(added.await/signal) and one for remove(remove.await/signal). It is possible by using reentrant locks and conditions class.
 
 ![](res/avoid_dead_lock_producer_consumer.PNG)
 
@@ -764,7 +766,7 @@ SOLUTION: Replace notify with notifyAll in the producer/consumer code (above).
 
 
 # ReadWriteLock
-- We can use readwrite lock to allow multiple threads to read a resources, using rentrant lock will also block reads to the resource. Multiple reader threads and only one writer thread is required. 
+- We can use readwrite lock to allow multiple threads to read a resources, using reentrant lock will also block reads to the resource. Multiple reader threads and only one writer thread is required. 
 - There is one caveat though even though multiple threads can acquire the read lock, while someone is accessing the readlock, no thread can access the write lock, even if they are separate locks. Only one among read/write lock can be acquried at a time.
 - We can have either readlock acquired by n threads or a write lock acquired by 1 thread. But never at the same time.
 - ## Only write lock can allow newConditions
@@ -775,7 +777,7 @@ In this case we have 2 types of thread, R and W. Once thread 1 releases lock, bo
 
 While Thread 2 and 4 are still working on the read lock, if another thread 5 which is a read thread comes in, we can have 2 types of behavior.
   -  Thread 5 can acquire the read lock skipping thread 3 but if a lot of read threads comes, thread 3 can go into starvation.
-  -  Thread 3 will acquire the lock, rentrant readwrite lock implements does this case, the thread 5 will wait for thread 3 to complete. 
+  -  Thread 3 will acquire the lock, reentrant readwrite lock implements does this case, the thread 5 will wait for thread 3 to complete. 
 
 
 # Semaphores
