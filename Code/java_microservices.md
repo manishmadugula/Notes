@@ -362,7 +362,7 @@ Mockito.when(service.someMethod(Mockito.any(Integer.clas)))
 - Allows us to verify if some interaction has been done or not and other use cases.
 - The below code verifies if someDummyMethod has been called twice, else test fails
 ```java
-Mockito.verify(someDummyClass, Mockito.times(2))
+Mockito.verify(someDummyMock, Mockito.times(2))
 .someDummyMethod();
 ```
 
@@ -396,6 +396,47 @@ ArgumentCaptor<List> argumentCaptor = ArgumentCaptor.forClass(List.class);
 verify(mockedList).addAll(argumentCaptor.capture());
 List<String> capturedArgument = argumentCaptor.<List<String>> getValue();
 assertEquals(true, capturedArgument.hasItem("someElement"));
+```
+
+# Full example of a test using both Junit and Mockito
+```java
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {UserService.class})
+public class UserServiceTest {
+
+    @MockBean
+    private UserRepository userRepositoryMock;
+
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void testGetAllUsers(){
+        List<User> users = new ArrayList<>();
+        users.add(new User("Manish", "Madugula", "MVV Ozone"));
+        users.add(new User("Sunil", "Madugula", "MVV Ozone"));
+
+
+        Mockito.when(userRepositoryMock.getAllUsers()).thenReturn(users);
+        List<User> userReturned = userService.getAllUsers();
+        Assertions.assertEquals(userReturned, users);
+        Mockito.verify(userRepositoryMock, Mockito.times(1)).getAllUsers();
+
+    }
+}
+
 ```
 
 # Spring Test Framework

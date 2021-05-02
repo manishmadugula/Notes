@@ -146,3 +146,26 @@ resilience4j uses decorator pattern to implement Circuit Breaker in Java, Hystri
 
 ### Deal with bad actors
 - Request queue(Array Blocking Queue) for each server can be partitioned to serve request ID per Hash, each internal server will have unique ID, and the parition for the bad actor will be only blocked, rest of the paritions will be safe. 
+
+
+# How to track likes
+- Asynchrously increase the likes, by using a queue for no locking/contention. 
+- This is lead to eventual consistency but it is fine.
+
+# Strong vs Eventual Consistency
+- Ideally you would always want strong consistency, but due to low latency constraints you may go for eventually consistency system provided you make sure the service is reliable, functionally correct and has a good user experience.
+## Strong
+- TinyURL 
+  - Since you need a highly available service with a good user experience.
+- Inventory Count
+  - Has to be strongly consistent, since if there are no count then he shouldn't buy.
+  - How to solve this? for less thread contention.
+## Eventual Consistency
+- Likes
+  - Since increment likes count leads to locking and say 100 likes come at once only one transaction is successful other 99 has to retry and if retry count threshold is less than 99, the rest of the API calls with fail resulting in bad user experience.
+  - There is no strong consistency required, eventual consistency is fine.
+  - Async update using a queue.
+- Dropbox
+  - It is very tough to do eventual consistency, since all the devices connected to dropbox might not be online.
+  - This however has challenges in the sense that 2 different drives can have different changes in the same file, in that case dropbox can notify the user that there is some conflict in the file changes.
+  
