@@ -247,6 +247,17 @@ Write a query to print the top two scores in each subject of the students table.
 
 ## DS Algo
 
+### Day-1
+- https://leetcode.com/problems/poor-pigs/
+  - Couldn't Solve
+- https://www.geeksforgeeks.org/minimum-moves-required-to-come-out-of-a-grid-safely/
+  - Couldn't Solve
+- https://leetcode.com/problems/rabbits-in-forest/
+  - Solved
+- https://www.geeksforgeeks.org/a-product-array-puzzle-set-3/
+  - Division can be done using (exp(log(a) - log(b))).
+- 
+
 
 ## Tips
 - In the design rounds, interviewer doesn’t expect the most ideal answer from you and unless your choice of technology is outrageously wrong, he won’t pinpoint that.
