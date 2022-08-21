@@ -155,6 +155,7 @@ System.out.println(arrayList2.indexOf(341));
 ```
 
 ## Searching a Sorted Collection
+- The same bitwiseInsertion point applies here.
 ```java
 System.out.println(Collections.binarySearch(arrayList2,125));
 ```
