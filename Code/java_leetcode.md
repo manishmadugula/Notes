@@ -36,7 +36,7 @@ import java.util.function.*;
   - All Collections have an instance method ```list.stream()``` to convert to stream
   - To convert arrays to streams, use ```Arrays.stream(arr)```
 - Opposite of ```boxed()``` is ```mapToInt(i->i)```
-- ### ```toArray()``` can be used to convert List/Stream to Array. The toArray List/Stream requires a generator Function when dealing with Objects like Integer ```(Integer[])arrayList2.toArray(Integer[]::new);```
+- ### ```toArray()``` can be used to convert List/Stream to Array. The toArray List/Stream requires a generator Function when dealing with Objects like Integer ```(Integer[])arrayList2.toArray(Integer[]::new); It however doesn't require any generator for primitive types```
   - The Above method reference can also be replaced by a lambda ```size -> new Integer[size]```
 - ```Arrays.asList(arr)``` can be Used to convert ArrayList to Object Array, but keep in mind you still need to call the constructor of ArrayList
 ## Convert from Primitive Arrays to ArrayList (IMPORTANT)
@@ -84,7 +84,7 @@ StringBuilder sB = new StringBuilder(s);
 stringBuilder.toString()
 ```
 
-## Convert a String to Character Array
+## Convert a String to char[]
 ```java
 char[] charArray = s.toCharArray();
 ```
@@ -92,6 +92,55 @@ char[] charArray = s.toCharArray();
 ## Convert a Character Array to String
 ```java
 String x = new String(charArray);
+```
+
+## Convert a primitive character[] to Character[] (IMPORTANT)
+```java
+Character[] charArrayBoxed = new String(primChar).chars().mapToObj(x->(char)x).toArray(Character[]::new);
+```
+
+## Convert a primitive character[] to String 
+```java
+new String(primChar)
+```
+## Convert a Character[] to String (IMPORTANT)
+```java
+Arrays.stream(boxedCharArr).map(c->String.valueOf(c)).collect(Collectors.joining()); \\or
+Arrays.stream(boxedCharArr).map(x->x+"").collect(Collectors.joining());
+```
+## Convert a Character to String
+```java
+String.valueOf(charA); \\or
+""+charA
+```
+## Convert a String to Character[]
+```java
+str.chars().mapToObj(x->(char)x).toArray(Character[]::new);
+```
+## Convert a char[] to stream (IMPORTANT)
+- Arrays.stream() is not possible for char[]. (It is possible for int[], long[],double[] and T[])
+```java
+new String(charArr).chars();
+```
+- This probably is an IntStream
+
+## Convert a Character[] to stream (IMPORTANT)
+```java
+Arrays.stream(boxedCharArr);
+```
+
+## Convert a String to stream
+```java
+str.chars().mapToObj(x->(char)x);
+```
+
+## Convert a char Stream to Character Stream
+```java
+charStream.mapToObj(x->(char)x)
+```
+## Convert a Character Stream to String (IMPORTANT)
+```java
+String s = charStream.map(c->String.valueOf(c)).collect(Collectors.joining());
 ```
 
 ## String to Integer
@@ -428,7 +477,9 @@ str.contains(substring);
 
 
 # String Builder
-
+- setCharAt
+- deleteCharAt
+- charAt
 # For Custom Objects
 ## Implement To String
 ```java
@@ -483,3 +534,7 @@ public int compareTo(Node other){
 # Graph Problems in JAVA
 
 # Binary Search in JAVA
+
+# Misc
+- \n is a single character
+- "+" is a meta character, has to be escaped when using split("\\+");
