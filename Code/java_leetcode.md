@@ -196,6 +196,19 @@ Integer[] arr = {0,1,2,3,5,6,7,8,9,10};
 Integer bitWiseNotInsertionPoint = Arrays.binarySearch(arr,4); // returns -5
 Integer insertionPoint = ~bitWiseNotInsertionPoint;// return 4
 ```
+### Binary Search specifics
+
+#### Custom Comparator
+- Searching descending array. 
+```java
+Arrays.binarySearch(arr,key,(x,y)->(y-x));
+```
+#### Search only portion of array
+```java
+Arrays.binarySearch(arr,fromIndex,toIndex,key,Comparator<? super Integer>);
+```
+#### Example
+![](res/arr_binary_search.png)
 
 ## Searching a Collection
 ```java
@@ -208,6 +221,11 @@ System.out.println(arrayList2.indexOf(341));
 ```java
 System.out.println(Collections.binarySearch(arrayList2,125));
 ```
+- ### Collections doesn't support searching only portion of array. But it supports custom comparator.
+```java
+Collections.binarySearch(list,1,(x,y)->(y-x))
+```
+
 
 # Arrays
 - length : ```arr.length``` (It's a property not a method)
@@ -263,6 +281,11 @@ list.get(idx);
 ## Initialize an ArrayList with a specific size and default value
 ```java
 List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val)); 
+```
+
+## Initialize an Array with a specific value
+```java
+Arrays.fill(dp,-1);
 ```
 
 # LinkedList in JAVA
@@ -354,16 +377,49 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
 - Set Value
   ```entry.setValue(Obj)```
 
-# TreeSet in JAVA
+# TreeSet in JAVA (V.Imp methods)
+
+## Custom comparator
+```java
+TreeSet<String> animals = new TreeSet<>((x,y)->(return y-x));//Any functional interface implementing public int compare(T x, T y)
+```
+## Basic
+- add
+- remove
+- size()
+- clear()
+
 ## How to traverse
-- Use ```set.pollFirst()``` to get the first item and remove it.
 - Use ```set.first()``` to get the first item.
+- Use ```set.last()``` to get the last item.
 - Use for each loop for iterating.
+- Use ```set.pollFirst()``` to get the first item and remove it.
 
+## BST Methods
+- contains() O(LogN)
+- ### higher(element) Returns the lowest element among those elements that are greater than the specified element.
+- ### lower(element) - Returns the greatest element among those elements that are less than the specified element.
+- ### ceiling(element) - Returns the lowest element among those elements that are greater than the specified element. If the element passed exists in a tree set, it returns the element passed as an argument.
+- ### floor(element) - Returns the greatest element among those elements that are less than the specified element. If the element passed exists in a tree set, it returns the element passed as an argument.
 ## Custom Comparator
-- Look at Key Map Below.
+- Look at Tree Map Below.
 
-# TreeMap in JAVA
+# TreeMap in JAVA (V.Imp Methods)
+## Basic
+- put()
+- containsKey()
+- size()
+- clear()
+- ### putIfAbsent() (V.Imp)
+- get() : Returns the value associated with the specified key. Returns null if the key is not found.
+- ### getOrDefault() : Returns the value associated with the specified key. Returns the specified default value if the key is not found.
+- remove(key)
+- ### replace(key, value) (V.Imp)
+## Elements of treeMap
+- entrySet() : returns a set of all the key/values mapping (entry) of a treemap
+- keySet() : returns a set of all the keys of a tree map
+
+
 ## How to iterate
 - Same as map using KeySet/EntrySet.
 - Use ```map.pollFirstEntry()``` to get the first item and remove it.
@@ -373,6 +429,11 @@ List<Integer> list = new ArrayList<>(Collections.nCopies(num, default_val));
 ```java
 TreeMap<Integer, String> map = new TreeMap<>((x,y)->y-x);
 ```
+## LogN Methods
+- ### higherKey() - Returns the lowest key among those keys that are greater than the specified key.
+- ### lowerKey() - Returns the greatest key among all those keys that are less than the specified key.
+- ### ceilingKey() - Returns the lowest key among those keys that are greater than the specified key. If the key passed as an argument is present in the map, it returns that key.
+- ### floorKey() - Returns the greatest key among those keys that are less than the specified key. If the key passed as an argument is present, it returns that key.
 
 # Priority Queue in JAVA
 - Add in Priority Queue
@@ -529,7 +590,7 @@ public int compareTo(Node other){
 - Be very careful when dealing with division in java
 - Always use Doubles wherever possible to avoid issues
 - say n=3, and doing Math.ceil(n/2) would give 1 since n/2 = 1 and ceil 1 is 1, so to make sure the inside value is a double use ```Math.ceil((double)n/2.0)``` 
-
+-  Math.pow(2,Math.ceil(Math.log(arrlen)/Math.log(2)));
 
 # Graph Problems in JAVA
 

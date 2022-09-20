@@ -899,6 +899,9 @@ std::priority_queue<int, std::vector<int>, std::greater<int> > q2;
 - $O(n^2) =O(n+(n-1)+(n-2)+(n-3)+(n-4))$
 
 
+### Sum of squares formulae
+![](res/sum_of_squares.png)
+
 # Primer on Permutation and Combinations
 ## PERMUTATION :
 You have n items and want to find the number of ways k items can be ordered(Without Duplications):
@@ -1183,6 +1186,23 @@ This is exactly what median of medians algorithm does, essentially to find optim
 
 # Binary Tree
 - A tree with n vertices will have n-1 edges. (Think every node has only one edge to parent except the root.)
+## Full Binary Tree
+- It is also known as proper binary tree
+- A full Binary tree is a special type of binary tree in which every parent node/internal node has either two or no children.
+![](res/full-binary-tree.webp)
+- For any formulaes just take example and solve.
+
+## Complete Binary Tree
+- A complete binary tree is a binary tree in which all the levels are completely filled except possibly the lowest one, which is filled from the left.
+- All the leaf elements must lean towards the left.
+![](res/complete-binary-tree.webp)
+- A complete binary tree has an interesting property that we can use to find the children and parents of any node. Complete binary tree can be stored as an array
+- If the index of any element in the array is i, the element in the index 2i+1 will become the left child and element in 2i+2 index will become the right child. Also, the parent of any element at index i is given by the lower bound of (i-1)/2.
+## Perfect Binary Tree
+- A perfect binary tree is a type of binary tree in which every internal node has exactly two child nodes and all the leaf nodes are at the same level.
+![](res/perfect-binary-tree.webp)
+- Perfect binary tree has height h = log2(n+1)-1; ```1+2^1+2^2+....2^h``` Use GP Formulae.
+- The perfect binary tree is also complete so can be represented as array above.
 
 # Binary Heap
 - Can be implemented using an array.
@@ -1397,7 +1417,7 @@ void union_sets(int a, int b) {
 - we start with the segment a[0…n−1], split the current segment in half (if it has not yet become a segment containing a single element), and then calling the same procedure for both halves. For each such segment we store the sum of the numbers on it. The above procedure forms a binary tree. 
 - We also ensure that the length of the array is made the power of 2, by appending empty nodes in it. The defination of empty nodes depends on the problem.
 - The above constraint makes sure segment trees form complete binary trees.
-- Let's take a = [1,3,-2,8,7] as an example
+- Let's take a = [1,3,-2,8,-7] as an example
 - ![](res/segment_trees.png)
 - In most implementation tree is not constructed explicitly.
 - The height of the Segment Tree is O(logn), because when going down from the root to the leaves the size of the segments decreases approximately by half.
@@ -1582,7 +1602,7 @@ Reason
 
 - len tells the max length of the prefix and also a suffix for substring 0 to i-1.
 
-- Thus if A[len]==A[i] it means to find the length of largest suffix which is also prefix for string 0 to i just take the value of "len"(length of largest prefix which is also a suffix for string 0 to i-1) and add 1 to it i.e LPS[i] = len + 1; (Can't we write LPS[i] = LPS[i-1]+1?)
+- Thus if A[len]==A[i] it means to find the length of largest suffix which is also prefix for string 0 to i just take the value of "len"(length of largest prefix which is also a suffix for string 0 to i-1) and add 1 to it i.e LPS[i] = len + 1; (Can't we write LPS[i] = LPS[i-1]+1? Ans : No Ex: "aabaaac" gives [0, 1, 0, 1, 2, 3, 0] )
 
 - If len is zero and A[i] doesn't match the first character(A[len=0]) the Longest Prefix that is a suffix is zero as there is nothing less than len(which is also the last index of maximum prefix of string 0 to i-1) to be compared with anything less than i and also since A[i] and A[0] not same so LPS[i]=0;
 
