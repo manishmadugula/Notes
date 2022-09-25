@@ -735,7 +735,59 @@ class Solution {
 ## Couldn't solve simple problem https://leetcode.com/problems/minimum-area-rectangle/solution/
 - Iterate over 2 points, taking them as diagonal. O(N*N)
 
+# 22.9.22
+## Couldn't solve crack the safe. Important question.
+### de Brujin Sequence
+A de Bruijn sequence of order n on a size-k alphabet A is a cyclic sequence in which every possible length-n string on A occurs exactly once as a substring. It has length k^n, which is also the number of distinct substrings of length n on a size-k alphabet; **de Bruijn sequences are therefore optimally short.**
+- Explaination [Link](https://leetcode.com/problems/cracking-the-safe/discuss/153039/DFS-with-Explanations)
+```java
+class Solution {
+    
+    private boolean helper(StringBuilder sb, Set<String> visited, int n, int k){
+        //Base case, found a string where all the possible combinations i.e pow(k,n) occurs only once.
+        if(visited.size()==Math.pow(k,n)){
+            return true;
+        }
+        
+        for(int i=0;i<k;i++){
+            int lenSb = sb.length();
+            String newString = sb.substring(lenSb-n+1,lenSb)+((char)('0'+i));
+            if(!visited.contains(newString)){
+                //If this is a never before seen string add it. Else ignore it.
+                visited.add(newString);
+                sb.append((char)('0'+i)+"");
+                if(helper(sb,visited,n,k)){
+                    return true;
+                }
+                //If helper returned false, the above string wasn't part of the answer. Test with the next k.
+                sb.deleteCharAt(lenSb);
+                visited.remove(newString);
+            }
+        }
+        return false;
+    }
+    
+    public String crackSafe(int n, int k) {
+        //There exists a sequence where all permutations of size n with 0 to k-1 exists only once in the sequence.
+        StringBuilder sb = new StringBuilder();
+        Set<String> visited = new HashSet<>();
+        //Start with the first combination i.e string of n 0's
+        for(int i=0;i<n;i++){
+            sb.append("0");
+        }
+        visited.add(new String(sb));
+        //You can also visit other combinations if helper returns null here, but 0 seems to work always. 
+        helper(sb,visited,n,k);        
+        return new String(sb);
+    }
+}
+```
 
+## 23.6.22
+### https://leetcode.com/problems/cheapest-flights-within-k-stops/
+- TLE need to solve again
+### Algoexpert Airport connections
+- Was able to think in the same way.
 
 # To-Do
 - https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/

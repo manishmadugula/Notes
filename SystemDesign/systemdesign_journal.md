@@ -25,6 +25,9 @@ Gaga all end up on the same shard. Thundering herd
 - Scale your data tier by sharding
 - Split tiers into individual services
 - Monitor your system and use automation tools
+- Use better protocols http 2.0, websockets, long polling (don't break connection)
+- Compress your request before sending.
+- Request collapsing, request condensing/batch fetch from db.
 
 ## Latency calculations
 - Compress data before sending it over the internet if possible.
@@ -41,11 +44,19 @@ Gaga all end up on the same shard. Thundering herd
 - Save money, especially for companies using third party infra.
 - Predictable behavior.
 
+## Advantages of using API Gateway
+- API gateway is a fully managed
+service that supports rate limiting.
+- SSL termination
+- authentication
+- IP whitelisting
+- servicing static content, etc.
 
 # Techniques
 - Instead of putting lock on every request, for some use-cases (where you need to provide a lease/unique Id)
 - In chat systems use last seen date, rather than seeing if the user is online or not.
 - Same as keeping date-of-birth column rather than age column, no need to update the age by cron job daily.
+- Push vs Pull model (Celebrity use-case)
 # Misc
 - Stackoverflow only uses a single database
 - EdgeRank is the name of facebook's feed ranking algorithm.
