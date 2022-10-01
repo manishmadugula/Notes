@@ -112,3 +112,130 @@ access. In-memory cache is chosen because it is fast and supports time-based exp
 
 
 # Design Consistent Hashing
+- Ring 0 to Limit of the hashfunction(0 to 2^160 - 1 for SHA-1).
+- Servers and requests mapped to this ring, using the above hashfunction.
+- Virtual nodes can be used to make sure the servers have uniform load and in the event of server adding or removing only k/n keys needs to be moved, where k is the total keys and n is the total real nodes.
+![](res/consistent_hashing.png)
+- In the above images s0_0, s0_1, s0_2 are the virtual nodes for 0th server, s1_0, s1_1, s1_2 are for 1st server.
+- Once a request/key is mapped to the ring, move clockwise and the first virtual node encountered is the server which should serve the request or the cache with the value corresponding to the key.
+- Consistent hashing can be used for load balancing of application servers, sharding of cache and db servers.
+- Consistent hashing is widely used in real-world systems, including some notable ones:
+    - Partitioning component of Amazon’s Dynamo database
+    - Data partitioning across the cluster in Apache Cassandra
+    - Discord chat application
+    - Akamai content delivery network
+    - Maglev network load balancer
+
+# Design Key Value store
+
+## Clarifications
+- If the key-value store should be in-memory or persistent?
+- Is it distributed and we need to think of concurrency?
+- What about availability? On failure what should happen? What happens on network failure during syncing?
+- Requests per second.
+- Read to write ratio
+- What happens in the event of failure and the server comes back up.
+- What is the size of value to be stored.
+
+## Requirements
+- Horizontal Autoscaling (HAS)
+- Tunable Consistency
+- Low latency
+- size of key-value is 10KB
+- Ability to store huge data.
+
+## High level design
+
+### To store huge data
+- Data compression
+- Store most used in memory and rest in disk
+- A distributed key-value store is required to support big data.
+
+### Scalability
+- Sharding
+- Consistent Hashing
+- Horizontal Auto Scaling
+- Heterogeneity: Total virtual nodes of a server are proportional to server capacity.
+
+### Consistency
+- Quorum, Tunable consistency parameters, Consistency models (Strong vs Eventually consistent), CAP Theorem
+- Versioning, Vector clocks, client conflict resolution
+
+### Availability
+- Replication
+- Cross data-center replication too.
+
+#### Failure Handling
+- Detection: Gossip protocol vs Phi Accrual Failure Detection
+- Temporary Failure Handling : Sloppy Quorum, Hinted Handoff
+- Permanent Failure Handling : Read Repair/Merkle Trees for optimized synching. (When is this used vs when is sloppy quorum used?) Anti-entropy protocol?
+
+### In memory db consideration
+
+#### Durability
+- Segmented Write ahead log (Commit log)
+- High water mark
+
+#### Low Latency
+##### Write Latency
+- In memory (memTable)
+- SSTable (Sequential Writes)
+- Compaction
+
+##### Read latency
+- In memory read
+- Bloom filters (Why not using hashtable for indexing?)
+
+## Questions
+- When is Sloppy Quorum with hinted handoff used vs when is merkle trees used?
+
+# Unique ID Generator
+
+## Clarifications
+- Do ID only contain numerical values or alphanumneric?
+- What should be the length of the unique ID generated.
+- Scalable system.
+- Do Ids need to be sortable?
+- How many Ids per second?
+- Does the Ids need to be strictly sorted i.e a user who came 2 mins earlier should have Id lesser than current user.
+
+## Requirements
+- Scalable
+    - Concurrency safe
+    - High throughput
+- Highly Available
+- Low latency
+- No conflicting ID.
+- Ids should increment by time, not necessarily by 1.
+- 10000 Ids per second.
+- 64 bit length
+
+## High Level Design
+
+### UUID Approach
+#### Pros
+- No syncronization needed, very low probability of duplicate
+- Scalable solution, ideal production solution for ids of tables.
+#### Cons 
+- 128 bit length
+- IDs don't go up with time.
+- IDs can be non numeric.
+
+### Ticket Server
+- Single ticket server to give the uuids to webservers.
+#### Cons
+- Single point of failure.
+
+### Twitter snowflake approach
+-  Instead of generating an ID directly, we divide an ID into different sections.
+![](res/twitter_snowflake.png)
+- Signbit : not in use apparently by twitter
+- Timestamp : Epoch time in milliseconds. (Max is 2^41 ~ valid for 69 years more)
+- datacenterId : Id of the datacenter. (32 datacenter limit)
+- machineId : 32 machines from cluster.
+- Sequence numbers : For every Id generated the Id in the machine increases by 1. This field is 0 unless more than one ID is generated in a millisecond on the same server. In theory, a machine can support a maximum of 4096 new IDs per millisecond.
+-  fewer sequence numbers but more timestamp bits are effective for low concurrency and long-term applications.
+### NTP for clock synchronisation
+- The Network Time Protocol (NTP) is a networking protocol for clock synchronization between computer systems over packet-switched, variable-latency data networks.
+- NTP servers have access to highly precise atomic clocks and GPU clocks.
+- NTP is a protocol that works over the application layer, it uses a hierarchical system of time resources and provides synchronization within the stratum servers

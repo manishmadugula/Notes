@@ -434,6 +434,8 @@ TreeMap<Integer, String> map = new TreeMap<>((x,y)->y-x);
 - ### lowerKey() - Returns the greatest key among all those keys that are less than the specified key.
 - ### ceilingKey() - Returns the lowest key among those keys that are greater than the specified key. If the key passed as an argument is present in the map, it returns that key.
 - ### floorKey() - Returns the greatest key among those keys that are less than the specified key. If the key passed as an argument is present, it returns that key.
+- ### firstKey() - Smallest element.
+- ### lastKey() - Largest element.
 
 # Priority Queue in JAVA
 - Add in Priority Queue
@@ -446,6 +448,7 @@ TreeMap<Integer, String> map = new TreeMap<>((x,y)->y-x);
   ```pq.remove(Obj)```
 - Decrease key operation
   - First remove the old Obj and insert the updated value.
+
 
 # Deque in JAVA
 ## IT is important to note there is no such thing as pop or top or even push in Deque.

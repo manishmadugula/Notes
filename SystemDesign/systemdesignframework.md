@@ -7,6 +7,7 @@
     - How does the company anticipate to scale up in 3 months, 6 months, 1 year.
     - What is the scale of the system? Is it built for a startup or a big company with a large user base?
     - Will the system work in a distributed environment?
+    - Read write ratio of the application.
 
 
 - Write down requirements

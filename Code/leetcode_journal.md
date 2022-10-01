@@ -789,6 +789,125 @@ class Solution {
 ### Algoexpert Airport connections
 - Was able to think in the same way.
 
+
+## 1.10.22
+### Couldn't solve properly https://leetcode.com/problems/minimum-window-substring/ 
+- Lots of testcases
+- 2 Pointer approach
+```java
+    private boolean condition(HashMap<Character,Integer> map, HashMap<Character,Integer> tmap){
+        for(Character c : tmap.keySet()){
+            if(!map.containsKey(c)) return false;
+            if(map.get(c)<tmap.get(c)){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public String minWindow(String s, String t) {
+        HashMap<Character,Integer> tmap = new HashMap<>();
+        for(Character c : t.toCharArray()){
+            tmap.putIfAbsent(c,0);
+            tmap.put(c,tmap.get(c)+1);
+        }
+        HashMap<Character,Integer> map = new HashMap<>();
+        int start=0;
+        int end=-1;
+        int ansstart=0;
+        int ansend=Integer.MAX_VALUE;
+        while(end<s.length()){
+            if(condition(map,tmap)){
+                if(ansend-ansstart > end-start){
+                    ansend = end;
+                    ansstart= start;
+                }
+                Character c=s.charAt(start);
+                start++;
+                map.put(c,map.get(c)-1);
+            }
+            else{
+                end++;
+                if(end<s.length()){
+                    Character c=s.charAt(end);
+                    map.putIfAbsent(c,0);
+                    map.put(c,map.get(c)+1);
+                }
+            }
+        }
+        if(ansend == Integer.MAX_VALUE) return "";
+        return s.substring(ansstart, ansend+1);
+        
+    }
+```
+### https://leetcode.com/problems/sliding-window-maximum/
+- Important question
+- Solved using the concept of monotonic queue.
+- Not all the entries are important, say for instance, if a higher number comes to the window, all the numbers lesser than that number becomes invalid and can be removed.
+- The deque window only has decreasing elements. That way, the leftmost element is always the largest.
+```java
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        List<Integer> ans = new ArrayList<>();
+        Deque<Integer> dq = new LinkedList<>();
+        for(int i=0;i<nums.length;i++){
+            while(!dq.isEmpty() && dq.peekLast()<nums[i]){
+                dq.pollLast();
+            }
+            dq.addLast(nums[i]);
+            if(i>=k){
+                if(nums[i-k] == dq.peekFirst()){
+                    dq.pollFirst();
+                }
+            }
+            if(i>=k-1){
+                ans.add(dq.peekFirst());
+            }
+        }
+        return ans.stream().mapToInt(x->x).toArray();
+    }
+```
+
+###  https://leetcode.com/problems/smallest-range-covering-elements-from-k-lists/
+- Sort all lists (if not already sorted).
+- Take the smallest number out of all the lists.
+- Calculate range and see if it is min.
+- Remove the smallest number and add the next number in the same list as that of the smallest number. repeat.
+
+```java
+    public int[] smallestRange(List<List<Integer>> nums) {
+        TreeMap<Integer,List<Integer>> rangeMap = new TreeMap<>();
+        for(int i=0;i<nums.size();i++){
+            rangeMap.putIfAbsent(nums.get(i).get(0),new ArrayList<>());
+            rangeMap.get(nums.get(i).get(0)).add(i);
+        }
+        
+        int ansStart=0;
+        int ansEnd=Integer.MAX_VALUE;
+        while(true){
+            int currentEnd = rangeMap.lastKey();
+            int currentStart = rangeMap.firstKey();
+            if(ansEnd-ansStart >currentEnd-currentStart){
+                ansEnd = currentEnd;
+                ansStart = currentStart;
+            }
+            List<Integer> smallestElemRangeList = rangeMap.get(currentStart);
+            Integer listIdx =smallestElemRangeList.get(0);
+            List<Integer> smallestElemList = nums.get(listIdx);
+            smallestElemRangeList.remove(0);
+            if(smallestElemRangeList.isEmpty()){
+                rangeMap.remove(currentStart);
+            }
+            smallestElemList.remove(0);
+            if(smallestElemList.isEmpty()){
+                return new int[]{ansStart,ansEnd};
+            }
+            Integer nextElem = smallestElemList.get(0);
+            rangeMap.putIfAbsent(nextElem, new ArrayList<>());
+            rangeMap.get(nextElem).add(listIdx);
+        }
+    }
+```
+
 # To-Do
 - https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/
 - https://leetcode.com/problems/string-transforms-into-another-string/
@@ -798,13 +917,12 @@ class Solution {
 - Solve 3Sum without sorting.
 - https://leetcode.com/problems/logger-rate-limiter/ (2 Set approach)
 - Time complexity of Strobogrammatic Number II
-- https://leetcode.com/problems/minimum-area-rectangle/
 - Confusing Number II
-- https://leetcode.com/problems/cracking-the-safe/
 - https://leetcode.com/problems/cheapest-flights-within-k-stops/
-
+- https://leetcode.com/problems/minimum-window-subsequence/
 # Later
 - Binary heap
+- Monotonic Queues questions.
 - Kadane algorithm, LIS, LCS other basic dp
 - String divisibility Problems
 - AVL Trees
@@ -841,7 +959,10 @@ class Solution {
 ### BinarySearch
 ### Binary Tree 
 ### Heaps
+### Monotonic Queue
+- https://leetcode.com/problems/sliding-window-maximum/
 ### 2Pointer
+- https://leetcode.com/problems/minimum-window-substring/
 ### Graph (DFS, BFS)
 ### Trie
 ### DP
