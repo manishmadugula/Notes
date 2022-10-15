@@ -8,7 +8,8 @@
     - What is the scale of the system? Is it built for a startup or a big company with a large user base?
     - Will the system work in a distributed environment?
     - Read write ratio of the application.
-
+    - ### Storage time to save information? (Always ask)
+    - Multidevice support?
 
 - Write down requirements
     - Write about latency and throughput.
@@ -61,12 +62,13 @@ necessary before diving into design.
 
 
 #### Some things to keep in mind
-- Security (Authentication, Authorization)
+- Security (Authentication, Authorization, API Gateways, Hiding internal networks)
 - Rate limiting
 - Caching
 - CDN
 - Message Queues
-- Logging, metrics, deployment CICD pipeline.
+- Multidevice support/ Concurrency?
+- Logging, metrics(telemetry), deployment CICD pipeline.
 
 #### URL Shortner
 - Hash function to convert a long url to short one, concurrency, locking etc to avoid duplicacy.
@@ -79,6 +81,8 @@ necessary before diving into design.
 - Talk about server failure, network loss, bottlenecks.
 - How to handle the next scale curve from 1 mil to 10 million users example.
 
-
-
-
+# Tips
+- Use whisical.
+- Have a sticky note for requirements, non functional too.
+- Have notes section for scribbling ideas.
+- Use comment to add emphasis on a node.

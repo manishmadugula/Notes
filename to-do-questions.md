@@ -103,7 +103,7 @@ Write a query to print the top two scores in each subject of the students table.
 
 # Amazon
 
-## LP
+## Leadership principles
 
 ### Customer Obsession
 - You seek customer feedback and it helped

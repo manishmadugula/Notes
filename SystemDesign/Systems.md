@@ -239,3 +239,141 @@ access. In-memory cache is chosen because it is fast and supports time-based exp
 - The Network Time Protocol (NTP) is a networking protocol for clock synchronization between computer systems over packet-switched, variable-latency data networks.
 - NTP servers have access to highly precise atomic clocks and GPU clocks.
 - NTP is a protocol that works over the application layer, it uses a hierarchical system of time resources and provides synchronization within the stratum servers
+
+# Web Crawler
+## Uses
+- Search Engine Indexing
+- Archiving
+- Data mining
+- Web Monitoring
+
+## Clarifications/ Requirement Gathering
+- What is the motivation, is it indexing, mining or something else?
+    - Search Engine Indexing
+- How many web pages need to be scraped?
+    - 1 Billion per month.
+- Content type?
+    - HTML
+- Storage time?
+    - 5 years
+    - In order to return the result of search the search engine need to store the content of the html.
+- Duplicate content
+    - Should be ignored
+- What is the scope of the crawling, single websites, or a list of websites, or the entire internet needs to be scraped?
+- Is it just a one time scrap, or continuously building up the index?
+    - New added or edited need to be continuosly updated?
+- Does the system need to be distributed?
+ - Yes it should be scalable.
+
+
+## Non functional Requirements
+ - Scalable (Web is too large so needs to be scalable with parallelization)
+ - Robust (Avoid traps, unresponsive servers, crashes, malicious links etc).
+ - Polite (Shouldn't make too many requests at once).
+
+
+## Back of the envelope 
+- Assume 1 billion web pages are downloaded every month.
+- QPS: 1,000,000,000 / 30 days / 24 hours / 3600 seconds = ~400 pages per second.
+- Assume the average web page size is 500k.
+- Assuming data are stored for five years, 500 TB * 12 months * 5 years = 30 PB. A 30 PB storage is needed to store five-year content.
+
+
+## High level design
+![](res/webcrawler.png)
+### URL Seeds
+- A good seed URL serves as a good starting point that a crawler can utilize to traverse as many links as possible.
+- The first proposed approach is based on locality as different countries may have different popular websites. Another way is to choose seed URLs based on topics; for example, we can divide URL space into shopping, sports, healthcare, etc. 
+
+### URL Frontier
+#### DFS vs BFS
+- Some websites can be too deep, so use BFS.
+
+#### Problems with simple bfs
+- Most links are linked back to the same host. So a simple fifo based bfs will bombared the site if webpages are crawled parallely. This is considered impolite.
+- No way to enforce priority in simple fifo queue.
+
+#### Multilevel multiqueue solution.
+![](res/webcrawler2.png)
+- 2 Level queue, first for priority and second for politeness can be implemented.
+- Front queues: manage prioritization
+- Back queues: manage politeness
+##### Politeness
+- To enforce politeness we can ensure all the links for a particular host go to the same worker node and we can add a delay between each task to this worker.
+- We would need a map which has information about which downloader thread is crawling which host urls.
+- One queue per host, Same as kafka.
+
+##### Priority
+- Different sites has different priority based on pagerank, web traffic, update frequency etc.
+- A prioritizer can take url as input and compute priority and based on priority can assign to the required queue based on priority.
+- Queues can be chosen at random with bias towards high priority queue, or simply number of high priority queues can be more than low priority, say in the above diagram the front queue selector has 200 threads, 150 can be dedicated to take up tasks from high priority and other 50 from low priority.
+
+#### Freshness
+- The crawler should recrawl important urls more often to retain freshness.
+
+#### Robustness of the queue
+- Can use kafka for managing the queues, producers and consumers.
+- Get high durability thanks to commit-log and replication.
+
+### HTML Downloader
+#### Robots.txt
+- Robots Exclusion Protocol, is a standard used by websites to communicate with crawlers. It specifies what pages crawlers are allowed to download.
+- To avoid repeated downloads, we can cache the robots.txt file for a host.
+#### DNS Resolver
+- To avoid bottleneck due to dns resolver, we need to cache the dns result.
+#### Distributed Crawl
+- We can have multiple crawl mutliple hosts parallely.
+#### Robustness
+- Have timeouts for unresponsive sites.
+- The crawler must handle exceptions gracefully without crashing the system.
+#### Server Side Rendering or dynamic rendering
+- Render the site on the server before downloading, rather than download .html file, since a lot of sites are doing server side rendering. If we download and parse web pages directly, we will not be able to retrieve dynamically generated links.
+### Content Parser
+- Checks if the pages are malformed.
+- Encode before parsing to prevent RCE attacks.
+#### Duplicate Content
+- Even if url is same sometimes content is exactly same, we can use checksums/hash values to reject already saved contents.
+#### Content Storage
+- Both disk and memory are used.
+- Most of the content is stored on disk because the data set is too big to fit in memory.
+- Popular content is kept in memory to reduce latency.
+- Techniques like replication and sharding are used to improve the data layer availability, scalability, and reliability.
+### Url Parser
+- URL Extractor parses and extracts links from HTML pages.
+- Excludes blacklisted sites.
+- Might also choose to blacklist sites without proper Certificate Authority.
+- Avoid Spider traps (Infinite loop urls.) (Might have a length parameter as a cutoff) www.spidertrapexample.com/foo/bar/foo/bar/foo/bar/…
+- Checks for duplicate urls using hashtable.
+- Adblock dns can be used to skip sites which have advertisements, spam etc.
+#### Url Storage
+- Stores visited urls with their hashvalue.
+
+# Chat System
+
+## Clarifications/ Requirement Gathering
+- What are the DAU?
+    - 50 Million
+- Is it a simple one to one chat or group chat?
+    - Both
+- Mobile desktop or webapp?
+    - Both
+- Max Group number limit
+    - 100 People in a group
+- Do we need last seen/online indicator?
+    - Yes
+- Is only text supported or images, videos,files etc too?
+    - Text
+- Message size limit?
+    - 1,00,000 character long
+- Is it required to be end to end encrypted?
+- If the user is not using the app, do we need to support notification as well?
+- Are we required to store the chats in the server or just app(with google drive backups).
+    - Store chat history forever.
+- Do we need to support profile pic and status of the user?
+- How many max friends can a user have?
+
+## Non Functional requirements
+- Low latency.
+
+# For the design
+- Refer to Whismical [Link](https://whimsical.com/UzfAwKNebfaZw9qVqsgBov)

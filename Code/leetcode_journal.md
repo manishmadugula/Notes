@@ -908,6 +908,316 @@ class Solution {
     }
 ```
 
+## 12.10.22
+
+
+
+### Amazon To-Do
+- Basic DP Questions
+    - LCS
+    - LIS
+    - Edit Distance
+    - Kadane
+    - Knapsacks
+    - Rod Cutting
+    - Coin Change
+    - Egg Drop
+- Basic Graph Questions
+    - Cycle detection
+    - Coloring Problem
+    - [x] Dijkstra
+    - [x] Topological Sorting
+    - [x] Minimum Spanning Tree
+        - No Cycle in tree
+- Union Find Disjoint Sets
+- Quick Select
+    https://leetcode.com/problems/top-k-frequent-elements/
+- Binary Number Questions
+- Trie
+- Sliding Window
+- Monotonic Queues, Stack
+- Previous Amazon Questions recent.
+- https://www.principle.cards/
+- https://liuzhenglaichn.gitbook.io/algorithm/mono-deque
+
+
+## 13.10.22
+
+### https://leetcode.com/problems/substring-with-largest-variance/
+- enumerate all [a,b] combinations and do kadane algorithm. 
+- It is feasible because max all combinations would still be around 325.
+### https://leetcode.com/problems/next-greater-element-i/
+- Very important question
+- Use monotonic stack for this question.
+- We use a stack to keep a decreasing sub-sequence, whenever we see a number x greater than stack.peek() we pop all elements less than x and for all the popped ones, their next greater element is x.
+### https://leetcode.com/problems/sum-of-total-strength-of-wizards/
+- Very tough question
+- https://leetcode.com/problems/sum-of-total-strength-of-wizards/discuss/2062017/C%2B%2B-prefix-%2B-monotonic-stack-O(N)-solution-with-thought-process
+### https://leetcode.com/problems/largest-rectangle-in-histogram/
+- Very Important
+- Similar to the above, infact part of the above is this question. Find the max subarray where the current element is the minimum.
+- For each bar calculate the prevSmaller Index and nextSmaller Index using monotonic Stack and we get the max width with the current height.
+- O(n)
+### https://leetcode.com/problems/next-greater-element-ii/
+- Loop twice or assume array is duplicated 2*n length and i = i%n;
+- Store index rather than actual value in stack to deal with duplicates.
+
+
+## 14.10.22
+### https://leetcode.com/problems/word-break/
+- Same as below explaination
+- https://leetcode.com/problems/word-break/discuss/1455100/Python-3-solutions%3A-Top-down-DP-Bottom-up-DP-then-Optimised-with-Trie-Clean-and-Concise
+### https://leetcode.com/problems/word-break-ii/
+- Given a string s, say the first i characters form a word (We can either use a HashSet to search in the dictionary or use a trie to search in constant time because the max length of s is 20), we can simply find all the strings formed by i+1 to end of the string s and append to the 0 to i of the string, once we do this for all possible i we have our answer.
+- We can use hashMap use memoization since all possible strings from i+1 to end remains the same we can save this value in the hashMap, and use that for other recursion iterations too.
+```java
+class Solution {
+    private class Node{
+        private Character ch;
+        private Node[] children;
+        private Boolean isEnd;
+        
+        Node(Character ch){
+            this.ch=ch;
+            children= new Node[26];
+            isEnd=false;
+        }
+    }
+    
+    private List<String> dp(String s,int index, Node root, HashMap<Integer,List<String>> map){
+        if(map.containsKey(index)){
+            return map.get(index);
+        }
+         List<String> ans = new ArrayList<>();
+         for(int i=index;i<s.length();i++){
+            String currentString = s.substring(index,i+1);
+            if(trieContains(root,currentString)){
+                if(i+1==s.length()){
+                    ans.add(currentString);
+                    map.putIfAbsent(index,ans);
+                    return ans;
+                }
+                List<String> lst = dp(s,i+1,root,map);
+                for(String exString : lst){
+                    ans.add(currentString+" "+exString);
+                }
+            }
+        }
+        map.putIfAbsent(index,ans);
+        return ans;
+    }
+    
+    private boolean trieContains(Node root, String st){
+        Node node = root;
+        for(int i=0;i<st.length();i++){
+            if(node.children[st.charAt(i)-'a']==null) return false;
+            node = node.children[st.charAt(i)-'a'];
+        }
+        return node.isEnd;
+    }
+    
+    private void buildTrie(Node root, String st){
+        Node node = root;
+        for(int i=0;i<st.length();i++){
+            if(node.children[st.charAt(i)-'a']==null){
+                node.children[st.charAt(i)-'a'] = new Node(st.charAt(i));
+            }
+            node = node.children[st.charAt(i)-'a'];
+        }
+        node.isEnd=true;
+    }
+    
+    public List<String> wordBreak(String s, List<String> wordDict) {
+        HashMap<Integer, List<String>> map = new HashMap<>();
+        List<String> ans = new ArrayList<>();
+        Node root = new Node(null);
+        for(String st:wordDict){
+            buildTrie(root,st);
+        }
+        
+        return dp(s,0,root,map);
+    }
+}
+```
+###  https://leetcode.com/problems/concatenated-words/
+- Sort the words according to shortest length since short ones form long words
+- For each word, see if forms wordbreak, if yes, no need to add to the trie, else add to trie.
+
+
+### https://leetcode.com/problems/minimum-number-of-moves-to-make-palindrome/
+- Very tough
+- 2 Pointer approach
+- Use greedy. Start from start(p), and for the end(q), if the character matches then continue, else find the character to the left of the end and swap till start and end character matches. and decrease the pointer for end and increase for start. Do this till you reach middle.
+- In case of odd number, if there is no value found to the right of p, note down this index(z) and increment q. At the end simply swap the z to the center.
+- https://leetcode.com/problems/minimum-number-of-moves-to-make-palindrome/discuss/1847011/c%2B%2B-2-pointers-with-detail-proof-and-explanation 
+
+### https://leetcode.com/problems/integer-to-english-words/
+- Lot's of edgecases
+- 0, 20, 30, 100, 1000, 101, 1001
+
+### https://leetcode.com/problems/word-ladder/
+- BFS
+
+
+## 15.10.22
+### https://leetcode.com/problems/robot-bounded-in-circle/
+- Robot is stuck, if it comes back to the initial position after the instruction or faces a direction different from original direction.
+
+### https://leetcode.com/problems/pairs-of-songs-with-total-durations-divisible-by-60/
+- Calculate the time % 60 then it will be exactly same as two sum problem.
+- we want to know that, for each t, how many x satisfy (t + x) % 60 = 0.
+- The straight forward idea is to take x % 60 = 60 - t % 60, But if t % 60 = 0, x % 60 = 0 instead of 60.
+- One solution is to use x % 60 = (60 - t % 60) % 60,
+
+
+### https://cybergeeksquad.co/2021/06/five-star-seller-maximum-average-pass-ratio-amazon-oa.html
+- add the delta's into a priority queue. 
+- Delta as in how much increase in percentage from adding one person to pass list. Greedily take the delta with highest value from pq.
+
+
+### https://cybergeeksquad.co/2021/06/split-string-into-unique-primes-solution-amazon-oa.html
+- Use dp
+
+### https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/
+- Use dp dfs help find the the minimum difficulty if start work at ith job with d days left.
+- If d = 1, only one day left, we have to do all jobs, return the maximum difficulty of jobs.
+```java
+class Solution {
+    
+    private int dp(int[] jobDifficulty, int index ,int d, HashMap<String, Integer> map){
+        String key = index+" : "+d;
+        if(map.containsKey(key)){
+            return map.get(key);
+        }
+        
+        int ans=Integer.MAX_VALUE;
+        int difficulty =-1;
+        if(d-1>0){
+            for(int i=index;i<jobDifficulty.length-d+1;i++){
+                difficulty =Math.max(difficulty,jobDifficulty[i] ) ;
+                ans = Math.min(ans, difficulty+dp(jobDifficulty,i+1,d-1,map));            
+            }
+        }
+        else{
+            for(int i=index;i<jobDifficulty.length;i++){
+                difficulty =Math.max(difficulty,jobDifficulty[i] ) ;
+                ans = difficulty;
+            }
+        }
+        map.putIfAbsent(key, ans);
+        return ans;
+    }
+    
+    public int minDifficulty(int[] jobDifficulty, int d) {
+        if(d>jobDifficulty.length) return -1;
+        HashMap<String, Integer> map = new HashMap<>();
+        return dp(jobDifficulty, 0,d,map);
+    }
+}
+```
+
+### https://leetcode.com/discuss/interview-question/373202/amazon-oa-2019-optimal-utilization
+- Important Question for 2 pointer approach.
+
+```java
+private List<int[]> getPairs(List<int[]> a, List<int[]> b, int target) {
+        Collections.sort(a, (i,j) -> i[1] - j[1]);
+        Collections.sort(b, (i,j) -> i[1] - j[1]);
+        List<int[]> result = new ArrayList<>();
+        int max = Integer.MIN_VALUE;
+        int m = a.size();
+        int n = b.size();
+        int i =0;
+        int j =n-1;
+        while(i<m && j >= 0) {
+            int sum = a.get(i)[1] + b.get(j)[1];
+            if(sum > target) {
+                 --j;
+            } else {
+                if(max <= sum) {
+                    if(max < sum) {
+                        max = sum;
+                        result.clear();
+                    }
+                    result.add(new int[]{a.get(i)[0], b.get(j)[0]});
+                    int index = j-1;
+                    while(index >=0 && b.get(index)[1] == b.get(index+1)[1]) {
+                         result.add(new int[]{a.get(i)[0], b.get(index--)[0]});
+                    }
+                }
+                ++i;
+            }
+        }
+        return result;
+    } 
+```
+
+### Shopping Options 4 Sum <=n 
+- https://leetcode.com/discuss/interview-question/1031663/Amazon-OA
+- Iterate through the first 2 arrays and count the frequency of all possible sums of pairs
+- Iterate through the other 2 arrays and sum up the frequency of -(c + d) where c and d are all possible pairs in these 2 arrays. -(c + d) should be equal to a + b for a valid solution.
+- The number of such matches is the required result
+```java
+def shoppingOptions(pairOfJeans, pairOfShoes, pairOfSkirts, pairOfTops, dollars):
+    """
+    :type pairOfJeans: List[int]
+    :type pairOfShoes: List[int]
+    :type pairOfSkirts: List[int]
+    :type pairOfTops: List[int]
+    :type dollars: int
+    :rtype: int
+    """
+    
+    hash_map = {}
+    count = 0
+    
+    for a in pairOfJeans:
+        for b in pairOfShoes:
+            curr_sum = a+b
+            if curr_sum in hash_map:
+                hash_map[curr_sum] += 1
+            else:
+                hash_map[curr_sum] = 1
+            
+    for c in pairOfSkirts:
+        for d in pairOfTops:
+            curr_val = dollars - (c + d)
+            li_keys = [k for k in hash_map if k <= curr_val]
+            values = [hash_map.get(k) for k in li_keys]
+            count += sum(values)
+            
+    return count
+
+print(shoppingOptions([2], [3, 4], [2, 5], [4, 6], 12)) # Ans 2
+print(shoppingOptions([2], [2, 2], [2], [2], 9)) # Ans 2
+print(shoppingOptions([4, 7], [6, 6], [1, 3, 5], [5, 7, 12], 20)) # Ans 12
+```
+
+### https://leetcode.com/problems/minimum-degree-of-a-connected-trio-in-a-graph/
+- Read question carefully
+- For each pair, check if they have a common neighbor and calculate their degree.
+- t1 > t2 > t3, so we do not check the same triplet twice.
+- degree = edges[t1] + edges[t2] + edges[t3] - 6
+- https://leetcode.com/problems/minimum-degree-of-a-connected-trio-in-a-graph/discuss/1064557/C%2B%2B-O(n-3)-Adjacency-List-vs.-Matrix
+
+
+### https://leetcode.com/problems/top-k-frequent-elements/
+- Do it later too
+- Quick Select can be used to find the top k in O(N) time
+
+### https://leetcode.com/problems/count-binary-substrings/
+- Group into zeros and ones, like say 1100011110000 -> (2,3,4,4)
+- Then the answer is (min(2,3) + min(3,4)+min(4,4))
+
+### https://cybergeeksquad.co/2022/10/decode-string-frequency-amazon-oa.html
+- Parse from the end.
+
+
+## 16.10.22
+- https://leetcode.com/discuss/interview-question/1171979/a-good-question-of-amazon-sde
+- https://leetcode.com/problems/maximize-score-after-n-operations/
+- https://leetcode.com/problems/sum-of-subarray-ranges/
+- https://cybergeeksquad.co/amazon-oa-online-assessment-2021-questions.html
 
 
 # To-Do
@@ -925,6 +1235,8 @@ class Solution {
 # Later
 - Binary heap
 - Monotonic Queues questions.
+- Monotonic Stack questions.
+    - https://leetcode.com/problems/sum-of-total-strength-of-wizards/discuss/2061985/JavaC%2B%2BPython-One-Pass-Solution
 - Kadane algorithm, LIS, LCS other basic dp
 - String divisibility Problems
 - AVL Trees
@@ -938,6 +1250,7 @@ class Solution {
 - Trie
 - Rabin Karp
 - suffix tree
+- Trajan's Algorithm
 - Dijkstra
 - DP Problems
 - Kth smallest largest
@@ -963,6 +1276,9 @@ class Solution {
 ### Heaps
 ### Monotonic Queue
 - https://leetcode.com/problems/sliding-window-maximum/
+### MonoStack
+- https://leetcode.com/problems/next-greater-element-i/
+
 ### 2Pointer
 - https://leetcode.com/problems/minimum-window-substring/
 ### Graph (DFS, BFS)
