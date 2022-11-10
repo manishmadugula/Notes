@@ -5,11 +5,13 @@
     - Is it a mobile app or web app or both?
     - How many daily active users (DAU) will we be supporting.
     - How does the company anticipate to scale up in 3 months, 6 months, 1 year.
-    - What is the scale of the system? Is it built for a startup or a big company with a large user base?
+    - What is the scale of the system? Is it built for a startup or a big company with a large user base? Is it global like say youtube.
     - Will the system work in a distributed environment?
     - Read write ratio of the application.
     - ### Storage time to save information? (Always ask)
     - Multidevice support?
+    - Constraints on the requirements, max video size uploaded eg.
+    - Can we leverage existing cloud solutions like AWS/ Google cloud or build in infra using Kubernetes.
 
 - Write down requirements
     - Write about latency and throughput.
@@ -29,6 +31,7 @@ necessary before diving into design.
     - peak QPS
     - storage
     - Cache
+    - R/W Ratio
 
 #### Twitter
 - 300 million monthly active users.
@@ -63,9 +66,11 @@ necessary before diving into design.
 
 #### Some things to keep in mind
 - Security (Authentication, Authorization, API Gateways, Hiding internal networks)
+    - File encryption, TLS
 - Rate limiting
 - Caching
 - CDN
+- Horizontal autoscaling.
 - Message Queues
 - Multidevice support/ Concurrency?
 - Logging, metrics(telemetry), deployment CICD pipeline.
@@ -79,7 +84,9 @@ necessary before diving into design.
 
 ### 5. Wrap up ( 3 - 5 minutes)
 - Talk about server failure, network loss, bottlenecks.
+- Talk about error and exception handling, retry etc. Recoverable and non recoverable errors.
 - How to handle the next scale curve from 1 mil to 10 million users example.
+
 
 # Tips
 - Use whisical.

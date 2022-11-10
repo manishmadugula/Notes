@@ -375,5 +375,97 @@ access. In-memory cache is chosen because it is fast and supports time-based exp
 ## Non Functional requirements
 - Low latency.
 
-# For the design
+## For the design
 - Refer to Whismical [Link](https://whimsical.com/UzfAwKNebfaZw9qVqsgBov)
+
+# Youtube
+## Design, Requirements etc.
+- Refer to Whimsical [Link](https://whimsical.com/youtube-7GxH77hWSBR52fpZghUbv8)
+## Streaming Protocol
+- MPEG–DASH. MPEG stands for “Moving Picture Experts Group” and DASH stands for "Dynamic Adaptive Streaming over HTTP".
+
+- Apple HLS. HLS stands for “HTTP Live Streaming”.
+
+- Microsoft Smooth Streaming.
+
+- Adobe HTTP Dynamic Streaming (HDS).
+
+- 
+
+- Web Real-Time Communication
+
+- different streaming protocols support different video encodings and playback players. 
+
+### Basics
+- Standardized method of delivering different types of media over internet
+- Sends “chunks” of content from one device to another and defines protocol for reassembling.
+- Both client and server needs to support the streaming protocol.
+- Codec means encoding and decoding i.e using compression. This process happens in real-time when it comes to live streaming. Eg : H.264, HEVC/H.265, MPEG-4
+- Container format : MP4, avi, mov etc.
+- Common transport formats or containers for streaming video include MP4 (fragments) and MPEG-TS.
+- There is a difference between inject and delivery streaming protocol
+
+### HTTP Live Streaming (HLS)
+- developed by Apple to work with an HTML5 video player.
+- HLS is an adaptive bitrate protocol and also uses HTTP servers.
+- A bit higher latency, however there is a Low-Latency HLS.
+- Compatible across just about any device and operating system. 
+- HLS is currently the best protocol for most video streaming use-cases. 
+
+### MPEG-DASH, Dynamic Adaptive Streaming over HTTP
+- This is one of the newest streaming protocols, and it is beginning to see broader adoption.
+- Dynamic Adaptive Streaming over HTTP (DASH) which is also known as MPEG-DASH, uses standard HTTP web servers. This reduces the cost and technical difficulty of implementation when compared to legacy methods of streaming like RTP.
+- MPEG-DASH is also an adaptive bitrate (ABR) protocol. This means it will automatically detect changes in the internet connection speed of the viewer and serve the best available quality video at any given time. ABR streaming reduces buffering and enhances the viewers’ experience. 
+- iOS and Safari don’t yet support it and might never support it. 
+- Native support on Android devices
+
+### Real-Time Messaging Protocol 
+- RTMP was developed by Macromedia with the primary use case of working with Adobe Flash player.
+- RTMP is now used for ingestion from the encoder to the online video platform.
+- When paired with HLS delivery, RTMP ingest produces a low-latency stream.
+- RTMP ingest is currently the most popular protocol for ingesting has to do with compatibility. HLS ingest, for example, is still not widely supported by streaming services.
+
+### WebRTC
+- new protocol used to web conferencing in microsoft teams and all.
+- also adaptive bit rate.
+
+### Microsoft Smooth Streaming (MSS)
+- Old protocol.
+
+# Google Drive
+
+## Cursor
+- This can help with the conflicts a lot. Websockets can be used.
+
+## Audit log
+- Might be useful to see what others are doing.
+
+## Operational Transform
+- Server keeps track of older operations that was performed, and it transform the request from the client based on those previous operations. Say first both client1 and client2 had DOG, client2 removed 'O' to get DG, client1 added S to the end to get DOGS, if the client2's request is processed first delete('1') (0 indexed), server remembers this operations so when client1's insert('S',3) arrives it transforms it to insert('S',2) so that it has a consistent view at the backend i.e DGS and propagates this to every client.
+- All operations has to go through the server, peer to peer is not allowed.
+- Server uses a queue.
+![](res/OT.png)
+
+## Conflict Free Replicated Data Types (CRDT)
+- CRDT's are data structures designed to provide data types that will always converge, as long as they see the same set of operations (in any order).
+- The CRDT data structures were based on the recognition that data structures expressible as semilattices are convergent. 
+- OT didn't achieve convergence in all cases.
+- CRDTs satisfy strong eventual consistency which leads to convergence.
+- Automerge is an implementation of this concept.
+- Datastructure which is commutative and idempotent. i.e it doesn't matter what order the changes arrive and doesn't matter how many times the same changes arrive.
+- We can have positional indexes which don't affect other indexes, we can do that by using fractions. And also add a bit of randomness. Fractional Indicies.
+- For CRDTs
+    - All characters are globally unique. (Site Id, Site Counter)
+    - All characters are globally ordered
+- Instead of numbers, we can also use trees
+- For deleting a character, we delete by siteId.
+![](res/CRDTs.png)
+- https://www.youtube.com/watch?v=hy0ePbpna5Y
+- Even if CRDTs lead to convergence they might not lead to expected results. ![](res/CRDTs_problem.png)
+### Consensus vs Collaboration
+- Keep only one changes.
+- Keep all changes and merge them.
+
+## Storage
+- Cassandra can be used, if we are storing CRDTs. Write heavy.
+- Formatting, Rich text/Markdown.

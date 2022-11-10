@@ -944,8 +944,7 @@ class Solution {
 ## 13.10.22
 
 ### https://leetcode.com/problems/substring-with-largest-variance/
-- enumerate all [a,b] combinations and do kadane algorithm. 
-- It is feasible because max all combinations would still be around 325.
+
 ### https://leetcode.com/problems/next-greater-element-i/
 - Very important question
 - Use monotonic stack for this question.
@@ -1218,7 +1217,705 @@ print(shoppingOptions([4, 7], [6, 6], [1, 3, 5], [5, 7, 12], 20)) # Ans 12
 - https://leetcode.com/problems/maximize-score-after-n-operations/
 - https://leetcode.com/problems/sum-of-subarray-ranges/
 - https://cybergeeksquad.co/amazon-oa-online-assessment-2021-questions.html
+- https://leetcode.com/problems/trapping-rain-water/
 
+
+## 27.10.22
+### https://leetcode.com/problems/sum-of-total-strength-of-wizards/
+- Very tough question, has few concepts embedded
+- Modulus Arithemetic
+- Next Lesser and Previous Lesser Element
+- Find the of subarray in constant time. Preprocess the array (Prefix Sum+ Sum of Prefix Sum).
+- The below solution still doesn't clear 2 test cases.
+```java
+class Solution {
+    
+    int findLeft(int[] strength, int i){
+        int ans=i-1;
+        while(ans>=0){
+            if(strength[ans]<strength[i]) return ans;
+            ans--;
+        }
+        return ans;
+    }
+    
+    int findRight(int[] strength, int i){
+        int ans=i+1;
+        while(ans<strength.length){
+            if(strength[ans]<=strength[i]) return ans;
+            ans++;
+        }
+        return ans;
+    }
+    
+    public int totalStrength(int[] strength) {
+        long[] p = new long[strength.length];
+        long[] pp = new long[strength.length];
+        long mod = ((int)Math.pow(10,9))+7;
+        
+        int[] left = new int[strength.length];
+        int[] right = new int[strength.length];
+        left[0]=-1;
+        LinkedList<Integer> stack = new LinkedList<>();
+        stack.add(0);
+        for(int i=1;i<strength.length;i++){
+            while(!stack.isEmpty() && strength[i]<=strength[stack.getLast()]){
+                stack.removeLast();
+            }
+            if(stack.isEmpty()){
+               left[i]=-1; 
+            }
+            else{
+                left[i]=stack.getLast();
+            }
+            stack.add(i);
+        }
+        stack = new LinkedList<>();
+        stack.add(strength.length-1);
+        right[strength.length-1]=strength.length;
+        for(int i=strength.length-2;i>=0;i--){
+            while(!stack.isEmpty() && strength[i]<strength[stack.getLast()]){
+                stack.removeLast();
+            }
+            if(stack.isEmpty()){
+               right[i]=strength.length; 
+            }
+            else{
+                right[i]=stack.getLast();
+            }
+            stack.add(i);
+        }
+        
+        long sum=strength[0];
+        p[0]=sum;
+        for(int i=1;i<strength.length;i++){
+            p[i]=(sum%mod+strength[i]%mod)%mod;
+            sum=p[i];
+        }
+        
+        sum=p[0];
+        pp[0]=sum;
+        for(int i=1;i<strength.length;i++){
+            pp[i]=(sum%mod+p[i]%mod)%mod;
+            sum=pp[i];
+        }
+        
+        // System.out.println(Arrays.toString(left));
+        // System.out.println(Arrays.toString(pp));
+
+        long ans=0;
+        for(int i=0;i<strength.length;i++){
+            // System.out.print("For,  i : " +i);
+
+            long tempans=0;
+            int x = left[i];
+            int y = right[i];
+            // System.out.print(" Current element : " + strength[i]+" leftidx : "+x +" rightIdx : "+y);
+            
+            int n,m;
+            if(x<0){
+                n=i;
+            }
+            else{
+                n = i-x-1;
+            }
+            if(y>=strength.length){
+                m=strength.length-i-1;
+            }
+            else{
+                m = y-i-1;
+            }
+            // System.out.print(", m : " + m+", n : "+n +", ");
+
+            
+            if(i-n-2>=0){
+                // System.out.println(", inside1 ");
+                tempans+=((((((p[i]%mod)*((n+1)%mod))%mod - ((pp[i-1]%mod)-(pp[i-n-2]%mod))%mod)%mod)*((m+1)%mod))%mod + ((n+1)%mod)*((pp[i+m]%mod-pp[i]%mod-(m%mod)*(p[i]%mod)%mod)%mod))%mod;
+            }
+            else if(i-1>=0){
+                // System.out.println(", inside2 ");
+                tempans+=((((((p[i]%mod)*((n+1)%mod))%mod - ((pp[i-1]%mod))%mod)%mod)*((m+1)%mod))%mod + ((n+1)%mod)*((pp[i+m]%mod-pp[i]%mod-(m%mod)*(p[i]%mod)%mod)%mod))%mod;
+            }
+            else{
+                // System.out.println(", inside3 ");
+                tempans+=((((((p[i]%mod)*((n+1)%mod))%mod)%mod)*((m+1)%mod))%mod + ((n+1)%mod)*((pp[i+m]%mod-pp[i]%mod-(m%mod)*(p[i]%mod)%mod)%mod))%mod;
+            }
+            // System.out.println(", processed ans " + strength[i]*tempans);
+            ans=(ans%mod+((strength[i]%mod)*(tempans%mod))%mod)%mod;
+
+        }
+        System.out.println(", ans " + ans);
+        // System.out.println(", mod " + mod);
+
+        return ((int)(ans%mod));
+        
+    }
+}
+```
+
+### Modular Arithmatic
+- The most obvious definition is: mod(x,y) or x % y gives the remainder when you divide x by y.
+- Technique used by many a programmer to work out mod(x,y) when a mod function isn't available i.e. ```mod(x,y)= x-x*int(x/y)```
+  
+- Properties
+    - Addition property
+        ```
+        (A + B) mod C = (A mod C + B mod C)mod C
+        ```
+    - Mod of a -ve number
+      ```
+      (-A) mod C = (-A + C)mod C
+      ```
+    - **Multiplication property**
+      ```
+      (A * B) mod C = (A mod C * B mod C) mod C
+      ```
+    
+    - Exponentiation property
+      ```
+      A^B mod C = ( (A mod C)^B ) mod C
+      ```
+
+    - Modular Inverse property
+      ```
+      A * A^-1) ≡ 1 (mod C) or equivalently (A * A^-1) mod C = 1
+      ```
+      Only the numbers coprime to C (numbers that share no prime factors with C) have a modular inverse (mod C)
+
+- Non Negative Modulus
+    ```
+    long long modul(long long p,long long q){
+    return (q + (p%q)) % q;
+    ```
+
+### Facebook basic questions
+- https://leetcode.com/problems/buildings-with-an-ocean-view/
+    - Straightforward monotonic stack
+- https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iii/
+    - Important
+    - Solve this question without extra space.
+    - https://leetcode.com/problems/intersection-of-two-linked-lists/solution/
+    - If we say that cc is the shared part, aa is exclusive part of list A and bb is exclusive part of list B, then we can have one pointer that goes over a + c + b and the other that goes over b + c + a. Have a look at the diagram below, and this should be fairly intuitive.
+    - Set pointer pA to point at headA.
+        Set pointer pB to point at headB.
+        While pA and pB are not pointing at the same node:
+        If pA is pointing to a null, set pA to point to headB.
+        Else, set pA to point at pA.next.
+        If pB is pointing to a null, set pB to point to headA.
+        Else, set pB to point at pB.next.
+- https://leetcode.com/problems/minimum-remove-to-make-valid-parentheses/
+    - Simple stack solution
+- https://leetcode.com/problems/binary-tree-vertical-order-traversal/
+    - It's bfs not dfs
+## 28.11.22
+- https://leetcode.com/problems/dot-product-of-two-sparse-vectors/
+    - We can use a map <Index, Value> and store just the non-zero values and then we can iterate on the smaller map and then compute the dot product. But the issue with this approach is that there would be random access of indices due to which there could be a lot more cache misses if the sparse array is too long.
+    - Technically Hashmap uses an array of nodes internally, but to get an element we hash the key, and then access this array based on the hashcode. It's highly probable that the chunk of array where our destination lies is not in the cache, hence a cache miss.
+    - We take a list of integer arrays[i, nums[i]]. With this approach we will potentially have a lot less cache misses since list internally uses an array.
+    - If only one of the vector is sparse, then we can use the third approach, pick upon the indices of the sparse vector and then binary search the indices in the second vector. In this case complexity would be (l log N) where l is the length of sparse vector and N is the length of non-sparse vector.
+    - With list approach we can use two pointer to find the indices in other array.
+```java
+class SparseVector {
+
+List<int[]> list;
+
+SparseVector(int[] nums) {
+    list = new ArrayList<>();
+    
+    for(int i=0; i<nums.length; i++){
+        if(nums[i] != 0)
+            list.add(new int[]{i, nums[i]});
+    }
+}
+
+// Return the dotProduct of two sparse vectors
+public int dotProduct(SparseVector vec) {
+    int dotProduct = 0;
+    int p = 0, q = 0;
+    
+    while(p < list.size() && q < vec.list.size()) {
+        
+        if(list.get(p)[0] == vec.list.get(q)[0]){
+            dotProduct += list.get(p)[1] * vec.list.get(q)[1];
+            p++;
+            q++;
+        }
+        else if(list.get(p)[0] < vec.list.get(q)[0])
+            p++;
+        else
+            q++;
+    }
+    
+    
+    return dotProduct;
+}
+}
+```
+- https://leetcode.com/problems/random-pick-with-weight/
+ - Decent question
+ - Prefix Sum + Binary Search
+### Random Numbers in Java
+```java
+    Random rand = new Random(); 
+    int upperbound = 25;
+    //generate random values from 0-24
+    int int_random = rand.nextInt(upperbound); 
+    double double_random=rand.nextDouble(); //0.0 to 1.0
+    float float_random=rand.nextFloat();
+      
+```
+
+## 28.10.22
+- https://leetcode.com/problems/group-shifted-strings/
+    - Important question
+    - Easy question but solved inefficiently.
+    - Simply rotate the given string such that the first character is a, that is the hash of the String.
+
+- https://leetcode.com/problems/valid-palindrome-iii
+
+## 30.10.22
+- https://leetcode.com/problems/insert-into-a-sorted-circular-linked-list/
+    - Lots of conditions
+    - Important edgecase : [3,3,3]
+- https://leetcode.com/problems/vertical-order-traversal-of-a-binary-tree/
+    - Use Priority queue with custom comparator.
+    - Harder version of https://leetcode.com/problems/binary-tree-vertical-order-traversal/ 
+
+
+## 31.11.22
+- https://leetcode.com/problems/construct-quad-tree/
+- https://leetcode.com/problems/simplify-path/
+    - Simpler solution using stack.
+    - https://leetcode.com/problems/simplify-path/discuss/1847526/Best-Explanation-Ever-Possible-oror-Not-a-ClickBait
+- https://leetcode.com/problems/insert-into-a-sorted-circular-linked-list/
+
+## 1.10.22
+- https://leetcode.com/problems/valid-number/solution/
+    - Solved but there are lot of cases.
+    - Decent approach is below.
+```java
+    public boolean isNumber(String s) {
+        boolean seenDigit = false;
+        boolean seenExponent = false;
+        boolean seenDot = false;
+        
+        for (int i = 0; i < s.length(); i++) {
+            char curr = s.charAt(i);
+            if (Character.isDigit(curr)) {
+                seenDigit = true;
+            } else if (curr == '+' || curr == '-') {
+                if (i > 0 && s.charAt(i - 1) != 'e' && s.charAt(i - 1) != 'E') {
+                    return false;
+                }
+            } else if (curr == 'e' || curr == 'E') {
+                if (seenExponent || !seenDigit) {
+                    return false;
+                }
+                seenExponent = true;
+                seenDigit = false;
+            } else if (curr == '.') {
+                if (seenDot || seenExponent) {
+                    return false;
+                }
+                seenDot = true;
+            } else {
+                return false;
+            }
+        }
+        
+        return seenDigit;
+    }
+```
+- Also a Deterministic Finite Automation approach can be used.
+    - ![](res/dfa_valid_number.png)
+
+
+
+## 3.11.22
+### https://leetcode.com/problems/basic-calculator-ii/
+- Difficult Question
+- Important Question, use stacks to solve.
+- Lots of cases to keep in mind, digits with more than 1 length, negative cases. Don't follow BDMAS rule but the operator precedence rule. i.e * and/ have same precedence but have higher precedance than + and - which have same precedance.
+### https://leetcode.com/problems/basic-calculator/
+- Similar stack question, if you get ) just pop till you get ( or -(
+## 4.11.22
+### https://leetcode.com/problems/basic-calculator-iii/
+- Important question
+- Solved using both recursion and stack, as soon as ( is encountered recurse to compress it to a number.
+```java
+    private int[] getNextNumber(String s, int i){
+        if(s.charAt(i)=='('){
+            // System.out.println("Recursing ");
+            return helper(s,i+1); 
+        }
+        int j=i;
+        while(j<s.length()){
+            if(s.charAt(j)<='9' &&s.charAt(j)>='0'){
+                j++;
+            }
+            else{
+                break;
+            }
+        }
+        return new int[]{Integer.parseInt(s.substring(i,j)),j};
+    }
+    
+    private int[] helper(String s, int i){
+        // System.out.println("Helper i : " +i);
+        LinkedList<Integer> stack = new LinkedList<>();
+        int j=i;
+        while(j<s.length()){
+            if(s.charAt(j)=='(')
+            {
+                // System.out.println("OpenBracket recursing ");
+                int[] pair = helper(s,j+1);
+                // System.out.println("Pair : " +Arrays.toString(pair)+" ");
+                stack.addLast(pair[0]);
+                j=pair[1];
+            }
+            else if(s.charAt(j)=='+'){
+                // System.out.println("Addition, increasing j ");
+                j++;
+            }
+            else if(s.charAt(j)=='-'){
+                // System.out.println("Subtraction, next number: ");
+                int[] pair = getNextNumber(s,j+1);
+                // System.out.println("Pair : " +Arrays.toString(pair)+" ");
+                stack.addLast(-1*pair[0]);
+                j=pair[1];
+            }
+            else if(s.charAt(j)=='*'){
+                // System.out.println("Multiplication, next number: ");
+                int[] pair = getNextNumber(s,j+1);
+                // System.out.println("Pair : " +Arrays.toString(pair)+" ");
+                int prev = stack.pollLast();
+                stack.addLast(prev*pair[0]);
+                j=pair[1];
+            }
+            else if(s.charAt(j)=='/'){
+                // System.out.println("Division, next number: ");
+                int[] pair = getNextNumber(s,j+1);
+                // System.out.println("Pair : " +Arrays.toString(pair)+" ");
+                int prev = stack.pollLast();
+                stack.addLast(prev/pair[0]);
+                j=pair[1];
+            }
+            else if(s.charAt(j)==')'){
+                // System.out.println("Returning ) encountered");
+                int sum = 0;
+                while(!stack.isEmpty()){
+                    sum+=stack.pollLast();
+                }
+                return new int[]{sum,j+1};
+            }
+            else{
+                // System.out.println("Number, next number");
+                int[] pair = getNextNumber(s,j);
+                // System.out.println("Pair : " +Arrays.toString(pair)+" ");
+                stack.addLast(pair[0]);
+                j=pair[1];
+            }
+        }
+        
+        int sum=0;
+        while(!stack.isEmpty()){
+            sum+=stack.pollLast();
+        }
+        return new int[]{sum,s.length()};
+    }
+    
+    public int calculate(String s) {
+        return helper(s,0)[0];
+    }
+```
+
+## 6.11.22
+## https://leetcode.com/problems/median-of-two-sorted-arrays/
+- Relook before all interviews.
+- Couldn't Solve
+- https://www.youtube.com/watch?v=LPFhl65R7ww&t=1256s
+- Keep in mind edge cases.
+- Find i,j such that elements partitiioned by these indexes form 2 equal halfs of the array.
+- Find i using binary search (start can be -1 to deal with empty arrays.)
+```java
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+
+        if(nums1.length>nums2.length){
+            return findMedianSortedArrays(nums2,nums1);
+        }
+
+        int m = nums1.length;
+        int n = nums2.length;
+        int start = -1; //To deal with edge case
+        int end = m-1;
+        while(start<=end){
+            int i = (start)+(end-start)/2;
+            int j = (m+n+1)/2-2-i; // Takes care of both even and odd
+            int firstRight=i+1!=m ? nums1[i+1]: Integer.MAX_VALUE; //To deal with edgecases.
+            int secondRight=j+1!=n? nums2[j+1]: Integer.MAX_VALUE;
+            int firstLeft=i>=0 ? nums1[i]: Integer.MIN_VALUE;
+            int secondLeft=j>=0 ? nums2[j]: Integer.MIN_VALUE;
+            
+            if((firstLeft<=secondRight) && (firstRight>=secondLeft)){
+                if((m+n)%2==1){
+                    return Math.max(firstLeft,secondLeft);
+                }
+                else{
+                    return ((Math.max(firstLeft,secondLeft) + Math.min(secondRight,firstRight)))/2.0;
+                }
+            }
+            else if(firstLeft>secondRight){
+                end=i-1;
+            }
+            else if(secondLeft>firstRight){
+                start=i+1;
+            }
+        }
+        return -1;//Should never reach here.
+    }
+```
+## https://leetcode.com/problems/substring-with-largest-variance/
+- Couldn't Solve
+- Very important question.
+- Relook before all interviews
+- enumerate all [a,b] combinations and do kadane algorithm. a,b as well as b,a
+- It is feasible because max all combinations would still be around 26*26.
+- if a (highfreq element) is encountered +1, if b is encountered -1, if any other element then 0.
+- Then do a wierd kadane algorithm, because for a valid subarray we need atleast 1 b in the subarray. For this maintain a has_b flag.
+- Also if a subarray starts with b, and another b is encountered, we can safely increment the start of the subarray to maximize the variance.
+- Update the max_variance only if the current subarray considered has_b.
+- https://leetcode.com/problems/substring-with-largest-variance/discuss/2491331/Insights-into-Votrubac-soln
+- https://leetcode.com/problems/substring-with-largest-variance/discuss/2579146/%22Weird-Kadane%22-or-Intuition-%2B-Solution-Explained
+```java
+    public int largestVariance(String s) {
+        int ans=0;
+        for(int i=0;i<26;i++){
+            for(int j=0;j<26;j++){
+                boolean has_b=false;
+                boolean first_b=false;
+                if(i==j) continue;
+                char a = (char)('a'+i);
+                char b = (char)('a'+j);
+                int var =0;
+                if(!(s.contains(a+"") && s.contains(b+""))){
+                    continue;
+                }
+                for(int k=0;k<s.length();k++){
+                    if(s.charAt(k)==a){
+                        var++;
+                    }
+                    else if(s.charAt(k)==b){
+                        if(first_b){
+                            if(var>=0){ //If the variance is negative don't reset the first_b, because if variance is negative that means the prev valid element is also b. Keep in mind here don't use s.char(k-1)==b because that can be a character other than a or b.
+                                first_b=false;
+                            }
+                        }
+                        else{
+                            if(var-1<0){ //It is better to consider ab[b] than [abb] because the first case i.e ab[b] let's us ignore the first_b when we encounter another b. So use var-1<0 instead of var-1<-1
+                                first_b=true;
+                                var=-1;
+                            }
+                            else{
+                                var-=1;
+                            }
+                        }
+                        has_b=true;
+                    }
+                    if(has_b){
+                            ans=Math.max(ans,var);
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+```
+
+## https://leetcode.com/problems/design-hit-counter/
+- Important question.
+- Simple Queue Algorithm.
+- Do again efficiently.
+
+
+
+
+# 7.11.22
+## Knapsacks Algorithm
+- You either choose this element (a certain number of times) or don't choose type of questions.
+### https://leetcode.com/problems/partition-equal-subset-sum/solution/
+- Bounded Knapsacks
+- Using 1d array only. N^2
+- Hidden Knapsacks problem.
+### https://leetcode.com/problems/coin-change-ii/
+- Unbounded Knapsacks problem
+### https://leetcode.com/problems/ones-and-zeroes/
+- 2 Dimensional Bounded Knapsacks problem.
+
+
+## https://leetcode.com/problems/combination-sum-iv/
+### Coin Change 2 vs Combination Sum IV - Loop Ordering Dilemma
+  - Coin Change 2 -> Combinations
+  - Combination Sum IV -> Permutations
+
+  #### Coin Change 2
+  ```java
+    public int change(int amount, int[] coins) {
+        int[] dp = new int[amount+1];
+        dp[0]=1;
+        for(int n:coins){
+            for(int j=n;j<=amount;j++){
+                dp[j]=dp[j]+dp[j-n];
+            }
+        }
+        return dp[amount];
+    }
+    }
+  ```
+
+
+#### Combination Sum IV (Actually Permutations)
+```java
+public int combinationSum4(int[] nums, int target) {
+    int[] dp = new int[target+1];
+    dp[0]=1;
+    for(int i=1;i<=target;i++){
+        for(int num : nums){
+            if(num<=i){
+                dp[i]+=dp[i-num];                
+            }
+        }
+    }
+    return dp[target];
+}
+```
+  #### Loop Ordering matters?
+  Well, the real reason why the answer changes because of loops is because of the change in dp definition when you try to reduce the space complexity.If we define dp[i][j] as "number of ways to get sum 'j' using 'first i' coins", then the answer doesn't change because of loop arrangement.
+
+
+  So why does the answer change only when we try to reduce the space complexity?
+
+  To get the correct answer, the correct dp definition should be dp[i][j]="number of ways to get sum 'j' using 'first i' coins". Now when we try to traverse the 2-d array row-wise by keeping only previous row array(to reduce space complexity), we preserve the above dp definition as dp[j]="number of ways to get sum 'j' using 'previous /first i coins' " but when we try to traverse the 2-d array column-wise by keeping only the previous column, the meaning of dp array changes to dp[j]=**"number of ways to get sum 'j' using 'all' coins", Which is what we for the Combination IV Question. 
+
+  #### For Coin Change
+  dp[j]="number of ways to get sum 'j' using first i coins"
+  ![](res/Combination_Sum4-c.jpeg)
+  
+  #### For Combination Sum IV 
+  dp[j]=**"number of ways to get sum 'j' using 'all' coins"
+  ![](res/Combination_Sum4-b.jpeg)
+
+  #### Why does the above solution produce unique permutations.
+  - First Assumption -> Say you are calculating for ith target value, and assume all answers/groups for target<i comprise of unique permutation of elements.
+  - At each iteration we take a number for the given list of nums and add that to group denoted by dp[i-nums[j]] at the end. Since according to first assumption we have all unique elements in the i-nums[j] group, even the new group after adding the number (nums[j]) to dp[i-nums[j]] group will be unique.
+  - Since nums[0], nums[1], nums[2] are different, so adding these numbers to the end of each group and combining all groups also produces a unique element group.
+
+  ![](res/Combination_Sum4-a.jpg)
+
+# 8.11.22
+
+## https://leetcode.com/problems/target-sum/
+- Important Question.
+- Was not able to solve the top-down approach without being messed up in corner cases and offsets.
+- It is the same as the partition-equal-subset-sum problem above. Find partition subset sum for (target-Sum(allnumbers))/2; [Link](https://leetcode.com/problems/target-sum/discuss/97334/Java-(15-ms)-C%2B%2B-(3-ms)-O(ns)-iterative-DP-solution-using-subset-sum-with-explanation)
+- You could have also used Map instead of integer array.
+- Always first solve with 2D Array then optimize for 1D Array.
+- Use Map instead of Integer Array to make all intuitive and not deal with negative indices and offsets.
+
+## https://leetcode.com/problems/integer-break/
+- DP solution is simple.
+- There is a O(N) Solution (Probably out of scope though).
+
+# 9.11.22
+## IMPORTANT CONCEPT - These below questions are very similar and revolve around following techniques
+    - XOR
+    - SUM and then difference.
+    - SUM of squares and sum for 2 equations 2 variables https://leetcode.com/problems/set-mismatch/
+    - Using indexes as hashes and negating to mark those indexes.
+## https://leetcode.com/problems/missing-number/
+- Don't go for overkill i.e array manipulation. Simply add all numbers and subtract from total sum including n.
+```java
+    public int missingNumber(int[] nums) {
+        int sum1=nums.length;
+        int sum2=0;
+        for(int i=0;i<nums.length;i++){
+            sum2+=nums[i];
+            sum1+=i;
+        }
+        return sum1-sum2;
+    }
+```
+## https://leetcode.com/problems/single-number/
+- Easy, simple XOR all numbers to find duplicate
+## https://leetcode.com/problems/find-the-difference
+- XOR all the characters together from both strings to find the random character that was added.
+## https://leetcode.com/problems/set-mismatch/
+- Important question to solve in O(1) space and without modifying the array.
+- Uses the negative index trick to solve in O(1) space complexity. Although requires array modification.
+- Use 2 equations (1 + 2 + ... + n = n*(n+1)//2) and (1^2 + 2^2 + ... + n^2 = n*(n+1)*(2*n+1)//6)
+- A = -sum(nums) + n*(n+1)//2, B = -sum(i*i for i in nums) + n*(n+1)*(2*n+1)//6.
+- A = y - x | B = y*y - x*x.
+- https://leetcode.com/problems/set-mismatch/discuss/1089475/Python-O(n)-timeO(1)-space-math-solution-explained
+
+## https://leetcode.com/problems/single-number-ii/
+- 
+
+## https://leetcode.com/problems/single-number-iii/
+## https://leetcode.com/problems/find-the-duplicate-number/
+## https://leetcode.com/problems/first-missing-positive/
+## https://leetcode.com/problems/smallest-number-in-infinite-set/
+
+
+
+
+
+
+
+
+
+
+
+
+# First To-Do
+- Do LIS of https://leetcode.com/discuss/general-discussion/662866/dp-for-beginners-problems-patterns-sample-solutions
+- Do Merge Intervals, Decision and DP Strings + Hard in https://leetcode.com/discuss/study-guide/458695/Dynamic-Programming-Patterns
+- Floyd hair and tortoise (leetcode.md)
+    - https://leetcode.com/problems/find-the-duplicate-number/
+    - https://leetcode.com/problems/linked-list-cycle-ii/
+    - https://leetcode.com/problems/couples-holding-hands/
+- Kth smallest largest
+    - Prefix Sum (Read leetcode.md)
+- Bit manipulations questions
+    - [x] https://leetcode.com/problems/find-the-difference
+    - [x] https://leetcode.com/problems/single-number/
+    - https://leetcode.com/problems/cinema-seat-allocation/
+    - https://leetcode.com/problems/counting-bits/
+    - https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/
+- Graph Questions.
+- Josephus Question
+- Boyer Moore Voting algorithm
+    - https://leetcode.com/problems/majority-element/
+- Index manipulation questions (Read leetcode.md)
+- String Divisibility type questions (Read leetcode.md)
+- Tree Questions
+    - Left View
+    - Boundary View
+    - Morris Tree Traversal
+    - Spriral Traversal
+- Misc prev solved
+    - https://leetcode.com/problems/sliding-window-maximum/submissions/
+    - https://leetcode.com/problems/maximum-sum-circular-subarray/
+    - https://leetcode.com/problems/bulb-switcher-iii/
+    - https://leetcode.com/problems/online-stock-span/
+    - https://leetcode.com/problems/contiguous-array/submissions/
+    - https://leetcode.com/problems/word-search-ii/
+    - https://leetcode.com/problems/reverse-words-in-a-string/
+    - https://leetcode.com/problems/soup-servings/
+    - https://leetcode.com/problems/prefix-and-suffix-search/
+    - https://leetcode.com/problems/h-index/
+    - https://www.geeksforgeeks.org/design-a-stack-that-supports-getmin-in-o1-time-and-o1-extra-space/
+    -  https://leetcode.com/problems/last-stone-weight-ii/discuss/294888/JavaC%2B%2BPython-Easy-Knapsacks-DP
+    - https://leetcode.com/problems/maximum-product-subarray/
+    - https://leetcode.com/problems/maximum-subarray/
 
 # To-Do
 - https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/
@@ -1232,6 +1929,9 @@ print(shoppingOptions([4, 7], [6, 6], [1, 3, 5], [5, 7, 12], 20)) # Ans 12
 - Confusing Number II
 - https://leetcode.com/problems/cheapest-flights-within-k-stops/
 - https://leetcode.com/problems/minimum-window-subsequence/
+- Do this: https://leetcode.com/problems/number-of-ways-to-paint-n-3-grid/
+- And https://leetcode.com/problems/expression-add-operators/
+
 # Later
 - Binary heap
 - Monotonic Queues questions.
@@ -1267,6 +1967,7 @@ print(shoppingOptions([4, 7], [6, 6], [1, 3, 5], [5, 7, 12], 20)) # Ans 12
 - https://leetcode.com/discuss/study-guide/655708/Graph-For-Beginners-Problems-or-Pattern-or-Sample-Solutions
 - https://leetcode.com/tag/segment-tree/
 - https://cp-algorithms.com/data_structures/segment_tree.html#addition-on-segments
+- https://leetcode.com/discuss/general-discussion/665604/Important-and-Useful-links-from-all-over-the-LeetCode
 
 # Techniques
 ### Sorting
@@ -1276,12 +1977,17 @@ print(shoppingOptions([4, 7], [6, 6], [1, 3, 5], [5, 7, 12], 20)) # Ans 12
 ### Heaps
 ### Monotonic Queue
 - https://leetcode.com/problems/sliding-window-maximum/
+### Knapsacks (1 dimension can be decreased since we only rely on the previous answer.)
+- These type of problems usually involve either choosing or not choosing an element in the final array. If you go with top down approach i.e recursive approach.
 ### MonoStack
 - https://leetcode.com/problems/next-greater-element-i/
+- Next greater, next smaller, prev greater, prev smaller types.
 
 ### 2Pointer
 - https://leetcode.com/problems/minimum-window-substring/
 ### Graph (DFS, BFS)
+### Linkedlist
+- Intersection of linked list is very similar to Lowest common ancestor with parent pointer. https://leetcode.com/problems/intersection-of-two-linked-lists/
 ### Trie
 ### DP
 ### Segment Trees

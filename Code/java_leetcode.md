@@ -424,6 +424,7 @@ TreeSet<String> animals = new TreeSet<>((x,y)->(return y-x));//Any functional in
 - Same as map using KeySet/EntrySet.
 - Use ```map.pollFirstEntry()``` to get the first item and remove it.
 - Use ```map.firstEntry()``` to get the first Entry in the order set by comparator.
+- ### Don't use foreach loop to iterate the priority queue, you might get wrong answers
 ## Custom Comparator
 - Simply provide a lambda function, since the TreeMap expects the Functional Interface i.e Comparator.
 ```java
@@ -588,6 +589,14 @@ public int compareTo(Node other){
 
 
 # Random in JAVA
+```java
+  Random rand = new Random(); //instance of random class
+    int upperbound = 25;
+      //generate random values from 0-24
+    int int_random = rand.nextInt(upperbound); 
+    double double_random=rand.nextDouble();
+    float float_random=rand.nextFloat();
+```
 
 # Math in JAVA
 - Be very careful when dealing with division in java
@@ -599,6 +608,152 @@ public int compareTo(Node other){
 
 # Binary Search in JAVA
 
+# Bit Manipulation in JAVA
+## Integer Range
+- Integer is a 32 bit number.
+- $-2^{31}$ to $2^{31}-1$.
+- $-2^{31}$ to $-1$ and $1$ to $2^{31}$ and $0$.  
+- **Negative number has one more number than the positive number.**
+- A 4 bit 2's complement representation can go from 7 to -8.
+- A 8 bit 2's complement can go from 127 to -128.
+
+## Binary representation of Numbers
+- Left most bit is the sign bit. This is also the MSB (Most significant bit).
+- Right most bit is the least significant bit (LSB)
+-  $10     =  00000000000000000000000000001010$
+-  $-10    =  11111111111111111111111111110110$
+```java
+int ten = 0b1010
+10 == ten
+
+```
+- $2^{31} = 01111111111111111111111111111111$
+### Negative Numbers
+- 2's complement i.e compute bitwise not and add a 1 to it. 
+```java
+(~10+1) == -10
+``` 
+
+### Convert to Binary String
+```java
+Integer.toBinaryString(10) // "1010"
+Integer.toBinaryString(-8) //"11111111111111111111111111111000"
+```
+```java
+Integer.MAX_VALUE == 0b01111111111111111111111111111111
+Integer.MIN_VALUE == 0b10000000000000000000000000000000
+-1                == 0b11111111111111111111111111111111
+```
+
+### Convert from Binary String to Integer
+- The below doesn't work for negative 32 bit representations.
+```java
+int ten = Integer.parseInt("1010",2)
+int minusone = Integer.parseInt("11111111111111111111111111111111") // Numberformatexception
+```
+- ## Use the following for both negative and positive conversion.
+```java
+String binaryString = Integer.toBinaryString(-1);
+(int)Long.parseLong(binaryString,2); //-1
+```
+## Tips on binary manipulation
+
+### Find the LSB
+- ```10&1 == 0```
+
+### Find the MSB
+- Calculate the $log_2(n)$
+
+### Left Shift Operator
+- Multiply by 2 power n.
+- $10<<n = 10*2^n$
+```java
+10<<5 == 10*32
+```
+
+### Right Shift Operator
+- Divide by 2 power n
+- $100<<n = 100/2^n$
+```java
+100>>5 == 100/32
+```
+
+### XOR Operator
+- Xoring a number by itself is zero.
+  - This is a useful tip to find the only number which is not repeated twice/four times...
+- Xoring a number by negative of itself is all 1's
+#### Misc questions
+- Minimize XOR, sort the array and find the XOR value which is the minimum
+  - Proof https://medium.com/codebrace/starred-problem-1-min-xor-value-7c996f9f77c8
+
+
+### Find total Set bits in a number
+- Brian Kerighan's Algorithm -> Subtraction of a number by 1 inverts all the bits(from right to left) till the rightmost set bit(including the rightmost set bit). So if we subtract a number by 1 and do a bitwise and with itself (n&(n-1)) we unset the rightmost bit. If we do n=(n&(n-1)) in a loop and count the number of times loop (till n == 0) executes it gives the number of set bits.
+  ```java
+    private int countBit(int n){
+        int x=0;
+        while(n!=0){
+            n=n&(n-1);
+            x++;
+        }
+        return x;
+    }
+  ```
+- Below are some of it's application
+#### Turn off last set bit
+- ```S & (S-1)``` Brian Kernighan's algorithm
+
+#### Set last unset bit
+- ```S | (S+1)```, Similar logic as above.
+
+
+### Find left most set bit
+- ```S & (-S)```
+
+### Set the jth Bit
+- ```S = S | (1<<j)```
+
+### Check if a bit is set
+- Very Important
+- ```S & (1<<j)```
+
+### Clear a bit if set
+- Very Important
+```S & (~(1<<j))```
+
+### Toggle a bit
+- Very Important
+```S ^ (1<<j)```
+
+### turnOffLastConsecutiveBits
+- ```((S) & (S+1))```
+
+### turnOnLastConsecutiveZeroes
+- ```((S) | (S-1))```
+
+#### Find if a number is a power of 2
+- If totalSetBits using above algorithm are 1, then it is a power of 2.
+- Take log2 of the number if you get integer value it is power of 2.
+- If a number is power of 2 (n&(n-1)) is 0. You however need to take care of 0 case. so return x&&(!(x&(x-1))).
+
+
+
+## Check overflow in integer.
+
+
+## Misc bit manipulation
+### Binary Search and bitwise not
+- When doing binary search in an array, if the element doesn't exist, a bitwise not of the insertion point is returned. i.e insertionPoint = ~returnValue
+
+### Convert the truth table to logical circuit formulae.
+
+- Say for instance we have to add 2 bits, with carry.
+Truth Table Looks like.
+![](res/truth_table.png)
+
+- Let us find the logical circuit for Carry Out. You need to just consider the cases where C-Out is 1, i.e ```A*B*(!C) + A*(!B)*C + A*B*C + (!A)*B*C = A*B + (A^B)*C```. Similarly you can do for any truth table.
+
 # Misc
 - \n is a single character
 - "+" is a meta character, has to be escaped when using split("\\+");
+- ### "." is also a meta character, has to be escaped when using split("\\.");

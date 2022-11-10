@@ -65,6 +65,9 @@ service that supports rate limiting.
 - https://nickcraver.com/blog/2013/11/22/what-it-takes-to-run-stack-overflow/
 
 
+# 21.10.22
+## 
+
 # To-Do
 - multi-masters and circular replication
 - https://www.youtube.com/watch?v=m4_7W4XzRgk
