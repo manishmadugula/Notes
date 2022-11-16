@@ -578,7 +578,7 @@ public int lengthOfLIS(int[] nums) {
 ```
 
 
-# 14.0.22
+# 14.9.22
 ## (IMP) Find the celebrity (https://leetcode.com/problems/find-the-celebrity/solution/)
 - Since everyone must know the celebrity, start from a random number as celebrity, and check if the this candidate knows the subsequent number(No need to look at older indexes since everyone knows the celebrity and celebrity knows no one) so a single loop is enough. The first pass is to pick out the candidate. If candidate knows i, then switch candidate. The second pass is to check whether the candidate is real.
 
@@ -1482,7 +1482,7 @@ public int dotProduct(SparseVector vec) {
     - Harder version of https://leetcode.com/problems/binary-tree-vertical-order-traversal/ 
 
 
-## 31.11.22
+## 31.10.22
 - https://leetcode.com/problems/construct-quad-tree/
 - https://leetcode.com/problems/simplify-path/
     - Simpler solution using stack.
@@ -1831,6 +1831,8 @@ public int combinationSum4(int[] nums, int target) {
     - SUM and then difference.
     - SUM of squares and sum for 2 equations 2 variables https://leetcode.com/problems/set-mismatch/
     - Using indexes as hashes and negating to mark those indexes.
+    - For some questions where 3/5/7 duplicates are present and 1 is unique, just have 32 counters for each bit and then finally simply take mod of 3/5/7 for all counters and reverse the items and that is the bit array representation of unique number. See (Single Number II)
+    - Say if an array has all duplicates except 2 numbers, compute xor of all to get a^b. Then divide all the nums in the array into 2 groups one where the msb of (a^b) is one and the other where it is zero, xor the numbers in Each of these groups. See (Single Number III)
 ## https://leetcode.com/problems/missing-number/
 - Don't go for overkill i.e array manipulation. Simply add all numbers and subtract from total sum including n.
 ```java
@@ -1850,26 +1852,304 @@ public int combinationSum4(int[] nums, int target) {
 - XOR all the characters together from both strings to find the random character that was added.
 ## https://leetcode.com/problems/set-mismatch/
 - Important question to solve in O(1) space and without modifying the array.
-- Uses the negative index trick to solve in O(1) space complexity. Although requires array modification.
+- Array Indexes as hashes : Uses the negative index trick to solve in O(1) space complexity. Although requires array modification. We can also swap the value with the number whose index==value.
 - Use 2 equations (1 + 2 + ... + n = n*(n+1)//2) and (1^2 + 2^2 + ... + n^2 = n*(n+1)*(2*n+1)//6)
 - A = -sum(nums) + n*(n+1)//2, B = -sum(i*i for i in nums) + n*(n+1)*(2*n+1)//6.
 - A = y - x | B = y*y - x*x.
 - https://leetcode.com/problems/set-mismatch/discuss/1089475/Python-O(n)-timeO(1)-space-math-solution-explained
 
+# 11.11.22
 ## https://leetcode.com/problems/single-number-ii/
-- 
+- Important
+- The Long Parser below takes care of negative numbers as well.
+```java
+    public int singleNumber(int[] nums) {
+        int[] counter = new int[32];
+        for(int num : nums){
+            for(int i=0;i<32;i++){
+                counter[i] += (num & (1<<i))==0?0:1;
+            }
+        }
+        for(int i=0;i<32;i++){
+            counter[i]=counter[i]%3;
+        }
+        StringBuilder binaryString=new StringBuilder();
+        for(int i=31;i>=0;i--){ //reverse
+            binaryString.append(counter[i]+"");
+        }
+        return (int)Long.parseLong(binaryString.toString(),2); //To take care of negative numbers
+    }
+```
 
 ## https://leetcode.com/problems/single-number-iii/
-## https://leetcode.com/problems/find-the-duplicate-number/
+- Important
+- Find the first bit where the a and b differs.
+- Form 2 variables, one which xors all the numbers in nums with the above bit as 0, other as one. That is your answer.
+```java
+    public int[] singleNumberIII(int[] nums) {  
+        int xor=0;
+        for(int num : nums){
+            xor=xor^num;
+        }
+        
+        int zero=0;
+        int one=0;
+        int msb = 1<<(Integer.toBinaryString(xor).length()-1);
+
+        for(int num : nums){
+            if((num&msb)==0){
+                zero=zero^num;
+            }
+            else{
+                one=one^num;
+            }
+        }
+        return new int[]{one,zero};
+    }
+```
 ## https://leetcode.com/problems/first-missing-positive/
+- Important
+- First replace useless negative and zeros with 1. Also check if 1 exist simultaneously.
+- Use the above approach of using array indexes as hashes. Mark a number as negative if the number exists and is in range 0 to n.
+```java
+    public int firstMissingPositive(int[] nums) {
+        boolean hasOne=false;
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]==1){
+                hasOne=true;
+            }
+            if(nums[i]<=0){
+                nums[i]=1;
+            }
+        }
+        if(!hasOne) return 1;
+        for(int i=0;i<nums.length;i++){
+            int idx = Math.abs(nums[i])-1;
+            if(idx>=0 && idx<nums.length){
+                nums[idx]=-1*Math.abs(nums[idx]);
+            }
+        }
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]>0){
+                return i+1;
+            }
+        }
+        return nums.length+1;
+    }
+```
+
 ## https://leetcode.com/problems/smallest-number-in-infinite-set/
+- Simple question using priorityQueue, counter and set
+
+# 12.11.22
+
+## https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/
+- To maximize xor, we need to make sure bits of the 2 numbers considered should differ as much as possible with higher priority for the bits towards left.
+- Simply form a bit-trie out of all numbers.
+- Give a number, find start from 31st bit and iterate the trie.
+    - If ~bit is found for the currentBit then take that path,
+     else take the bit path.
+```java
+class Solution {
+    
+    Integer bitVal = 31;
+    
+    class Node{
+        boolean isEnd;
+        Node[] children;
+        Integer currentNumber;
+        Integer val;
+        
+        Node(Integer val){
+            isEnd=false;
+            children = new Node[2];
+            this.val = val;
+        }
+        
+        public String toString(){
+            return val + " : {" + children[0] + ", " +children[1]+"}";
+        }
+    }
+    
+    private int getJBit(int num, int j){
+        return ((num & (1<<j)) == 0)?0:1;
+    }
+    
+    private void addToRoot(int num, int j, Node root){
+        Node node;
+        if(getJBit(num,j)==1){
+            if(root.children[1]==null){
+                root.children[1] = new Node(1);
+            }
+            node = root.children[1];
+        }
+        else{
+            if(root.children[0] == null){
+                root.children[0]= new Node(0);
+            }
+            node = root.children[0];
+        }
+        
+        if(j==0){
+            node.isEnd = true;
+            node.currentNumber = num;
+            return;
+        }
+        addToRoot(num,j-1,node);
+    }
+    
+    private Node buildTrie(int[] nums){
+        Node root = new Node(null);
+        for(int num : nums){
+            addToRoot(num,bitVal,root);
+        }
+        return root;
+    }
+    
+    private Integer findMax(Node root, int num, int j){
+        if(root.isEnd) {
+            return root.currentNumber;
+        }
+        int bit = getJBit(num,j);
+        int neg = bit == 1?0:1;
+        if(root.children[neg]!=null){
+            return findMax(root.children[neg],num,j-1);
+        }
+        else{
+            return findMax(root.children[bit],num,j-1);
+        }
+    }
+    
+    public int findMaximumXOR(int[] nums) {
+        Node root = buildTrie(nums);
+        int ans=Integer.MIN_VALUE;
+        for(int num : nums){
+            ans = Math.max(ans, num^findMax(root, num,bitVal));
+        }
+        return ans;
+    }
+}
+```
+
+# 13.11.22
+
+## Floyd Hair and Tortoise Problem
+- See leetcode.md explaination.
+
+## https://leetcode.com/problems/linked-list-cycle-ii/
+- The case [1,2] where the cycle starts at 1, is a bit tricky. For that case we need to first handle the check of oldtortoise and newtortoise and then move the tortoises.
+```java
+    public ListNode detectCycle(ListNode head) {
+        ListNode hare = head;
+        ListNode oldtort = head;
+        ListNode newtort = head;
+        if(head==null){
+            return head;
+        }
+        
+        while(hare.next!=null && hare.next.next!=null){
+            hare    =  hare.next.next;
+            oldtort =  oldtort.next;
+            if(hare == oldtort){
+                while(oldtort.next!=null){
+                    if(oldtort==newtort){
+                        return oldtort;
+                    }
+                    oldtort=oldtort.next;
+                    newtort=newtort.next;
+                }
+            }
+        }
+        return null;
+    }
+```
+
+## https://leetcode.com/problems/find-the-duplicate-number/
+- This problem can be solved in O(1) space and O(n) time using floyd hair and tortoise method.
+- Funny video : https://www.youtube.com/watch?v=pKO9UjSeLew
+```java
+public int findNext(int[] nums, int node){
+    return nums[node];
+}
+
+public int findDuplicate(int[] nums) {
+    int hare =nums[0];
+    int tort = nums[0];
+    int ntort = nums[0];
+    while(true){
+        hare = findNext(nums, findNext(nums,hare));
+        tort = findNext(nums, tort);
+        if(hare == tort){
+            while(true){
+                if(ntort == tort){
+                    return tort;
+                }
+                tort = findNext(nums,tort);
+                ntort = findNext(nums,ntort);
+            }
+        }
+    }
+    
+}
+```
+
+## Josephus Problem :
+- https://leetcode.com/problems/find-the-winner-of-the-circular-game/submissions/
+- This is the famous Josephus problem.
+- We can solve this using recursion.
+- First the recursive function is the combination of 2 parameters, total number of elements n and k. Recursive function returns the winner of the game.
+- Base case J(1,k) = 1 (winner)
+- Each recursive iteration assumes the game starts from the first item. So to get J(n) from J(n-1), we need to imagine the J(n-1) game starts from the looser of the first iteration. Say 6 items are there 1,2,3,4,5,6 and k = 3. In first iteration : 3 is killed so the next iteration i.e J(n-1)'th result starts from 4. But J(n-1) returns the result assuming 4 as the first item so we need to transform J(n-1)'s answer to fit J(N)'s positions. The next iteration 4,5,6,1,2 is mapped to 1,2,3,4,5. 
+- Formulae ```J(n,k) = ((J(n-1,k)-1)+k%n)%n+1;``` Let's understand this. The k%n denotes that if the answer of J(N-1) = 1, then J(n)=4 (since the next iteration starts from 4) similarly: 
+```
+J(n-1) = 2 : J(n) = 5
+J(n-1) = 3 : J(n) = 6
+J(n-1) = 4 : J(n) = 1
+J(n-1) = 5 : J(n) = 2
+```
+- We mod by n to make sure the answer rotates back to 1. 
+- The above formulae assumes that winner is to be returned based on 1 based indexing. If we want zero based indexing we can use ```J(n,k) = (J(n-1,k)+k%n)%n```.
+```java
+public int findTheWinner(int n, int k) {
+    if(n==1) return 1;
+    int ans = ((findTheWinner(n-1,k)-1)+k%n)%(n)+1; 
+    return ans;
+}
+```
 
 
+# 15.11.22
+## Boyer–Moore majority vote algorithm  
+- The algorithm is two pass: the first one chooses the best candidate that can potentially be a majority element, the second pass confirms or rejects this guess.
+- This algorithm will return a majority element i.e the element that appears more than ⌊n / 2⌋ times.
+- We initialize 2 variable candidate=num[0] and count=1. Starting from i=1 to n, if nums[i] == candidate then count++, else count--. If count==0 then candidate=nums[i]. 
+- The final candidate should be checked if it is indeed a majority element or not. 
+### https://leetcode.com/problems/majority-element/
+```java
+  public int majorityElement(int[] nums) {
+        int count = 1;
+        int candidate=nums[0];
+        for(int i=1;i<nums.length;i++){
+            if(count==0){
+                candidate=nums[i];
+            }
+            if(nums[i]==candidate){
+                count++;
+            }
+            else{
+                count--;
+            }
+        }
+        return candidate;
+    }
+```
+### https://leetcode.com/problems/majority-element-ii
 
 
+## 16.11.22
+## https://leetcode.com/problems/couples-holding-hands/
 
-
-
+## https://leetcode.com/problems/cinema-seat-allocation/
 
 
 
@@ -1878,22 +2158,13 @@ public int combinationSum4(int[] nums, int target) {
 # First To-Do
 - Do LIS of https://leetcode.com/discuss/general-discussion/662866/dp-for-beginners-problems-patterns-sample-solutions
 - Do Merge Intervals, Decision and DP Strings + Hard in https://leetcode.com/discuss/study-guide/458695/Dynamic-Programming-Patterns
-- Floyd hair and tortoise (leetcode.md)
-    - https://leetcode.com/problems/find-the-duplicate-number/
-    - https://leetcode.com/problems/linked-list-cycle-ii/
-    - https://leetcode.com/problems/couples-holding-hands/
+
 - Kth smallest largest
     - Prefix Sum (Read leetcode.md)
 - Bit manipulations questions
-    - [x] https://leetcode.com/problems/find-the-difference
-    - [x] https://leetcode.com/problems/single-number/
-    - https://leetcode.com/problems/cinema-seat-allocation/
-    - https://leetcode.com/problems/counting-bits/
-    - https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/
+    - Cracking the coding interview questions
 - Graph Questions.
-- Josephus Question
 - Boyer Moore Voting algorithm
-    - https://leetcode.com/problems/majority-element/
 - Index manipulation questions (Read leetcode.md)
 - String Divisibility type questions (Read leetcode.md)
 - Tree Questions
@@ -1972,6 +2243,8 @@ public int combinationSum4(int[] nums, int target) {
 # Techniques
 ### Sorting
 ### Hashing
+### Bit Manipulation
+- Brian Kernighan's algorithm
 ### BinarySearch
 ### Binary Tree 
 ### Heaps
@@ -1989,6 +2262,11 @@ public int combinationSum4(int[] nums, int target) {
 ### Linkedlist
 - Intersection of linked list is very similar to Lowest common ancestor with parent pointer. https://leetcode.com/problems/intersection-of-two-linked-lists/
 ### Trie
+### Bit Trie
+### Binary Trie
+
+### Boyer Moore Majority Voting Algorithm
+### Josephus Problem
 ### DP
 ### Segment Trees
 ### KMP
@@ -2001,3 +2279,14 @@ while (lo < hi && num[hi] == num[hi-1]) hi--;
 ```
 - Technique to push the answer to the end in a single loop. 
     - Celebrity Problem
+
+### State based approach found in Buy and Sell stocks.
+
+
+### IMPORTANT CONCEPT - These below questions are very similar and revolve around following techniques
+    - XOR
+    - SUM and then difference.
+    - SUM of squares and sum for 2 equations 2 variables https://leetcode.com/problems/set-mismatch/
+    - Using indexes as hashes and negating to mark those indexes.
+    - For some questions where 3/5/7 duplicates are present and 1 is unique, just have 32 counters for each bit and then finally simply take mod of 3/5/7 for all counters and reverse the items and that is the bit array representation of unique number. See (Single Number II)
+    - Say if an array has all duplicates except 2 numbers, compute xor of all to get a^b. Then divide all the nums in the array into 2 groups one where the msb of (a^b) is one and the other where it is zero, xor the numbers in Each of these groups. See (Single Number III)

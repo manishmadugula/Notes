@@ -661,8 +661,8 @@ String binaryString = Integer.toBinaryString(-1);
 ### Find the LSB
 - ```10&1 == 0```
 
-### Find the MSB
-- Calculate the $log_2(n)$
+### Find the MSB (V.Imp)
+- ```1<<(Integer.toBinaryString(xor).length()-1)```
 
 ### Left Shift Operator
 - Multiply by 2 power n.
@@ -736,9 +736,23 @@ String binaryString = Integer.toBinaryString(-1);
 - Take log2 of the number if you get integer value it is power of 2.
 - If a number is power of 2 (n&(n-1)) is 0. You however need to take care of 0 case. so return x&&(!(x&(x-1))).
 
-
-
 ## Check overflow in integer.
+```java
+boolean checkOverFlowAdd(int x, int y){
+  if(x>0 && y>0){
+    return (x>Integer.MAX_VALUE-y);
+  }
+  else if(x<0 && y<0){
+    return (x<Integer.MIN_VALUE-y);
+  }
+  return false;
+}
+
+boolean checkOverflowMultiply(int x, int y){
+  if(x==0 || y==0) return false;
+  return Math.abs(y) > Integer.MAX_VALUE/Math.abs(x);
+}
+```
 
 
 ## Misc bit manipulation
