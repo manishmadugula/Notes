@@ -152,7 +152,8 @@ In java, if a class needs to support cloning it has to do following things:
 - Clone is the protected method, you need to make it public to access in other packages.
 - No constructor is called on the object being cloned. As a result, it is your responsibility, to make sure all the members have been properly set.
 ```java
-//Cloneable has to be implemented else there will be runtime exception CloneNotSupportedException
+/*Cloneable has to be implemented else there will be runtime exception 
+CloneNotSupportedException*/
 public class ClassA implements Cloneable{
     public int a;
     public List<Integer> l;
@@ -162,8 +163,9 @@ public class ClassA implements Cloneable{
         this.l = l;
         this.b = b;
     }
-    //Keep in mind the return type is Object so you need to cast wherever you clone
-    //The access specifier by default is protected, so only accessible within the same package.
+    /*Keep in mind the return type is Object so you need to cast wherever you clone
+    The access specifier by default is protected, so only accessible within the same
+    package.*/
     @Override
     protected Object clone() throws CloneNotSupportedException {
         ClassA temp =(ClassA) super.clone();
@@ -264,7 +266,8 @@ public final class ImmutableClass {
 
 ## To get the address of the object use:
 ```java
-System.identityHashCode(s1); //Don't use object.hashCode(), since this depends on the contents.
+System.identityHashCode(s1); 
+//Don't use object.hashCode(), since this depends on the contents.
 ```
 # NULL in Java
 - Unlike common misconception, null is not Object or neither a type. It’s just a special value, which can be assigned to any reference type and you can type cast null to any type.
@@ -359,7 +362,8 @@ public void foo() throws Exception {
     try {
       someMethod();  //Throws exceptionOne
     } finally {
-      cleanUp();    //If finally also threw any exception the exceptionOne will be lost forever
+      cleanUp();    
+      //If finally also threw any exception the exceptionOne will be lost forever
     }
     ```
     - This is fine, as long as cleanUp() can never throw any exception. In the above example, if someMethod() throws an exception, and in the finally block also, cleanUp() throws an exception, **that second exception will come out of method and the original first exception (correct reason) will be lost forever.** If the code that you call in a finally block can possibly throw an exception, make sure that you either handle it, or log it. Never let it come out of the finally block.
@@ -792,8 +796,11 @@ public class Main {
         A a = new B();
         System.out.println(a.temp); // Will print : 10 (Not 20)
         a.print();  //Will print "In Class B".
-        System.out.println(a.getTemp()) // prints 10, will call the super classes getTemp method and thus will refer to A.temp not B.temp.
-        //
+        System.out.println(a.getTemp()) 
+        /* 
+        prints 10, will call the super classes getTemp method
+        and thus will refer to A.temp not B.temp.
+        */
  
 
     }
@@ -1243,7 +1250,8 @@ public static <K,V> void printCustom(K key, V value){
 
 
 public static void main(){
-  printCustom(14,"Fourteen"); // (K can be anything and V can also be any other Object or same too).
+  printCustom(14,"Fourteen");
+  // (K can be anything and V can also be any other Object or same too).
 }
 ```
 
@@ -1707,7 +1715,8 @@ This Integer caching works only on auto-boxing. Integer objects will not be cach
   ```java
   //Creating string using a string literal. 
   String s1 = "Hello";  //Caches the s1 object.
-  String s2 = "Hello"; //JVM, searches the permGen space to see if it already has "Hello" object, and returns its reference if it is found.
+  String s2 = "Hello"; /*JVM, searches the permGen space to see if it
+  already has "Hello" object, and returns its reference if it is found.*/
   ``` 
   Both s1 and s2 in above code point to same object. You can test this by checking ```s1==s2```.
 - ### Strings created using new keyword/ constructor are not interned

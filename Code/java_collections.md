@@ -59,14 +59,17 @@ public class IterableExample<T> implements Iterable<T> {
     //See that the Iterator also should have the generic parameter T passed for type safety.
     private class ListIterator implements Iterator<T>{
         
-        //The inner class(nested non static) has access to all the members of the outer class
-        // (Mosh did mistake by adding non required fields for the Outer Classes's instance, correct implementation
-        // reference : https://www.csc.ncsu.edu/courses/csc216-common/Heckman/lectures/19_InnerClasses_Iterators.pdf)
-        //Using this index we can check the current i in the for loop.
+        /*The inner class(nested non static) has access to all the members of the outer class
+        (Mosh did mistake by adding non required fields for the Outer Classes's instance
+        correct implementation reference :
+        https://www.csc.ncsu.edu/courses/
+        csc216-common/Heckman/lectures/19_InnerClasses_Iterators.pdf)
+        Using this index we can check the current i in the for loop.*/
         int index=0;
 
-        //You can check what methods doesn't have default implementation in IntelliJ by looking at the icon of the method,
-        // it will have 2 parallel lines.
+        /*You can check what methods doesn't have default implementation 
+        in IntelliJ by looking at the icon of the method,
+        it will have 2 parallel lines.*/
         @Override
         public boolean hasNext() {
             return index < count;
@@ -74,9 +77,10 @@ public class IterableExample<T> implements Iterable<T> {
 
         @Override
         public T next() {
-          //direct access to outer class member variables and functions
-          //Also can explicitly reference outerclass instance as 
-          //return IterableExample.this.get(index++); if there is a get in the inner class too.
+          /*direct access to outer class member variables and functions
+          Also can explicitly reference outerclass instance as 
+          return IterableExample.this.get(index++);
+          if there is a get in the inner class too.*/
           return get(index++);
         }
     }
@@ -98,7 +102,8 @@ public class IterableExample<T> implements Iterable<T> {
 - This is very useful in ```CompletableFuture.allOf```. Which expects an array of Completable Futures not List/Collection.
 - toArray returns an array of objects. You cannot simply cast to string[]. You need to do the following.
 ```java
-var stringArray = myCollection.toArray(new String[0]);//Java compiler will automatically assign enough memory, even if 0 is passed.
+var stringArray = myCollection.toArray(new String[0]);
+//Java compiler will automatically assign enough memory, even if 0 is passed.
 ```
 - Do note above we can simply pass 0 in the indices for Java compiler to automatically assign enough memory.
 

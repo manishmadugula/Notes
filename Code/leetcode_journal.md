@@ -2124,6 +2124,7 @@ public int findTheWinner(int n, int k) {
 - This algorithm will return a majority element i.e the element that appears more than ⌊n / 2⌋ times.
 - We initialize 2 variable candidate=num[0] and count=1. Starting from i=1 to n, if nums[i] == candidate then count++, else count--. If count==0 then candidate=nums[i]. 
 - The final candidate should be checked if it is indeed a majority element or not. 
+- https://gregable.com/2013/10/majority-vote-algorithm-find-majority.html
 ### https://leetcode.com/problems/majority-element/
 ```java
   public int majorityElement(int[] nums) {
@@ -2143,13 +2144,48 @@ public int findTheWinner(int n, int k) {
         return candidate;
     }
 ```
-### https://leetcode.com/problems/majority-element-ii
+
 
 
 ## 16.11.22
-## https://leetcode.com/problems/couples-holding-hands/
+
+## https://leetcode.com/problems/majority-element-ii
+
 
 ## https://leetcode.com/problems/cinema-seat-allocation/
+- Solved using bitmap.
+- Only 4 combinations can guarantee seats a,b,c,d.
+- Start with total=2*n(If all are empty then max per row is 2).
+- Based on combinations subtract with total.
+```java
+    public int maxNumberOfFamilies(int n, int[][] reservedSeats) {
+        HashMap<Integer, Integer> map = new HashMap<>();
+        for(int[] arr : reservedSeats){
+            map.putIfAbsent(arr[0],0);
+            int num = map.get(arr[0]);
+            map.put(arr[0], num|1<<(10-arr[1]));
+        }
+        int a = 0b0111111110;
+        int b = 0b0001111000;
+        int c = 0b0111100000;
+        int d = 0b0000011110;
+        int total = 2*n;
+        for(Integer row : map.keySet()){
+            int pattern = map.get(row);
+            if((pattern&a)!=0){
+                if((pattern&b)==0 || (pattern&c)==0 || (pattern&d)==0){
+                    total-=1;
+                }
+                else{
+                    total-=2;
+                }
+            }
+        }
+        return total;
+    }
+```
+## https://leetcode.com/problems/couples-holding-hands/
+
 
 
 
@@ -2167,9 +2203,11 @@ public int findTheWinner(int n, int k) {
 - Boyer Moore Voting algorithm
 - Index manipulation questions (Read leetcode.md)
 - String Divisibility type questions (Read leetcode.md)
+- Solve top rated hard questions.
 - Tree Questions
     - Left View
     - Boundary View
+    - Level order traversal
     - Morris Tree Traversal
     - Spriral Traversal
 - Misc prev solved

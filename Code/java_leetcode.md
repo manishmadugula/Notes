@@ -56,7 +56,8 @@ ArrayList<Integer> convArrayList3 =
 
 ## Convert from primitive Array to Integer Array
 ```java
-Integer[] convIntegerArray = (Integer[])Arrays.stream(primitiveArray2).boxed().toArray(Integer[]::new);
+Integer[] convIntegerArray = (Integer[])Arrays.stream(primitiveArray2)
+                                        .boxed().toArray(Integer[]::new);
 ```
 
 ## Convert from Object Array to Primitive Array
@@ -96,7 +97,8 @@ String x = new String(charArray);
 
 ## Convert a primitive character[] to Character[] (IMPORTANT)
 ```java
-Character[] charArrayBoxed = new String(primChar).chars().mapToObj(x->(char)x).toArray(Character[]::new);
+Character[] charArrayBoxed = new String(primChar).chars().mapToObj(x->(char)x)
+                                                          .toArray(Character[]::new);
 ```
 
 ## Convert a primitive character[] to String 
@@ -179,7 +181,8 @@ Collections.sort(list);
 ## Searching an Array
 ```java
 int[] arr = {1,2,3,4,5,6,7,12,4,5352};
-ArrayList<Integer> arrayList = (ArrayList<Integer>) Arrays.stream(arr).boxed().collect(Collectors.toList());
+ArrayList<Integer> arrayList = (ArrayList<Integer>) Arrays.stream(arr).boxed()
+                                                    .collect(Collectors.toList());
 System.out.println(arrayList.indexOf(5));
 ```
 
@@ -212,7 +215,7 @@ Arrays.binarySearch(arr,fromIndex,toIndex,key,Comparator<? super Integer>);
 
 ## Searching a Collection
 ```java
-ArrayList<Integer> arrayList2 = new ArrayList<>(List.of(1,2,341,12,4,124,12242,24,2,31,1,1));
+ArrayList<Integer> arrayList2 = new ArrayList<>(List.of(1,2,341,12,4,124,24,2,31,1,1));
 System.out.println(arrayList2.indexOf(341));
 ```
 
@@ -244,7 +247,8 @@ int a[2] = 2;
 //Removing the item at i'th index from an Array
 int[] arr = {1,2,3,4,5,6,7};
 //Remove item at 3rd index i.e 4
-ArrayList<Integer> arrayList = (ArrayList<Integer>) Arrays.stream(arr).boxed().collect(Collectors.toList());
+ArrayList<Integer> arrayList = (ArrayList<Integer>) Arrays.stream(arr).boxed()
+                                                      .collect(Collectors.toList());
 arrayList.remove(3);
 arr = arrayList.stream().mapToInt(i->i).toArray();
 System.out.println(Arrays.toString(arr));
@@ -381,7 +385,8 @@ Arrays.fill(dp,-1);
 
 ## Custom comparator
 ```java
-TreeSet<String> animals = new TreeSet<>((x,y)->(return y-x));//Any functional interface implementing public int compare(T x, T y)
+TreeSet<String> animals = new TreeSet<>((x,y)->(return y-x));
+//Any functional interface implementing public int compare(T x, T y)
 ```
 ## Basic
 - add
@@ -649,7 +654,8 @@ Integer.MIN_VALUE == 0b10000000000000000000000000000000
 - The below doesn't work for negative 32 bit representations.
 ```java
 int ten = Integer.parseInt("1010",2)
-int minusone = Integer.parseInt("11111111111111111111111111111111") // Numberformatexception
+int minusone = Integer.parseInt("11111111111111111111111111111111")
+ // Numberformatexception
 ```
 - ## Use the following for both negative and positive conversion.
 ```java
@@ -666,14 +672,14 @@ String binaryString = Integer.toBinaryString(-1);
 
 ### Left Shift Operator
 - Multiply by 2 power n.
-- $10<<n = 10*2^n$
+- <img src="res/exp1.png" alt="exp1" width="150"/>
 ```java
 10<<5 == 10*32
 ```
 
 ### Right Shift Operator
 - Divide by 2 power n
-- $100<<n = 100/2^n$
+- <img src="res/exp2.png" alt="exp2" width="150"/>
 ```java
 100>>5 == 100/32
 ```
