@@ -466,11 +466,61 @@ public void foo() throws Exception {
 ### For Class
 - Final class can't be inheritted.
 
-# Compile time constant must be
-- declared final
-- primitive or String
-- initialized within declaration
-- initialized with constant expression
+# Compile time constant
+- These describing a value that is not changed after compilation.
+  - declared final
+  - primitive or String
+  - initialized within declaration
+  - initialized with constant expression
+
+```java
+public class Test{
+    public static final int MAXIMUM_NUMBER_OF_USERS = 10;
+    public static final String DEFAULT_USERNAME = "unknown";
+}
+``` 
+-  not all static and final variables are constants. If a state of an object can change, it is not a constant:
+```java
+//The following are not compile time constants
+public static final Logger log = LoggerFactory.getLogger(ClassConstants.class);
+public static final List<String> contributorGroups = Arrays.asList("contributor", "author"); 
+```
+- The Java compiler is able to calculate expressions that contain constant variables and certain operators during code compilation:
+  - Following example is continuation of the Test class mentioned above.
+  ```java
+  .
+  .
+  .
+  public static final int MAXIMUM_NUMBER_OF_GUESTS = MAXIMUM_NUMBER_OF_USERS * 10;
+  public String errorMessage = ClassConstants.DEFAULT_USERNAME + " not allowed here.";
+  .
+  .
+  .
+  ```
+- The term compile-time constants include class constants, but also instance and local variables defined using constant expressions.
+- The Java compiler statically optimizes all compile-time constants during the compilation process. Therefore, the compiler replaces all compile-time constant references with their actual values.
+## Usecases of compile time constants
+- ###  values used in the case statement has to be both compile-time constants and unique.
+- ### Annotation processing in Java takes place at compile time. In effect, that means that annotation parameters can only be defined using compile-time constants
+  ```java
+  private final String deprecatedDate = "20-02-14";
+  private final String deprecatedTime = "22:00";
+
+  @Deprecated(since = deprecatedDate + " " + deprecatedTime)
+  public void deprecatedMethod() {}
+  ```
+
+# Runtime Constant
+- A runtime constant value cannot change while the program is running. However, each time when we run the application, it can have a different value
+  ```java
+  Console console = System.console();
+
+  final String input = console.readLine();
+  console.writer().println(input);
+
+  final double random = Math.random();
+  console.writer().println("Number: " + random);
+  ```
 
 # Abstract
 ## Method
@@ -499,6 +549,11 @@ public abstract class AbstractClassExample {
 - Use IntelliJ's Generate to generate code for getter and setter in class.
 
 ## Class Initialization
+### Basics
+- Loading involves obtaining the byte array representing the Java class file.
+- Verification of a Java class file is the process of checking that the class file is structurally well-formed and then inspecting the class file contents to ensure that the code does not attempt to perform operations that are not permitted.
+- Preparation involves the allocation and default initialization of storage space for static class fields. Preparation also creates method tables, which speed up virtual method calls, and object templates, which speed up object creation.
+- Initialization involves the processing of the class's class initialization method, if defined, at which time static class fields are initialized to their user-defined initial values (if specified).
 ### When is a class loaded in java
 - Class loading is done by ClassLoaders in Java which can be implemented to eagerly load a class as soon as another class references it or lazy load the class until a need of class initialization occurs. If Class is loaded before its actually being used it can sit inside before being initialized. I believe this may vary from JVM to JVM. While its guaranteed by JLS that a class will be loaded when there is a need of static initialization.
 
@@ -698,8 +753,9 @@ class Student{
 ```
 
 ### IMPORTANT - Having only Private constructors
-- ### Because a class must call its super class constructor always. If the super class constructor can't be accessed, then the sub class can't be initialized. - Thus classes without public/protected constructors cannot be subclassed.(Unless both subclass and superclass are nested inside the same class).
+- ### Because a class must call its super class constructor always. If the super class constructor can't be accessed by subclass, then the sub class can't be initialized. - Thus classes without public/protected constructors cannot be inherited.(Unless both subclass and superclass are nested inside the same class).
 - Also a package local constructor cannot be used in another package.
+- [Link](https://stackoverflow.com/questions/16661595/why-can-you-not-inherit-from-a-class-whose-constructor-is-private)
 
 
 ## this and super
