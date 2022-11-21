@@ -786,6 +786,17 @@ class Student{
 - All variables declared inside interface is implicitly public final variable or constants.
 - All methods declared inside Java Interfaces are implicitly public and abstract
 - ### An interface cannot implement another interface in Java.
+  - This is merely syntax, we don't use the implement word to inherit other interfaces, we use extend to inherit other interfaces.
+  - An abstract class can "implement" multiple interfaces (It doesn't have to implement any methods and can rely on it's subclass to implement)
+    ```java
+    public interface SuperInterface{
+      public int readSuper();
+    }
+    public abstract class SubAbstractClass implements SuperInterface{
+      //No need to override this can be empty.
+    }
+    ```
+  - An interface can't extend any classes.
   - In Java its legal for an interface to **extend** multiple interface. **Look carefully, I used the word extend, i.e inherit and not implement. A class cannot extend more than one class.**
   -  An interface can extend any number of interfaces but one interface cannot implement another interface, because if any interface is implemented then its methods must be defined and interface never has the definition of any method.
   ```java
@@ -836,16 +847,19 @@ class Student{
 - OOP concept which hides data from the outside world.
 - Because of Encapsulation, you can change the internal implementation of HashMap with ease without impacting clients who are using HashMap. For example, in Java 8, the java.util.HashMap changes its implementation to use a binary tree instead of LinkedList to store objects in the same bucket after a certain threshold
 - Encapsulation is wrapping, just hiding properties and methods. Encapsulation is used for hide the code and data in a single unit to protect the data from the outside the world. 
+- This is done mainly to conceal the code and data for privacy, and make sure only limited functionality is available for client of this code. Say a class doesn't want anyone modifying it's data, in such case we can only expose the getter method and make the field private. It can also be done to prevent bugs and make sure unintentionally no one changes data.
 
 ### Abstraction vs Encapsulation
 - both Abstraction and Encapsulation does hide something, but the key difference is on intent. Abstraction hides details at the design level, while Encapsulation hides details at the implementation level.
 - Abstraction is about hiding unwanted details while giving out the most essential details, while Encapsulation means hiding the code and data into a single unit e.g. class or method to protect the inner working of an object from the outside world. In other words, Abstraction means extracting common details or generalizing things.
 - **In Java, Abstraction is supported using interface and abstract class while Encapsulation is supported using access modifiers e.g. public, private and protected getters and setters.**
+- Idea behind abstraction is making complex system simpler and increasing readability, and encapsulation is to protect the data and code from outside (can be other classes/package) etc.
 
 ## Polymorphism
 ### V.V.V Important Polymorphism doesn't work with member variables:
 - The polymorphic behaviour of the java language works with methods and not member variables: they designed the language to bind member variables at compile time.
 - https://stackoverflow.com/questions/15513467/polymorphism-with-instance-variables
+- Inheritance works but not polymorphism. i.e can't use superclass reference for calling subclass fields.
 ```java
 public class Main {
     public static void main(String[] args) {
@@ -855,7 +869,8 @@ public class Main {
         System.out.println(a.getTemp()) 
         /* 
         prints 10, will call the super classes getTemp method
-        and thus will refer to A.temp not B.temp.
+        and thus will refer to A.temp not B.temp. 
+        Note here we haven't overriden getTemp in B.
         */
  
 
