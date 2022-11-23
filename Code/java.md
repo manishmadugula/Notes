@@ -973,7 +973,7 @@ class B{
     FS = new System.IO.FileStream("C:\\temp.txt", System.IO.FileMode.Open);
   ```
   Above code, create a variable FS to hold a new object and then assign a new object to the variable. Here type is known before the variable is exercised during run-time, usually through declarative means. The FileStream is a specific object type, the instance assigned to FS is early bound. Early Binding is also called static binding or compile time binding.
-  - ### static, private and final methods and variables are resolved using static binding which makes there execution fast because no time is wasted to find correct method during runtime. (Doubt?? if this is applicable to Java)
+  - ### static, private and final methods and variables are resolved using static binding which makes there execution fast because no time is wasted to find correct method during runtime. (Doubt?? if this is applicable to Java) This is because they can't be overriden.
 
 ### Late Binding (Dynamic Binding)
   - Late binding functions, methods, variables and properties are detected and checked only at the run-time. It implies that the compiler does not know what kind of object or actual type of an object or which methods or properties an object contains until run time. The biggest advantages of Late binding is that the Objects of this type can hold references to any object, but lack many of the advantages of early-bound objects.
@@ -1036,6 +1036,26 @@ class B{
       }
   }
   ```
+- To create Inner Class, you need to first create outer class, i.e Inner Class can only be created (Say using new InnerClass()) if the context it is created in has access to "this" i.e current Instance of the outerclass, in essense what happens is ```this.new InnerClass()```.
+  ```java
+  public class OuterClass
+  {
+      private InnerClass innerClassInstance;
+      private class InnerClass{
+          private int b = 315;
+          InnerClass(int x){
+              b=x;
+              System.out.println("B : "+b);
+              System.out.println("Value of a:" + OuterClass.this.a);
+          }
+      }
+      OuterClass(){
+          //After creating instance of OuterClass, we need to create instance of InnerClass too.
+          innerClassInstance = new InnerClass(1);
+          //In essense what we are doing is this.new InnerClass(1)
+      }
+  }
+  ```
 
 - Inner Classes are of 2 types local classes and anonymous classes.
 #### Local Inner Class
@@ -1051,7 +1071,9 @@ Anonymous inner class are mainly created in two ways:
   - Useful in creating a task in a new thread
 The syntax of an anonymous class expression is like the **invocation of a constructor**, except that there is a class definition contained in a block of code.
 - Don't forget that we are actually invoking the constructor in case of abstract/ concrete classes.
-- The anonynmous class syntax actually invokes an object of the anonymous class. 
+- The anonynmous class syntax actually invokes an object of the anonymous class.
+- An anonymous class cannot have an explicitly declared constructor.
+- We can access final/ effectively final local variables from inside of anonymous class. 
 ```java
 new InterfaceSample(){
   @Override
@@ -1072,6 +1094,70 @@ new InterfaceSample(){
               } 
           }); 
   ```
+- Example of nested class
+```java
+public class OuterClass
+{
+    private int a =124;
+    private InnerClass innerClassInstance;
+    private class InnerClass{
+        private int b = 315;
+        InnerClass(int x){
+            b=x;
+            System.out.println("Inner Class created  with b : "+b);
+            System.out.println("We can access private variable of outerClass from inner class, a: " + OuterClass.this.a);
+        }
+    }
+    OuterClass(){
+        System.out.println("Outer Class created");
+        //After creating instance of OuterClass, we need to create instance of InnerClass too.
+        innerClassInstance = new InnerClass(1);
+        //In essence what we are doing is this.new InnerClass(1)
+    }
+
+    void randomMethodForLocalClass(){
+        class LocalClass implements Comparable<Integer>{
+            private int y;
+            LocalClass(int y){
+                System.out.println("LocalClass Constructor");
+                this.y = y;
+            }
+
+            @Override
+            public int compareTo(Integer o) {
+                return y-o;
+            }
+        }
+
+
+        LocalClass localClass = new LocalClass(20);
+        int y = localClass.y;
+
+        //An anonymous class cannot have an explicitly declared constructor.
+        RandomInterface anonymousClass = new RandomInterface() {
+            @Override
+            public boolean isEven(int x) {
+                System.out.println("Inside the anonymous class");
+                return x%2==0;
+            }
+        };
+        System.out.println("y is Even : "+ anonymousClass.isEven(y));
+    }
+}
+
+interface RandomInterface{
+    boolean isEven(int x);
+}
+
+/*
+Main function prints
+Inner Class created  with b : 1
+We can access private variable of outerClass from inner class, a: 124
+LocalClass Constructor
+Inside the anonymous class
+y is Even : true
+*/
+```
 - Functional Interfaces + Anonymous classes + Syntactic sugar = Lambdas
 
 
