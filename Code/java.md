@@ -1457,7 +1457,7 @@ public class GenericList<T extends Number> {
 
 ## Raw Types
 
-- Raw types refer to using a generic type without specifying a type parameter. For example, List is a raw type, while List<String> is a parameterized type.
+- Raw types refer to using a generic type without specifying a type parameter. For example, List is a raw type, while ```List<String>``` is a parameterized type.
 - We should avoid raw types, they aren't type safe, and some important kinds of errors will only appear at runtime
 - raw types were retained only to maintain backwards compatibility with older versions of Java.
 
@@ -1469,22 +1469,25 @@ public class GenericList<T extends Number> {
   - T[] : Gets converted to Object[]
   - T extends Number : Gets converted to Number
   - T extends Comparable : Gets converted to Comparable
-  - T extends Comparable & Clonable : Gets converted to Comparable (Left-most one)
+  - **T extends Comparable & Clonable : Gets converted to Comparable (Left-most one)**
 
 
 
-## List<SubType> not a subtype of List<SuperType>
-- If we have the requirement, where Users is superclass and Instructors is subclass and we want a generic print all method which should print all the subtypes of users with List<T extends User> as input, we would need to use wildcards. (List<Instructor> is not a subtype of List<User>)
+## ```List<SubType>``` not a subtype of ```List<SuperType>```
+- If we have the requirement, where Users is superclass and Instructors is subclass and we want a generic print all method which should print all the subtypes of users with ```List<T extends User>``` as input, we would need to use wildcards. (```List<Instructor>``` is not a subtype of ```List<User>```)
 
 
 ## Wildcards
 - As seen above List<SubType> is not a subtype of List<SuperType>, wildcard is how we tell the compiler to have a upper bound(? extends) and lower bound(? super) on the List.
 - PECS (PRODUCERS EXTEND, CONSUMER SUPER)
+  - PECS" is from the collection's point of view. If you are only pulling items from a generic collection, it is a producer and you should use extends; if you are only stuffing items in, it is a consumer and you should use super. If you do both with the same collection, you shouldn't use either extends or super.
+  - https://stackoverflow.com/questions/2723397/what-is-pecs-producer-extends-consumer-super
+  -  **A producer is allowed to produce something more specific, hence extends, a consumer is allowed to accept something more general, hence super.**
 ### Unbounded Wildcard
 - Just using ```List<?>``` will accept Lists of all the types.
 ### Upper Bound (? extends T)
 - Accepts all the values of T which are either T or are a subclass of T.
-- You cannot add (say integer) the list below though, since you don't have access to the type of ?, it can be Double, Integer, Big Decimal. You have no way of knowing. So this is only for reading. list is of type producer, you read from it, if your parameter is producer use extend.
+- You cannot add (say integer) the list below though, since you don't have access to the type of ?, it can be Double, Integer, Big Decimal. You have no way of knowing. So this is only for reading. list is of type producer, you read from it, if your parameter is producer use extend. Producer is not modified i.e it can be immutable.
 ```java
 //Accepts all the List of Objects where object is the subclass of Number.
 static double sumAllNumbers(List<? extends Number> list){
@@ -1569,9 +1572,11 @@ Collections.sort(customerList, new EmailComparator());
 - Java classes aren’t loaded into memory all at once, but when required by an application, at which point class loader is called by the JRE, these class loaders load classes into memory dynamically.
 - Not all classes are loaded by a single ClassLoader. Depending on the type of class and the path of class, the ClassLoader that loads that particular class is decided. 
 - ```ClassLoader getClassLoader()``` : This method returns the class loader for this class. 
+- If class loader can't find then we get class not found exception
 ### BootStrap ClassLoader
 - A Bootstrap Classloader is a Machine code which kickstarts the operation when the JVM calls it. It is not a java class. Its job is to load the first pure Java ClassLoader. Bootstrap ClassLoader loads classes from the location rt.jar.
 - rt = Run Time. It contains all the java runtime libraries. (Essential)
+- **This is because the bootstrap class loader is written in native code, not Java, so it doesn't show up as a Java class.**
 ### Extension ClassLoader:
 - The Extension ClassLoader is a child of Bootstrap ClassLoader and loads the extensions of core java classes from the respective JDK Extension library. It loads files from jre/lib/ext directory or any other directory pointed by the system property java.ext.dirs.
 
@@ -1579,6 +1584,19 @@ Collections.sort(customerList, new EmailComparator());
 -  An Application ClassLoader is also known as a System ClassLoader. It loads the Application type classes found in the environment variable CLASSPATH, -classpath or -cp command line option. The Application ClassLoader is a child class of Extension ClassLoader.
 
 ![Class-Loader](res/class_loader_java.PNG)
+### Delegation Model
+- The system class loader first delegates the loading of that class to its parent extension class loader, which in turn delegates it to the bootstrap class loader.
+- Only if the bootstrap and then the extension class loader are unsuccessful in loading the class, the system class loader tries to load the class itself.
+### Linking Phase
+#### Verify
+- Verify the bytecode.
+#### Prepare
+- ***The memory for static variables is allocated here. Not yet initialized.***
+#### Resolve
+- All symbolic references to other classes from a class is made to actual reference.
+- We get class defination not found if the symbolic reference is not resolved.
+### Initialize
+- Class variables are initialized.
 
 ## Runtime Data Areas
 ![Runtime Data Areas](res/method_heap_area_java.PNG)
@@ -2112,9 +2130,10 @@ ArrayList arr = new CopyOnWriteArrayList();
 # Path vs ClassPath vs SourcePath
 ## ClassPath
 - The CLASSPATH variable is one way to tell applications, including the JDK tools, where to look for user classes. (Classes that are part of the JRE, JDK platform, and extensions should be defined through other means, such as the bootstrap class path or the extensions directory.)
+- This looks for .class files.
 
 ## SourcePath
-- The sourcepath is the path to the sources you are compiling.
+- The sourcepath is the path to the sources you are compiling. i.e .java files
 
 ## Path
 - Used to tell operating system where to find the binaries, like javac and java etc.
@@ -2131,12 +2150,12 @@ ArrayList arr = new CopyOnWriteArrayList();
 
 ## Default Package
 - If no package is specified, the classes in the file goes into a special unnamed package (the same unnamed package for all files).
-- If no package declaration is specified for 2 classes, they cannot access each other method unless the method is public.
 - Package statement must be first statement in the program even before the import statement.
 
 
 ## Built-in Packages
--  java.lang: Contains language support classes(e.g classed which defines primitive data types, math operations). This package is automatically imported.
+-  java.lang: Contains language support classes(e.g classed which defines primitive data types, math operations). 
+  - ## This package is automatically imported.
 -  java.io: Contains classed for supporting input / output operations.
 -  ava.util: Contains utility classes which implement data structures like Linked List, Dictionary and support ; for Date / Time operations.
 -  
@@ -2192,11 +2211,81 @@ public class Test
 - The serialVersionUID is a universal version identifier for a Serializable class. Deserialization uses this number to ensure that a loaded class corresponds exactly to a serialized object. If no match is found, then an InvalidClassException is thrown.
 
 # New IO
+- [Tutorial for All APIs](https://www.youtube.com/watch?v=Tpwnvi-3pGw)
+- Basically, we first create a path object using Paths class, and then use APIs in Files class to perform operations
+  ```java
+  private static String HOME = System.getProperty("user.home");
+  Path p = Paths.get(HOME);
+  if(Files.exists(p)){
+    Files.createFile(p);
+    Files.createDirectory(p);
+    Files.delete(p);
+  }
+  ```
 
 # Reflection
-- You almost would never need to use it
+- It is used to manipulate classes. Access private fields and classes.
+- Invoke and get fields and methods by String.
+- It can significantly slow down the application because JVM can't optimize the code. 
+- You almost would never need to use it.
 - But as soon as, you are told to deal with classes which you don’t know at time of writing the code, and you must write code in too general way such that it can handle any class type then you will need reflection to do the job.
 
+## Accessing non-visible classes, private methods, private constructors and private fields:
+- Say you have a package ```privatepackage```, with a ```class PrivateClass```. This class is a package private class, so ideally shouldn't be accessible outside of the package, it also has a private method and private constructor and fields as shown below:
+```java
+package privatepackage;
+
+class PrivateClass {
+    {
+        System.out.println("This class is not accessible how did you access?");
+    }
+    private String privateString;
+    private PrivateClass(){
+        System.out.println("This is a private constructor, how did you create?");
+        this.privateString = "This String shouldn't be accessible outside";
+    }
+    private String privateMethod(){
+        privateString = "Test";
+        return "This is a private method, How did you access?";
+    }
+}
+```
+- To access it from another class, and another package in our case Main method : 
+```java
+    public static void main(String[] args) throws Exception {
+
+        //Get a class that is not visible to the current package.
+        Class<?> privateClass = Class.forName("privatepackage.PrivateClass");
+        //Fetches declared methods, in our case private methods.
+        System.out.println(Arrays.toString(privateClass.getDeclaredMethods())); 
+
+        //Construct an instance using a private constructor.
+        Constructor<?> constructor = privateClass.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        Object privateInstance = constructor.newInstance();
+
+        //Access private field
+        Field privateField = privateClass.getDeclaredField("privateString");
+        privateField.setAccessible(true);
+        System.out.println("Private field value is : " + privateField.get(privateInstance));
+
+        //Access private method
+        Method privateMethod = privateClass.getDeclaredMethod("privateMethod", null);
+        privateMethod.setAccessible(true);
+        System.out.println("Private method return value is : " +
+                                   privateMethod.invoke(privateInstance, null));
+    }
+
+    /*
+    The above code produces following output:
+      [private java.lang.String privatepackage.PrivateClass.privateMethod()]
+      This class is not accessible how did you access?
+      This is a private constructor, how did you create?
+      Private field value is : This String shouldn't be accessible outside
+      Private method return value is : This is a private method, How did you access?
+    */
+```
+- The above code produces the following output.
 ## real examples of Reflection
 - Code analyzer tools
 - Eclipse (Other IDEs) auto completion of method names
