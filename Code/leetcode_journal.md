@@ -2187,7 +2187,29 @@ public int findTheWinner(int n, int k) {
 ## https://leetcode.com/problems/couples-holding-hands/
 
 
-
+## 22/3/23
+### For apple 
+- LRU Cache, LFU Cache
+- Max Profit
+- KMP
+- Bit Manipulation Techniques
+- Missing number type questions
+- Josephus Problem
+- Intersection of Linked List
+- Floyd Hair Tortoise 
+- Median of 2 sorted arrays
+- Coin Change vs Combination Sum
+- LIS
+- Djikstra, MST
+- Cycle Detection
+- Union Find Disjoint sets
+- Basic Calculator 3
+- Minimum Window Substring
+- Minimum Window Subsequence
+- Sliding Window Maximum
+- Lowest Common Ancestor
+- Boyer Moore majority voting algorithm
+- Substring with largest variance
 
 
 
@@ -2328,3 +2350,5 @@ while (lo < hi && num[hi] == num[hi-1]) hi--;
     - Using indexes as hashes and negating to mark those indexes.
     - For some questions where 3/5/7 duplicates are present and 1 is unique, just have 32 counters for each bit and then finally simply take mod of 3/5/7 for all counters and reverse the items and that is the bit array representation of unique number. See (Single Number II)
     - Say if an array has all duplicates except 2 numbers, compute xor of all to get a^b. Then divide all the nums in the array into 2 groups one where the msb of (a^b) is one and the other where it is zero, xor the numbers in Each of these groups. See (Single Number III)
+
+

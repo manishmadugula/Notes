@@ -1579,7 +1579,7 @@ public:
 
 # String
 
-## KMP
+##            
 
 ### TIP -> MOST IMPORTANT STEP TO REMEMBER IN LPS AND KMP BOTH is the case where the iterator 1 and iterator 2 are not equal and also the iterator2's value is also not 0, then you perform the following operation ```iterator2 = LPS[iterator2-1]``` i.e reset iterator2's value to the appropriate position.
 

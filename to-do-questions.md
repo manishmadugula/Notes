@@ -259,6 +259,8 @@ Write a query to print the top two scores in each subject of the students table.
 - 
 
 
+- Given the Longest Common Prefix between all the suffixes of a string as a 2D Array, find the string.
+
 ## Tips
 - In the design rounds, interviewer doesn’t expect the most ideal answer from you and unless your choice of technology is outrageously wrong, he won’t pinpoint that.
 - Behavior questions take lots of time, and it’s very important to have different prepared stories for them. You can you same story for different questions if you can show the required aspect.

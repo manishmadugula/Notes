@@ -5,7 +5,7 @@ import java.util.*;
 import java.lang.*;
 import java.util.regex.*;
 import java.util.concurrent.*;
-Import java.util.concurrent.locks.*;
+import java.util.concurrent.locks.*;
 import java.util.stream.*;
 import java.util.function.*;
 ```
@@ -617,7 +617,7 @@ public int compareTo(Node other){
 ## Integer Range
 - Integer is a 32 bit number.
 - $-2^{31}$ to $2^{31}-1$.
-- $-2^{31}$ to $-1$ and $1$ to $2^{31}$ and $0$.  
+- $-2^{31}$ to $-1$ and $1$ to $2^{31}-1$ and $0$.  
 - **Negative number has one more number than the positive number.**
 - A 4 bit 2's complement representation can go from 7 to -8.
 - A 8 bit 2's complement can go from 127 to -128.
